@@ -1,3 +1,4 @@
+import { useDashboardSection } from '@/lib/useDashboardSection';
 import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -34,7 +35,7 @@ export default function TutorDashboard() {
   const { isPremium, isOnTrial, trialDaysLeft, loading: premLoading } = usePremiumAccess(user);
   const [profile, setProfile] = useState(null);
   const [resources, setResources] = useState([]);
-  const [activeSection, setActiveSection] = useState(null);
+  const [activeSection, toggleSection] = useDashboardSection('tutor');
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -141,9 +142,6 @@ export default function TutorDashboard() {
     }
   };
 
-  const toggleSection = (key) => {
-    setActiveSection(prev => prev === key ? null : key);
-  };
 
   // ---- Access Control Screens ----
   if (!user) {

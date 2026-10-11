@@ -1,3 +1,4 @@
+import { useDashboardSection } from '@/lib/useDashboardSection';
 import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
@@ -21,7 +22,7 @@ export default function ParentDashboard() {
   const { isPremium, isOnTrial, trialDaysLeft, loading: premLoading } = usePremiumAccess(user);
   const [tutors, setTutors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState(null);
+  const [activeSection, toggleSection] = useDashboardSection('parent');
 
   const loadTutors = useCallback(async () => {
     if (!user?.email) {
@@ -52,7 +53,6 @@ export default function ParentDashboard() {
     loadTutors();
   }, [loadTutors]);
 
-  const toggleSection = (key) => setActiveSection(prev => prev === key ? null : key);
 
   if (!user) {
     return (

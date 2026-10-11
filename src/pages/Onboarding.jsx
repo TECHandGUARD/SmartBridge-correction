@@ -1,300 +1,129 @@
-// src/pages/Onboarding.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
+import { getAccountDestination, getDashboardPath } from '@/lib/navigation';
+import { useAuth } from '@/lib/AuthContext';
+import { withTimeout } from '@/lib/auth-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { GraduationCap, Users, BookOpen, School, CheckCircle, Loader2, Shield } from 'lucide-react';
-import { toast } from 'sonner';
+import { BookOpen, GraduationCap, Users, Shield, School, Check, ArrowRight, Loader2 } from 'lucide-react';
 import TutorConsentModal from '@/components/onboarding/TutorConsentModal';
 
-
-
-const SA_UNIVERSITIES = [
-  'University of Cape Town (UCT)',
-  'University of the Witwatersrand (Wits)',
-  'University of Pretoria (UP)',
-  'Stellenbosch University (SU)',
-  'University of KwaZulu-Natal (UKZN)',
-  'University of Johannesburg (UJ)',
-  'University of the Free State (UFS)',
-  'University of the Western Cape (UWC)',
-  'Rhodes University',
-  'North-West University (NWU)',
-];
-
 const ROLES = [
-  {
-    id: 'student',
-    label: 'Student',
-    icon: GraduationCap,
-    color: 'border-blue-200 bg-blue-50 hover:bg-blue-100',
-    selectedColor: 'border-blue-500 bg-blue-100 ring-2 ring-blue-400',
-    desc: 'I am a Grade 10–12 learner looking for study resources and tutor sessions.',
-  },
-  {
-    id: 'parent',
-    label: 'Parent / Guardian',
-    icon: Users,
-    color: 'border-green-200 bg-green-50 hover:bg-green-100',
-    selectedColor: 'border-green-500 bg-green-100 ring-2 ring-green-400',
-    desc: "I want to monitor my child's academic progress and connect with tutors.",
-  },
-  {
-    id: 'sace_tutor',
-    label: 'SACE Registered Tutor',
-    icon: Shield,
-    color: 'border-primary/20 bg-primary/5 hover:bg-primary/10',
-    selectedColor: 'border-primary ring-2 ring-primary bg-primary/10',
-    desc: 'I am a qualified, SACE-registered educator who wants to tutor learners.',
-  },
-  {
-    id: 'student_tutor',
-    label: 'Student Tutor',
-    icon: School,
-    color: 'border-purple-200 bg-purple-50 hover:bg-purple-100',
-    selectedColor: 'border-purple-500 bg-purple-100 ring-2 ring-purple-400',
-    desc: 'I am a university student who wants to tutor Grade 10–12 learners.',
-  },
+  { id: 'student', label: 'Student', icon: GraduationCap, desc: 'Study resources, practice and tutor sessions for Grade 10–12 learners.' },
+  { id: 'parent', label: 'Parent / Guardian', icon: Users, desc: 'Link a learner, follow their progress and find learning support.' },
+  { id: 'sace_tutor', label: 'SACE Registered Tutor', icon: Shield, desc: 'Apply to tutor learners as a SACE-registered educator.' },
+  { id: 'student_tutor', label: 'Student Tutor', icon: School, desc: 'Apply to tutor Grade 10–12 learners as a university student.' },
 ];
+const UNIVERSITIES = ['University of Cape Town (UCT)', 'University of the Witwatersrand (Wits)', 'University of Pretoria (UP)', 'Stellenbosch University (SU)', 'University of KwaZulu-Natal (UKZN)', 'University of Johannesburg (UJ)', 'University of the Free State (UFS)', 'University of the Western Cape (UWC)', 'Rhodes University', 'North-West University (NWU)'];
 
 export default function Onboarding({ user, onComplete }) {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState('');
+  const { signOut } = useAuth();
+  const [role, setRole] = useState('');
+  const [step, setStep] = useState(0);
   const [saceNumber, setSaceNumber] = useState('');
   const [university, setUniversity] = useState('');
+  const [otherUniversity, setOtherUniversity] = useState('');
   const [studentNumber, setStudentNumber] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [showConsent, setShowConsent] = useState(false);
-  const [consentAccepted, setConsentAccepted] = useState(false);
   const [policyConsent, setPolicyConsent] = useState(false);
+  const [agreementAccepted, setAgreementAccepted] = useState(false);
+  const [showAgreement, setShowAgreement] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const submitting = useRef(false);
+  const heading = useRef(null);
+  const tutor = role === 'sace_tutor' || role === 'student_tutor';
+  const universityName = university === 'other' ? otherUniversity.trim() : university;
+  const steps = tutor ? ['Your role', 'Credentials', 'Review & consent'] : ['Your role', 'Review & consent'];
+  const lastStep = step === steps.length - 1;
+  const credentialsValid = role === 'sace_tutor' ? !!saceNumber.trim() : !!universityName && !!studentNumber.trim();
+  const canContinue = step === 0 ? !!role : credentialsValid;
+  const selectedRole = ROLES.find(option => option.id === role);
 
-  // ✅ Admin redirect (already logged in as admin)
   useEffect(() => {
-    const isAdmin = user?.is_super_admin === true;
-    if (isAdmin) {
-      console.log('🚀 Admin detected in Onboarding – redirecting to home');
-      navigate('/', { replace: true });
-    }
+    if (user?.is_super_admin === true || user?.onboarding_complete) navigate(getAccountDestination(user), { replace: true });
   }, [user, navigate]);
+  useEffect(() => { heading.current?.focus(); }, [step]);
 
-  // If admin, show loading spinner
-  const isAdmin = user?.is_super_admin === true;
-  if (isAdmin) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <Loader2 className="w-12 h-12 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Redirecting to dashboard...</p>
-      </div>
-    );
-  }
-
-  const isTutorRole = selectedRole === 'sace_tutor' || selectedRole === 'student_tutor';
-
-  const canSubmit = () => {
-    if (!selectedRole) return false;
-    if (selectedRole === 'sace_tutor' && !saceNumber.trim()) return false;
-    if (selectedRole === 'student_tutor' && (!university || !studentNumber.trim())) return false;
-    if (!policyConsent) return false;
-    return true;
-  };
-
-  const handleSubmitClick = () => {
-    if (!canSubmit()) { toast.error('Please complete all required fields.'); return; }
-    if (isTutorRole && !consentAccepted) {
-      setShowConsent(true);
-      return;
-    }
-    doSubmit(selectedRole);
-  };
-
-  const doSubmit = async (role, agreementAccepted = consentAccepted) => {
-    const isTutor = role === 'sace_tutor' || role === 'student_tutor';
-    setSaving(true);
-
+  const move = next => { setError(''); setStep(next); };
+  const submit = async () => {
+    if (submitting.current || !policyConsent || (tutor && (!credentialsValid || !agreementAccepted))) return;
+    submitting.current = true; setSaving(true); setError('');
     try {
       if (!user?.id) throw new Error('Please sign in before completing setup.');
-      const { error } = await supabase.rpc('complete_onboarding', {
-        requested_role: role,
-        sace_number: saceNumber.trim(), university_name: university,
+      const { error: requestError } = await withTimeout(supabase.rpc('complete_onboarding', {
+        requested_role: role, sace_number: saceNumber.trim(), university_name: universityName,
         student_number: studentNumber.trim(), policy_accepted: policyConsent,
-        tutor_agreement_accepted: isTutor && agreementAccepted,
-      });
-      if (error) throw error;
-
-      toast.success(
-        isTutor
-          ? '✅ Profile submitted! Admin will verify you within 1–2 business days.'
-          : '🎉 Welcome to SmartBridge FET!'
-      );
-      setSaving(false);
+        tutor_agreement_accepted: tutor && agreementAccepted,
+      }));
+      if (requestError) throw requestError;
       await onComplete?.();
-      navigate('/', { replace: true });
-
-    } catch (err) {
-      console.error('Onboarding error:', err);
-      toast.error(err.message || 'Could not complete setup. Please retry.');
-      setSaving(false);
-    }
+      navigate(getDashboardPath({ ...user, role, onboarding_complete: true }), { replace: true });
+    } catch (failure) {
+      setError(failure.message || 'Could not complete setup. Please retry. Your entries are still here.');
+    } finally { submitting.current = false; setSaving(false); }
   };
 
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center py-10 px-4">
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-            <BookOpen className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="font-playfair text-3xl font-bold mb-2">Welcome to SmartBridge FET</h1>
-          <p className="text-muted-foreground">Tell us who you are so we can personalise your experience.</p>
-          {user?.full_name && <p className="text-sm text-primary mt-1 font-medium">Hi, {user.full_name}! 👋</p>}
-        </div>
-
-        {/* Role cards */}
-        <div className="grid sm:grid-cols-2 gap-3 mb-6">
-          {ROLES.map(role => {
-            const Icon = role.icon;
-            const isSelected = selectedRole === role.id;
-            return (
-              <button
-                key={role.id}
-                onClick={() => setSelectedRole(role.id)}
-                className={`text-left p-4 rounded-2xl border-2 transition-all ${isSelected ? role.selectedColor : role.color}`}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-9 h-9 rounded-xl bg-white/60 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-foreground" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{role.label}</span>
-                    {isSelected && <CheckCircle className="w-4 h-4 text-green-600" />}
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{role.desc}</p>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Conditional fields */}
-        {selectedRole === 'sace_tutor' && (
-          <div className="bg-card border border-border rounded-2xl p-5 mb-5 space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Shield className="w-4 h-4 text-primary" />
-              <p className="font-semibold text-sm">SACE Registration Verification</p>
-            </div>
-            <p className="text-xs text-muted-foreground">Enter your SACE registration number. Our admin team will verify it before activating tutor privileges.</p>
-            <div className="space-y-1.5">
-              <Label>SACE Registration Number *</Label>
-              <Input
-                placeholder="e.g. 20012345678"
-                value={saceNumber}
-                onChange={e => setSaceNumber(e.target.value)}
-                className="font-mono"
-              />
-            </div>
-            <Badge variant="outline" className="text-xs text-amber-700 border-amber-200 bg-amber-50">
-              ⏳ Your profile will be reviewed by an admin before going live
-            </Badge>
-          </div>
-        )}
-
-        {selectedRole === 'student_tutor' && (
-          <div className="bg-card border border-border rounded-2xl p-5 mb-5 space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <School className="w-4 h-4 text-purple-600" />
-              <p className="font-semibold text-sm">University Verification</p>
-            </div>
-            <p className="text-xs text-muted-foreground">Select your university and enter your student number for verification.</p>
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <Label>University *</Label>
-                <Select value={university} onValueChange={setUniversity}>
-                  <SelectTrigger><SelectValue placeholder="Select your university..." /></SelectTrigger>
-                  <SelectContent>
-                    {SA_UNIVERSITIES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Student Number *</Label>
-                <Input
-                  placeholder="e.g. 2023012345"
-                  value={studentNumber}
-                  onChange={e => setStudentNumber(e.target.value)}
-                  className="font-mono"
-                />
-              </div>
-            </div>
-            <Badge variant="outline" className="text-xs text-purple-700 border-purple-200 bg-purple-50">
-              ⏳ Your student tutor profile will be reviewed by an admin
-            </Badge>
-          </div>
-        )}
-
-        {selectedRole === 'parent' && <p className="text-sm mb-5">Linking a learner requires verified permission. Contact support to arrange access.</p>}
-
-        {/* Consent & Policy */}
-        {isTutorRole && !consentAccepted && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-xs text-amber-800">
-            <p className="font-semibold mb-0.5">⚖️ Service Agreement Required</p>
-            <p>You'll need to review and accept the Independent Tutor Service Agreement before completing registration.</p>
-          </div>
-        )}
-        {isTutorRole && consentAccepted && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4 flex items-center gap-2 text-xs text-green-800">
-            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-            <span>Service Agreement accepted. You may now complete your registration.</span>
-          </div>
-        )}
-
-        <div className="flex items-start gap-3 mb-5 p-4 bg-card border border-border rounded-xl">
-          <Checkbox
-            id="policyConsent"
-            checked={policyConsent}
-            onCheckedChange={checked => setPolicyConsent(checked === true)}
-            className="mt-1 flex-shrink-0"
-          />
-          <Label htmlFor="policyConsent" className="text-xs text-foreground cursor-pointer leading-relaxed">
-            I have read and agree to the{' '}
-            <Link to="/privacy" target="_blank" className="text-primary font-semibold hover:underline">
-              Privacy Policy
-            </Link>
-            {' '}and{' '}
-            <Link to="/terms" target="_blank" className="text-primary font-semibold hover:underline">
-              Terms of Service
-            </Link>.
-          </Label>
-        </div>
-
-        <Button
-          onClick={handleSubmitClick}
-          disabled={!canSubmit() || saving}
-          className="w-full bg-primary gap-2 text-base py-5 rounded-xl"
-          size="lg"
-        >
-          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
-          {saving ? 'Setting up your account...' : isTutorRole && !consentAccepted ? 'Review Agreement & Register' : 'Complete Setup'}
-        </Button>
-        <p className="text-xs text-center text-muted-foreground mt-3">You can update your profile details anytime from your dashboard.</p>
+  return <main className="min-h-screen bg-background px-4 py-8 sm:py-12">
+    <div className="mx-auto max-w-2xl">
+      <div className="mb-8 flex items-center justify-center gap-3 text-primary">
+        <BookOpen className="h-7 w-7" aria-hidden="true" /><span className="font-playfair text-xl font-bold">SmartBridge FET</span>
       </div>
-
-      {/* Consent Modal */}
-      <TutorConsentModal
-        open={showConsent}
-        user={user}
-        onAccept={() => {
-          setConsentAccepted(true);
-          setShowConsent(false);
-          doSubmit(selectedRole, true);
-        }}
-        onDecline={() => setShowConsent(false)}
-      />
+      <ol aria-label="Setup progress" className="mb-8 flex gap-2 sm:gap-4">
+        {steps.map((label, index) => <li key={label} aria-current={index === step ? 'step' : undefined} className="min-w-0 flex-1">
+          <div className={`mb-2 h-1.5 rounded-full ${index <= step ? 'bg-primary' : 'bg-border'}`} />
+          <span className={`text-xs sm:text-sm ${index === step ? 'font-semibold text-primary' : 'text-muted-foreground'}`}>{index + 1}. {label}</span>
+        </li>)}
+      </ol>
+      <section className="rounded-3xl border bg-card p-5 shadow-sm sm:p-8" aria-labelledby="setup-heading">
+        <p className="mb-2 text-sm text-primary">Step {step + 1} of {steps.length}</p>
+        <h1 id="setup-heading" ref={heading} tabIndex={-1} className="font-playfair text-2xl font-bold outline-none sm:text-3xl">
+          {step === 0 ? 'Welcome to SmartBridge FET' : lastStep ? 'Ready for your next step?' : 'Tell us about your qualifications'}
+        </h1>
+        <p className="mt-3 mb-6 text-sm leading-relaxed text-muted-foreground">
+          {step === 0 ? 'Tell us who you are so we can personalise your experience.' : lastStep ? 'Check your details and review the agreements before finishing setup.' : 'Your credentials will be reviewed before tutor tools become available.'}
+        </p>
+        {step === 0 && <fieldset disabled={saving}>
+          <legend className="mb-3 font-medium">How will you use SmartBridge?</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {ROLES.map(({ id, label, desc, icon: Icon }) => <label key={id} className={`relative cursor-pointer rounded-2xl border-2 p-4 transition-colors focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${role === id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}>
+              <div className="mb-3 flex items-center gap-3"><Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+                <span className="flex-1 text-sm font-semibold">{label}</span>
+                <input type="radio" name="onboarding-role" aria-label={label} value={id} checked={role === id} aria-describedby={`${id}-description`} onChange={() => { setRole(id); setAgreementAccepted(false); }} className="h-4 w-4 accent-primary" />
+              </div>
+              <p id={`${id}-description`} className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
+            </label>)}
+          </div>
+        </fieldset>}
+        {!lastStep && step === 1 && tutor && <div className="space-y-5">
+          {role === 'sace_tutor' ? <div className="space-y-2"><Label htmlFor="sace-number">SACE registration number</Label><Input id="sace-number" value={saceNumber} onChange={e => setSaceNumber(e.target.value)} autoComplete="off" required /></div> : <>
+            <div className="space-y-2"><Label htmlFor="university">University</Label><select id="university" value={university} onChange={e => setUniversity(e.target.value)} className="flex min-h-11 w-full rounded-md border bg-background px-3 text-sm" required><option value="">Select your university</option>{UNIVERSITIES.map(name => <option key={name}>{name}</option>)}<option value="other">Another university</option></select></div>
+            {university === 'other' && <div className="space-y-2"><Label htmlFor="other-university">University name</Label><Input id="other-university" value={otherUniversity} onChange={e => setOtherUniversity(e.target.value)} required /></div>}
+            <div className="space-y-2"><Label htmlFor="student-number">Student number</Label><Input id="student-number" value={studentNumber} onChange={e => setStudentNumber(e.target.value)} autoComplete="off" required /></div>
+          </>}
+          <p className="rounded-xl bg-muted p-4 text-sm text-muted-foreground">After submission, you can check your verification status. Your profile will appear in the tutor directory once approved.</p>
+        </div>}
+        {lastStep && <div className="space-y-5">
+          <dl className="rounded-xl bg-muted p-4 text-sm"><dt className="text-muted-foreground">Your role</dt><dd className="mt-1 font-semibold">{selectedRole?.label}</dd>
+            {role === 'sace_tutor' && <><dt className="mt-3 text-muted-foreground">SACE number</dt><dd className="break-words">{saceNumber}</dd></>}
+            {role === 'student_tutor' && <><dt className="mt-3 text-muted-foreground">University</dt><dd className="break-words">{universityName}</dd><dt className="mt-3 text-muted-foreground">Student number</dt><dd className="break-words">{studentNumber}</dd></>}
+          </dl>
+          <p className="text-sm leading-relaxed">{tutor ? 'Next: your application goes to admin review. Tutor tools stay locked until verification is complete.' : role === 'parent' ? 'Next: request access using your learner’s email. They must approve before you can see their reports.' : 'Next: open your dashboard to explore subjects and track your study progress.'}</p>
+          <div className="flex items-start gap-3"><Checkbox id="policy-consent" checked={policyConsent} onCheckedChange={value => setPolicyConsent(value === true)} disabled={saving} className="mt-1 shrink-0" /><Label htmlFor="policy-consent" className="text-sm font-normal leading-relaxed">I agree to the <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline">Terms of Service</Link> and <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline">Privacy Policy</Link> (opens in a new tab).</Label></div>
+          {tutor && <div className="rounded-xl border p-4"><p className="mb-3 text-sm">{agreementAccepted ? 'Tutor agreement accepted. Submit below when you are ready.' : 'Please read and accept the tutor agreement before submitting.'}</p><Button variant="outline" disabled={saving} onClick={() => setShowAgreement(true)}>{agreementAccepted ? 'Review tutor agreement' : 'Read tutor agreement'}</Button>{agreementAccepted && <Check className="ml-3 inline h-5 w-5 text-primary" aria-label="Agreement accepted" />}</div>}
+        </div>}
+        {error && <p role="alert" className="mt-5 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</p>}
+        <div className="mt-8 flex items-center justify-between gap-3 border-t pt-5">
+          {step > 0 ? <Button variant="outline" disabled={saving} onClick={() => move(step - 1)}>Back</Button> : <span className="text-xs text-muted-foreground">You can review before submitting.</span>}
+          {lastStep ? <Button disabled={saving || !policyConsent || (tutor && !agreementAccepted)} onClick={submit} className="min-h-11 shrink-0 gap-2">{saving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}{saving ? 'Saving…' : tutor ? 'Submit application' : 'Complete Setup'}</Button> : <Button disabled={!canContinue} onClick={() => move(step + 1)} className="min-h-11 gap-2">Continue<ArrowRight className="h-4 w-4" aria-hidden="true" /></Button>}
+        </div>
+      </section>
+      <p className="mt-5 text-center text-xs text-muted-foreground">Your account role determines which tools you can access.</p>
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2 text-xs text-muted-foreground"><span className="max-w-full break-all">Setting up {user?.email}</span><Button variant="link" size="sm" disabled={saving} onClick={signOut}>Sign out</Button></div>
     </div>
-  );
+    <TutorConsentModal open={showAgreement} onDecline={() => setShowAgreement(false)} onAccept={() => { setAgreementAccepted(true); setShowAgreement(false); }} />
+  </main>;
 }

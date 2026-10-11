@@ -15,7 +15,7 @@ const assert=require('node:assert/strict');
  let profile={id:'00000000-0000-4000-8000-000000000101',email:'learner@example.test',full_name:'Test Learner',role:'user',onboarding_complete:false,is_active:true,is_super_admin:false};
  const authUser={id:profile.id,email:profile.email,user_metadata:{full_name:profile.full_name},aud:'authenticated',role:'authenticated'};
  const session={access_token:'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAxMDEiLCJleHAiOjQxMDI0NDQ4MDAsInJvbGUiOiJhdXRoZW50aWNhdGVkIn0.test',refresh_token:'test-refresh',expires_at:4102444800,expires_in:3600,token_type:'bearer',user:authUser};
- let failResult=true, failBooking=true;
+ let failResult=true, failBooking=true, failOnboarding=false;
  const tutor={id:'tutor-1',user_id:'tutor-user',user_email:'tutor@example.test',full_name:'Test Tutor',hourly_rate:100,subjects:['Mathematics'],grades:['Grade 12'],is_verified:true,is_active:true,rating:5};
  const bookingCalls=[];let links=[];let bookingRows=[];let sessionCalls=[];let sessions=0;
 
@@ -24,9 +24,10 @@ const assert=require('node:assert/strict');
   if(url.pathname==='/auth/v1/user') data=authUser;
   if(url.pathname==='/auth/v1/token') data=session;
   if(url.pathname==='/rest/v1/users') data=[profile];
-  if(url.pathname==='/rest/v1/rpc/complete_onboarding') {writes.push(req.postDataJSON());profile={...profile,role:'student',onboarding_complete:true};data=profile;}
+  if(url.pathname==='/rest/v1/rpc/complete_onboarding') {if(failOnboarding){failOnboarding=false;await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({message:'Setup temporarily unavailable. Please retry.'})});return;}writes.push(req.postDataJSON());const chosen=req.postDataJSON().requested_role;profile={...profile,role:chosen.includes('tutor')?'tutor_pending':chosen,onboarding_complete:true};data=profile;}
   if(url.pathname==='/rest/v1/quizzes') data=[{id:'quiz-1',title:'Test Quiz',subject:'Mathematics',grade:'Grade 12',questions:[{question:'Test question?',options:['A','B','C','D'],correct_index:0,explanation:'Test explanation'}]}];
   if(url.pathname==='/rest/v1/quiz_results' && req.method()==='POST') { const body=req.postDataJSON();writes.push(body); if(failResult){failResult=false;status=403;data={message:'Test save failure',code:'42501'};}else data={...body,id:'result-1'}; }
+  if(url.pathname==='/rest/v1/tutor_profiles') data=profile.role==='sace_tutor' ? {is_verified:true} : null;
   if(url.pathname==='/rest/v1/tutor_directory') data=[tutor];
   if(url.pathname==='/rest/v1/tutor_bookings') data=bookingRows;
   if(url.pathname==='/rest/v1/study_progress') data=sessions ? [{id:'progress-1',subject:'Mathematics',grade:'Grade 12',study_sessions:sessions,last_access:'2026-10-11'}] : [];
@@ -50,12 +51,13 @@ const assert=require('node:assert/strict');
  await page.getByPlaceholder('Password',{exact:true}).fill('TestPassword123');
  await page.getByRole('button',{name:'Sign In',exact:true}).click();
  await page.getByText('Tell us who you are').waitFor();
- await page.getByRole('button',{name:/^Student I am/}).click();
+ await page.getByRole('radio',{name:'Student',exact:true}).check();
+ await page.getByRole('button',{name:'Continue',exact:true}).click();
  await page.getByRole('checkbox').check();
  await page.getByRole('button',{name:'Complete Setup',exact:true}).click();
- await page.waitForURL('http://127.0.0.1:5173/');
+ await page.waitForURL('http://127.0.0.1:5173/student-dashboard');
  assert.equal(writes[0].requested_role,'student');
- console.log('PASS: login -> onboarding -> authenticated home');
+ console.log('PASS: login -> guided onboarding -> learner dashboard');
  await page.goto('http://127.0.0.1:5173/quiz');
  const selectors=page.getByRole('combobox');
  await selectors.nth(0).click();await page.getByRole('option',{name:'Mathematics',exact:true}).click();
@@ -78,7 +80,7 @@ const assert=require('node:assert/strict');
  await page.getByLabel('New password',{exact:true}).fill('ChangedPassword123');
  await page.getByLabel('Confirm password',{exact:true}).fill('ChangedPassword123');
  await page.getByRole('button',{name:'Save password'}).click();
- await page.waitForURL('http://127.0.0.1:5173/');console.log('PASS: reset-password route updates password');
+ await page.waitForURL('http://127.0.0.1:5173/student-dashboard');console.log('PASS: reset-password route updates password');
  await page.goto('http://127.0.0.1:5173/bookings');
  await page.getByRole('button',{name:'Schedule New Session'}).click();
  await page.getByRole('combobox').nth(0).click();await page.getByRole('option',{name:/Test Tutor/}).click();
@@ -109,6 +111,82 @@ const assert=require('node:assert/strict');
  await page.getByText('Study session logged!',{exact:true}).waitFor();
  assert.equal(sessionCalls.length,1);assert.ok(sessionCalls[0].request_id);
  console.log('PASS: progress tracker uses existing study-session records through one RPC');
+
+ // URL-backed sections preserve refresh and browser history.
+ assert.ok(page.url().endsWith('?section=progress'));
+ await page.reload();
+ await page.getByRole('button',{name:'My Progress',exact:true}).waitFor();
+ assert.equal(await page.getByRole('button',{name:'My Progress',exact:true}).getAttribute('aria-pressed'),'true');
+ await page.getByRole('button',{name:'My Subjects',exact:true}).click();
+ await page.goBack();
+ await page.waitForURL('**/student-dashboard?section=progress');
+ console.log('PASS: dashboard section persists on reload and Back');
+ await page.goto('http://127.0.0.1:5173/onboarding');
+ await page.waitForURL('**/student-dashboard');
+ console.log('PASS: completed accounts skip setup');
+
+ for (const role of ['parent','sace_tutor','student_tutor']) {
+  profile={...profile,role:'user',onboarding_complete:false};
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('http://127.0.0.1:5173/onboarding');
+  await page.getByRole('radio',{name:role==='parent'?'Parent / Guardian':role==='sace_tutor'?'SACE Registered Tutor':'Student Tutor',exact:true}).check();
+  await page.getByRole('button',{name:'Continue',exact:true}).click();
+  if(role!=='parent') {
+   if(role==='sace_tutor') await page.getByLabel('SACE registration number').fill('SACE-TEST');
+   else {
+    await page.getByLabel('University',{exact:true}).selectOption('other');
+    await page.getByLabel('University name').fill('Test University');
+    await page.getByLabel('Student number',{exact:true}).fill('TEST123');
+   }
+   await page.getByRole('button',{name:'Continue',exact:true}).click();
+   const before=writes.length;
+   await page.getByRole('button',{name:'Read tutor agreement',exact:true}).click();
+   await page.getByRole('region',{name:'Tutor agreement text'}).focus();
+   await page.keyboard.press('Control+End');
+   await page.getByRole('button',{name:'Accept agreement',exact:true}).click();
+   assert.equal(writes.length,before,'Accepting an agreement must not submit');
+  }
+  await page.getByRole('button',{name:'Back',exact:true}).click();
+  await page.getByRole('button',{name:'Continue',exact:true}).click();
+  await page.getByRole('checkbox').check();
+  await page.screenshot({path:'/tmp/smartbridge-'+role+'-review.png',fullPage:true});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),'Setup must fit phone width');
+  if(role==='parent') {
+   failOnboarding=true;
+   await page.getByRole('button',{name:'Complete Setup',exact:true}).click();
+   await page.getByRole('alert').filter({hasText:'Setup temporarily unavailable'}).waitFor();
+   assert.equal(await page.getByRole('checkbox').isChecked(),true);
+  }
+  await page.getByRole('button',{name:role==='parent'?'Complete Setup':'Submit application',exact:true}).click();
+  await page.waitForURL('**/'+(role==='parent'?'parent-dashboard':'tutor-dashboard'));
+  if(role==='parent') {
+   await page.getByLabel("Learner's email").waitFor();
+   await page.getByRole('button',{name:'Open navigation menu',exact:true}).click();
+   await page.getByRole('link',{name:'Link a learner',exact:true}).click();
+   await page.waitForURL('**/parent-dashboard?section=child');
+   await page.getByRole('button',{name:'Open navigation menu',exact:true}).click();
+   await page.getByRole('button',{name:'Sign out',exact:true}).waitFor();
+   await page.keyboard.press('Escape');
+  } else await page.getByRole('heading',{name:'Tutor verification pending',exact:true}).waitFor();
+  console.log('PASS: '+role+' mobile setup, review and role destination');
+ }
+ profile={...profile,role:'sace_tutor',onboarding_complete:true};
+ await page.goto('http://127.0.0.1:5173/tutor-dashboard?section=bookings');
+ await page.getByRole('button',{name:'Booking Requests',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Open navigation menu',exact:true}).click();
+ await page.getByRole('link',{name:'My bookings',exact:true}).waitFor();
+ await page.keyboard.press('Escape');
+ console.log('PASS: verified tutor sees relevant mobile navigation');
+ profile={...profile,role:'student'};
+ for(const width of [320,768,1024,1440]) {
+  await page.setViewportSize({width,height:900});
+  await page.goto('http://127.0.0.1:5173/subjects');
+  await page.getByRole('navigation',{name:'Main navigation',exact:true}).filter({visible:true}).waitFor();
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),'Page must fit width '+width);
+  await page.evaluate(()=>Promise.all(document.getAnimations().filter(animation=>animation.effect?.getTiming().iterations!==Infinity).map(animation=>animation.finished.catch(()=>{}))));
+  await page.screenshot({path:'/tmp/smartbridge-subjects-'+width+'.png',fullPage:true});
+ }
+ console.log('PASS: navigation and subjects layout fit 320, 768, 1024 and 1440px');
  assert.deepEqual(errors,[]);
  } finally { if(browser) await browser.close(); server.kill(); }
 })().catch(e=>{console.error(e);process.exit(1)});

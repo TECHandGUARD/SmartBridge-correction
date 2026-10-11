@@ -100,10 +100,10 @@
   
   /* Better touch targets on mobile */
   @media (max-width: 768px) {
-    button, 
+    button:not([role="checkbox"]),
     a, 
     [role="button"],
-    input,
+    input:not([type="radio"]):not([type="checkbox"]),
     select,
     textarea {
       min-height: 44px;
@@ -200,3 +200,7 @@
     }
   }
 }
+
+/* Reserve fixed mobile navigation and device safe areas. */
+.app-main { padding-top: calc(3.5rem + env(safe-area-inset-top)); padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) { .app-main { padding-top: 0; padding-bottom: 0; } }

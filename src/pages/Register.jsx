@@ -1,3 +1,4 @@
+import { getAccountDestination } from '@/lib/navigation';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
@@ -22,7 +23,7 @@ export default function Register() {
   // If already logged in, redirect to home
   useEffect(() => {
     if (user && !isLoadingAuth) {
-      navigate('/', { replace: true });
+      navigate(getAccountDestination(user), { replace: true });
     }
   }, [user, isLoadingAuth, navigate]);
 

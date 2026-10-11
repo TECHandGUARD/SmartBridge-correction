@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -8,36 +8,16 @@ import MobileHeader from './MobileHeader';
 import MobileBottomTabs from './MobileBottomTabs';
 import { useAuth } from '@/lib/AuthContext';
 import { withTimeout } from '@/lib/auth-utils';
-// ✅ FIXED: Correct import path
 import TutorPendingScreen from '@/components/tutor/TutorPendingScreen';
 
-const TUTOR_ROLES = ['sace_tutor', 'student_tutor', 'tutor_pending', 'tutor'];
-
-// ✅ Hardcoded admin emails for bypass
-
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
-  return isMobile;
-}
-
-const pageVariants = {
-  initial: { opacity: 0, x: 24 },
-  animate: { opacity: 1, x: 0 },
-  exit:    { opacity: 0, x: -24 },
-};
-const pageTransition = { duration: 0.22, ease: 'easeInOut' };
+import { TUTOR_ROLES } from '@/lib/navigation';
 
 export default function AppLayout() {
   const { user, isLoadingAuth: loading, checkUser: fetchUser, isAdmin, signOut } = useAuth();
   const [tutorVerified, setTutorVerified] = useState(null);
   const [tutorError, setTutorError] = useState(false);
-  const isMobile = useIsMobile();
+  const reducedMotion = useReducedMotion();
+  const main = useRef(null);
   const location = useLocation();
   useEffect(() => {
     let cancelled = false;
@@ -51,100 +31,25 @@ export default function AppLayout() {
     return () => { cancelled = true; };
   }, [user, isAdmin]);
 
-  if (loading) return (
-    <div className="fixed inset-0 flex items-center justify-center bg-background">
-      <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-    </div>
-  );
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    main.current?.focus({ preventScroll: true });
+  }, [location.pathname]);
 
-  if (!user) {
-    return isMobile ? (
-      <div className="min-h-screen bg-background flex flex-col">
-        <MobileHeader />
-        <main className="flex-1 pt-14 pb-16">
-          <AnimatePresence mode="wait">
-            <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
-              <Outlet context={{ user }} />
-            </motion.div>
-          </AnimatePresence>
-        </main>
-        <MobileBottomTabs user={user} />
-      </div>
-    ) : (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar user={user} />
-        <main className="flex-1">
-          <AnimatePresence mode="wait">
-            <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
-              <Outlet context={{ user }} />
-            </motion.div>
-          </AnimatePresence>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // ✅ Admin bypass – skip onboarding and pending screens
-
-  if (isAdmin) {
-    return isMobile ? (
-      <div className="min-h-screen bg-background flex flex-col">
-        <MobileHeader />
-        <main className="flex-1 pt-14 pb-16">
-          <AnimatePresence mode="wait">
-            <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
-              <Outlet context={{ user }} />
-            </motion.div>
-          </AnimatePresence>
-        </main>
-        <MobileBottomTabs user={user} />
-      </div>
-    ) : (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar user={user} />
-        <main className="flex-1">
-          <AnimatePresence mode="wait">
-            <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
-              <Outlet context={{ user }} />
-            </motion.div>
-          </AnimatePresence>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (TUTOR_ROLES.includes(user.role)) {
-    if (tutorError) return <div className="p-8 text-center" role="alert"><p>Could not check tutor verification. Please retry.</p><button onClick={fetchUser}>Retry</button><button onClick={signOut}>Sign out</button></div>;
-    if (tutorVerified === null) return <div className="p-8 text-center">Checking tutor verification…</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" role="status">Opening your account…</div>;
+  if (user && !isAdmin && TUTOR_ROLES.includes(user.role)) {
+    if (tutorError) return <main className="mx-auto max-w-lg p-8 text-center space-y-4" role="alert"><p>Could not check tutor verification. Please retry.</p><button className="rounded-lg border px-4 py-3" onClick={fetchUser}>Retry</button><button className="rounded-lg border px-4 py-3" onClick={signOut}>Sign out</button></main>;
+    if (tutorVerified === null) return <div className="p-8 text-center" role="status">Checking tutor verification…</div>;
     if (!tutorVerified) return <TutorPendingScreen user={user} onRefresh={fetchUser} />;
   }
-
-  // Normal layout for authenticated, onboarded users
-  return isMobile ? (
-    <div className="min-h-screen bg-background flex flex-col">
-      <MobileHeader />
-      <main className="flex-1 pt-14 pb-16">
-        <AnimatePresence mode="wait">
-          <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
-            <Outlet context={{ user }} />
-          </motion.div>
-        </AnimatePresence>
-      </main>
-      <MobileBottomTabs user={user} />
-    </div>
-  ) : (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar user={user} />
-      <main className="flex-1">
-        <AnimatePresence mode="wait">
-          <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
-            <Outlet context={{ user }} />
-          </motion.div>
-        </AnimatePresence>
-      </main>
-      <Footer />
-    </div>
-  );
+  return <div className="min-h-screen bg-background flex flex-col">
+    <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:p-3 focus:text-primary-foreground">Skip to content</a>
+    <div className="hidden lg:block"><Navbar user={user} /></div>
+    <div className="lg:hidden"><MobileHeader user={user} /></div>
+    <main id="main-content" ref={main} tabIndex={-1} className="app-main flex-1 outline-none">
+      <motion.div key={location.pathname} initial={{ opacity: reducedMotion ? 1 : 0 }} animate={{ opacity: 1 }} transition={{ duration: reducedMotion ? 0 : 0.15 }}><Outlet context={{ user }} /></motion.div>
+    </main>
+    <div className="lg:hidden"><MobileBottomTabs user={user} /></div>
+    <div className="hidden lg:block"><Footer /></div>
+  </div>;
 }

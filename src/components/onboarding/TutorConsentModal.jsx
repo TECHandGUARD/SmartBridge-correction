@@ -1,19 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { CheckCircle, AlertTriangle } from 'lucide-react';
 
 // Agreement version tracking
 const AGREEMENT_VERSION = '1.0.0';
 const AGREEMENT_EFFECTIVE_DATE = '2025-01-01';
 
-export default function TutorConsentModal({ open, onAccept, onDecline, user }) {
+export default function TutorConsentModal({ open, onAccept, onDecline }) {
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
-  const recordingConsent = false;
+  const scrollArea = useRef(null);
 
   // Reset scroll state each time modal opens
   useEffect(() => {
-    if (open) setScrolledToBottom(false);
+    if (!open) return;
+    setScrolledToBottom(false);
+    const timer = requestAnimationFrame(() => {
+      const el = scrollArea.current;
+      if (el && el.scrollHeight <= el.clientHeight + 20) setScrolledToBottom(true);
+    });
+    return () => cancelAnimationFrame(timer);
   }, [open]);
 
   const handleScroll = (e) => {
@@ -36,9 +42,9 @@ export default function TutorConsentModal({ open, onAccept, onDecline, user }) {
             </div>
             <div>
               <DialogTitle className="font-playfair text-xl">Independent Tutor Service Agreement</DialogTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                 SmartBridge FET — Please read carefully before proceeding
-              </p>
+              </DialogDescription>
               <p className="text-[10px] text-muted-foreground mt-0.5">
                 Version {AGREEMENT_VERSION} · Effective {AGREEMENT_EFFECTIVE_DATE}
               </p>
@@ -49,6 +55,10 @@ export default function TutorConsentModal({ open, onAccept, onDecline, user }) {
         <div
           className="flex-1 overflow-y-auto px-6 py-4 text-sm leading-relaxed space-y-5"
           style={{ maxHeight: '55vh' }}
+          ref={scrollArea}
+          tabIndex={0}
+          role="region"
+          aria-label="Tutor agreement text"
           onScroll={handleScroll}
         >
           <section>
@@ -125,20 +135,16 @@ export default function TutorConsentModal({ open, onAccept, onDecline, user }) {
         </div>
 
         <div className="px-6 py-4 border-t border-border flex-shrink-0 flex flex-col sm:flex-row gap-3">
-          <Button variant="outline" className="flex-1" onClick={onDecline} disabled={recordingConsent}>
-            Decline
+          <Button variant="outline" className="flex-1" onClick={onDecline}>
+            Back to setup
           </Button>
           <Button
             className="flex-1 bg-primary gap-2"
-            disabled={!scrolledToBottom || recordingConsent}
+            disabled={!scrolledToBottom}
             onClick={handleAccept}
           >
-            {recordingConsent ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <CheckCircle className="w-4 h-4" />
-            )}
-            {recordingConsent ? 'Recording Consent...' : 'I Accept — Proceed to Sign Up'}
+            <CheckCircle className="w-4 h-4" aria-hidden="true" />
+            Accept agreement
           </Button>
         </div>
       </DialogContent>

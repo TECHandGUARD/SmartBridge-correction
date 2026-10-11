@@ -1,3 +1,4 @@
+import { getAccountDestination } from '@/lib/navigation';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
@@ -19,7 +20,7 @@ export default function ResetPassword() {
     try {
       const { error } = await withTimeout(supabase.auth.updateUser({ password }));
       if (error) throw error;
-      navigate('/', { replace: true });
+      navigate(getAccountDestination(user), { replace: true });
     } catch (error) { setError(error.message); } finally { setSaving(false); }
   };
   if (isLoadingAuth) return <p className="p-8 text-center">Checking your recovery link…</p>;

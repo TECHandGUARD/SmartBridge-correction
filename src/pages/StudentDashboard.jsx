@@ -1,3 +1,4 @@
+import { useDashboardSection } from '@/lib/useDashboardSection';
 import ParentChildLink from '@/components/parent/ParentChildLink';
 import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
@@ -44,7 +45,7 @@ export default function StudentDashboard() {
   const [activeChat, setActiveChat] = useState(null);
   const [counselorInfo, setCounselorInfo] = useState(null);
   const [counselorChat, setCounselorChat] = useState(false);
-  const [activeSection, setActiveSection] = useState(null);
+  const [activeSection, toggleSection] = useDashboardSection('student');
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -131,7 +132,6 @@ export default function StudentDashboard() {
   }, [loadData]);
 
   const [deletingAccount, setDeletingAccount] = useState(false);
-  const toggleSection = (key) => setActiveSection(prev => prev === key ? null : key);
 
   const handleDeleteAccount = async () => {
     setDeletingAccount(true);

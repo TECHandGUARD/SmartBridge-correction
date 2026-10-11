@@ -1,3 +1,4 @@
+import { getAccountDestination } from '@/lib/navigation';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
@@ -18,22 +19,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // If already logged in, redirect to appropriate page
   useEffect(() => {
-    if (user && !isLoadingAuth) {
-      // ✅ ADMIN BYPASS: If user is admin, go straight to home
-      if (user.role === 'admin' || user.is_super_admin === true) {
-        navigate('/', { replace: true });
-        return;
-      }
-
-      // For other users, check onboarding status
-      if (user.onboarding_complete) {
-        navigate('/', { replace: true });
-      } else {
-        navigate('/onboarding', { replace: true });
-      }
-    }
+    if (user && !isLoadingAuth) navigate(getAccountDestination(user), { replace: true });
   }, [user, isLoadingAuth, navigate]);
 
   const handleSubmit = async (e) => {
