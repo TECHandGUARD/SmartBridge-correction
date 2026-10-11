@@ -1,3 +1,4 @@
+import { appConfig } from '@/lib/config';
 import { useDashboardSection } from '@/lib/useDashboardSection';
 import ParentChildLink from '@/components/parent/ParentChildLink';
 import { useAuth } from '@/lib/AuthContext';
@@ -213,7 +214,7 @@ export default function StudentDashboard() {
             ) : (
               <Link to="/premium">
                 <Button size="sm" className="gap-1.5 bg-secondary text-secondary-foreground hover:bg-secondary/90">
-                  <Crown className="w-4 h-4" /> Upgrade — R20/month
+                  <Crown className="w-4 h-4" /> Upgrade — R{appConfig.prices.student}/month
                 </Button>
               </Link>
             )}
@@ -433,13 +434,13 @@ export default function StudentDashboard() {
               <div className="bg-gradient-to-br from-primary to-green-dark rounded-2xl p-5 text-primary-foreground">
                 <Star className="w-6 h-6 fill-secondary text-secondary mb-2" />
                 <p className="font-playfair font-bold text-lg mb-1">Go Premium</p>
-                <p className="text-sm text-primary-foreground/80 mb-3">Unlock all resources, AI tools, past papers & more — R20/month.</p>
+                <p className="text-sm text-primary-foreground/80 mb-3">Unlock all resources, AI tools, past papers & more — R{appConfig.prices.student}/month.</p>
                 <Link to="/premium">
                   <Button size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 w-full">
-                    Upgrade Now — R20/month
+                    Upgrade Now — R{appConfig.prices.student}/month
                   </Button>
                 </Link>
-                <p className="text-xs text-primary-foreground/60 mt-2">Use your email as payment reference. Activated within 60 min.</p>
+                <p className="text-xs text-primary-foreground/60 mt-2">Use your email as payment reference. Access starts after payment is confirmed.</p>
               </div>
             )}
 

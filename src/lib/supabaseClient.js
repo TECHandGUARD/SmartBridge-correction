@@ -1,16 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-const validConnectionUrl = (() => {
-  try { const url = new URL(supabaseUrl); return url.protocol === 'https:' && !!url.hostname; }
-  catch { return false; }
-})();
-export const configurationError = !supabaseUrl || !supabaseAnonKey
-  ? 'The app is missing its connection settings. Please contact support.'
-  : !validConnectionUrl ? 'The app connection address is invalid. Please contact support.' : null;
+import { appConfig, configurationError } from './config.js';
+export { configurationError };
+const supabaseUrl = appConfig.supabaseUrl;
+const supabaseAnonKey = appConfig.supabaseKey;
 
 // Create Supabase client
 export const supabase = configurationError ? null : createClient(supabaseUrl, supabaseAnonKey, {
@@ -18,7 +11,7 @@ export const supabase = configurationError ? null : createClient(supabaseUrl, su
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storage: localStorage,
+    storage: typeof window === 'undefined' ? undefined : window.localStorage,
   },
   db: {
     schema: 'public',
@@ -32,12 +25,14 @@ export const supabase = configurationError ? null : createClient(supabaseUrl, su
 
 // Optional: Helper function to check if user is authenticated
 export const isAuthenticated = async () => {
+  if (!supabase) return false;
   const { data: { session } } = await supabase.auth.getSession();
   return !!session;
 };
 
 // Optional: Helper function to get current user
 export const getCurrentUser = async () => {
+  if (!supabase) return null;
   const { data: { user } } = await supabase.auth.getUser();
   return user;
 };

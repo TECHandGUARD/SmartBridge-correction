@@ -1,3 +1,4 @@
+import { appConfig } from '@/lib/config';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -73,8 +74,8 @@ export default function PageNotFound() {
                   <p className="text-[11px] text-slate-500 leading-relaxed">
                     This route is not registered in the application routing table. 
                     Please verify your route configuration or contact support at{' '}
-                    <a href="mailto:aneleq@techandguard.co.za" className="text-primary hover:underline">
-                      aneleq@techandguard.co.za
+                    <a href={`mailto:${appConfig.company.supportEmail}`} className="text-primary hover:underline">
+                      {appConfig.company.supportEmail}
                     </a>.
                   </p>
                 </div>

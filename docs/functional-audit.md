@@ -11,6 +11,8 @@ The app builds and the checked routes render, but several advertised features st
 - Retrieved eight live function sources in addition to the deployment inventory. The deployed code differs from the repository. Read-only metadata/source checks made no production changes and sent no real email, payment or AI request.
 - `functional-audit-coverage.csv` records the source checkpoint inventory. `functional-blockers.csv` lists remaining static contract findings plus confirmed service/storage/deployment blockers. Staged migrations and dormant modules are labelled separately.
 
+The subsequent environment/configuration changes are documented in [environment-configuration.md](environment-configuration.md). That guide records the new public/server settings and additional configuration tests.
+
 ## Corrected in this branch
 
 | Area | Failure and correction |
@@ -32,7 +34,7 @@ The app builds and the checked routes render, but several advertised features st
 
 1. **Core migrations are staged, not deployed.** The live project lacks `complete_onboarding`, `create_booking`, parent-link RPCs, `log_study_session`, `tutor_directory` and `study_progress`. The previous three migrations supply them; do not mistake their absence for a new duplicate feature request. New-account setup, reservations, report consent and progress depend on deployment. Existing SQL rollback fixtures validate the migrations against the connected schema, but a complete empty-database baseline is still absent.
 
-2. **Backend/source drift makes deployment unsafe to treat as a simple code sync.** Retrieved live functions already use canonical names in places where the repository did not. The live booking notification contains a Resend implementation while the repository version only logs email. Live AI functions use `gemini-pro`; five repository functions hard-code `gemini-2.0-flash`. Google lists the 2.0 Flash shutdown date as 1 June 2026. Align the function sources with the intended live implementations, select an available model for the account and test authenticated calls before deployment. Do not overwrite working live notification code with repository placeholders. [Google model lifecycle](https://ai.google.dev/gemini-api/docs/deprecations).
+2. **Backend/source drift makes deployment unsafe to treat as a simple code sync.** Retrieved live functions already use canonical names in places where the repository did not. The live booking notification contains a Resend implementation while the repository version only logs email. Live AI functions use `gemini-pro`; the five repository AI functions now require `GEMINI_MODEL` instead of the previous hard-coded `gemini-2.0-flash`. Google lists the 2.0 Flash shutdown date as 1 June 2026. Align the function sources with the intended live implementations, select an available model for the account and test authenticated calls before deployment. Do not overwrite working live notification code with repository placeholders. [Google model lifecycle](https://ai.google.dev/gemini-api/docs/deprecations).
 
 3. **Three directly invoked functions are absent:** `invoke-llm`, `generate-lesson-plan` and `send-email`. This blocks study assistant/planner responses, lesson generation and several manual email/report actions. Deployed named notification functions exist, but their delivery/secrets/webhooks remain untested. `find_matching_bursaries_v2` is also absent; the recommendation page has a direct-query fallback, which still needs usable data/read policies.
 

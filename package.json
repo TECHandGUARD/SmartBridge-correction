@@ -10,9 +10,11 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
-    "test": "node --test tests/core-flow.test.js",
+    "test": "node --test tests/*.test.js",
     "test:e2e": "node tests/browser-core-flows.cjs",
-    "test:e2e:audit": "node tests/browser-core-flows.cjs --all-pages"
+    "test:e2e:audit": "node tests/browser-core-flows.cjs --all-pages",
+    "check:env": "node scripts/check-env.js",
+    "test:e2e:config": "node tests/browser-config.cjs"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

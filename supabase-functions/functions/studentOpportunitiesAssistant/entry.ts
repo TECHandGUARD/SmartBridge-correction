@@ -1,3 +1,4 @@
+import { geminiSettings, requiredEnv } from "../../shared/config.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
@@ -13,8 +14,8 @@ serve(async (req) => {
 
   try {
     const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      requiredEnv("SUPABASE_URL"),
+      requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
       {
         auth: {
           autoRefreshToken: false,
@@ -77,19 +78,13 @@ serve(async (req) => {
 
     const systemPrompt = guardrail + "\n\nYou are an expert South African university and NBT assistant for FET students (Grade 10-12). Current year: " + currentYear + ".\n\nYou help students with:\n- NBT tests (Academic Literacy, Quantitative Literacy, Mathematics)\n- University application processes and deadlines at South African universities\n- Course requirements, APS scores, and prospectus information\n- Bursaries and financial aid (NSFAS, Funza Lushaka, private bursaries)\n- Career guidance and faculty selection" + resourceContext + "\n\nIMPORTANT: Always return a JSON response with a 'reply' (string) and 'source_references' (array of {title, url, caps_alignment_tag}). Only include sources you actually referenced.";
 
-    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!geminiApiKey) {
-      throw new Error("GEMINI_API_KEY not configured");
-    }
-
-    // ✅ FIXED: Correct Gemini URL
-    const geminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + geminiApiKey;
+    const { url: geminiUrl, apiKey: geminiApiKey } = geminiSettings();
 
     const fullPrompt = systemPrompt + "\n\nStudent question: " + message;
 
     const geminiResponse = await fetch(geminiUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
       body: JSON.stringify({
         contents: [{
           parts: [{ text: fullPrompt }]

@@ -1,3 +1,4 @@
+import { appConfig } from '@/lib/config';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -108,7 +109,7 @@ export default function TutorConsentModal({ open, onAccept, onDecline }) {
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2 text-xs text-muted-foreground">
               <p>• All student-to-tutor payments are held and processed by <strong className="text-foreground">Tech &amp; GUARD Pty Ltd</strong> via the SmartBridge FET platform.</p>
               <p>• Tutor net payouts are disbursed <strong className="text-foreground">every Thursday of the week</strong> via EFT to the tutor's registered South African bank account.</p>
-              <p>• Tutors must submit valid South African banking details to <strong className="text-foreground">aneleq@techandguard.co.za</strong> before their first payout.</p>
+              <p>• Tutors must submit valid South African banking details to <strong className="text-foreground">{appConfig.company.supportEmail}</strong> before their first payout.</p>
               <p>• Tech &amp; GUARD Pty Ltd reserves the right to hold payouts pending identity verification in compliance with FICA regulations.</p>
               <p>• Payout summaries are emailed to the tutor's registered address each Thursday alongside their session breakdown.</p>
             </div>

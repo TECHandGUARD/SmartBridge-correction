@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { appConfig } from '@/lib/config';
 import { useDashboardSection } from '@/lib/useDashboardSection';
 import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
@@ -349,15 +351,15 @@ export default function TutorDashboard() {
             {profile && !profile.is_premium && (
               <div className="bg-gradient-to-r from-primary/10 to-green-dark/10 border border-primary/20 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="flex-1">
-                  <p className="font-playfair font-bold text-lg text-foreground">Go Tutor Pro — R150/month</p>
+                  <p className="font-playfair font-bold text-lg text-foreground">Go Tutor Pro — R{appConfig.prices.tutor_pro}/month</p>
                   <p className="text-sm text-muted-foreground mt-0.5">Eliminate the 10% platform commission on all your bookings. Featured listing + advanced analytics.</p>
-                  <p className="text-xs text-muted-foreground mt-1">Use your email as reference on Yoco. Activated by Admin within 60 min.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Use your email as reference on Yoco. Access starts after payment is confirmed.</p>
                 </div>
-                <a href="https://pay.yoco.com/r/78MMPk" target="_blank" rel="noopener noreferrer">
+                <Link to="/premium">
                   <Button className="bg-primary gap-2 whitespace-nowrap">
                     <Star className="w-4 h-4 fill-current" /> Upgrade to Pro
                   </Button>
-                </a>
+                </Link>
               </div>
             )}
           </div>

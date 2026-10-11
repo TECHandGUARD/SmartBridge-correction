@@ -54,8 +54,16 @@ Before you begin, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone git@github.com:TECHandGUARD/SmartBridge-FET.git
-cd SmartBridge-FET
+git clone git@github.com:TECHandGUARD/SmartBridge-correction.git
+cd SmartBridge-correction
+npm ci
+```
+
+## Environment variables
+
+Copy `.env.example` to `.env.local` and set your project URL and browser publishable key (or legacy anon key). Run `npm run check:env` before building. Production builds reject missing or invalid connection settings and obvious server-secret exposure. Optional payment settings remain unavailable until configured.
+
+See [environment setup](docs/environment-configuration.md) for public settings, server-only secrets, staging isolation and deployment requirements.
 
 
 ## Technical repair and validation

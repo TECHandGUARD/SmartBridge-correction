@@ -1,3 +1,4 @@
+import { appConfig } from '@/lib/config';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';  // ✅ Fixed import path
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,7 +101,7 @@ export default function AutomatedBillingPayouts() {
               
               <p>Payments are processed every Thursday. Please allow 1–2 business days for the funds to reflect in your bank account.</p>
               
-              <p>If you have any questions, contact <a href="mailto:aneleq@techandguard.co.za">aneleq@techandguard.co.za</a></p>
+              <p>If you have any questions, contact <a href="mailto:${appConfig.company.supportEmail}">${appConfig.company.supportEmail}</a></p>
               
               <p style="margin-top: 30px; font-size: 12px; color: #666;">
                 — EduConnect FET / Tech &amp; GUARD Pty Ltd<br>

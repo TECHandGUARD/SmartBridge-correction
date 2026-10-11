@@ -1,3 +1,4 @@
+import { appConfig } from '@/lib/config';
 import { useState } from 'react';
 import { BookOpen, CheckCircle, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
@@ -25,7 +26,7 @@ export default function TutorPendingScreen({ onRefresh }) {
           <li aria-current="step" className="flex items-center gap-3 font-medium"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs text-primary">2</span>Admin reviews your application</li>
           <li className="flex items-center gap-3 text-muted-foreground"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs">3</span>Tutor dashboard opens once approved</li>
         </ol>
-        <p className="mb-6 text-sm text-muted-foreground">You can return to this page to check your status. If your credentials need correcting, contact <a className="text-primary underline" href="mailto:aneleq@techandguard.co.za">support</a>.</p>
+        <p className="mb-6 text-sm text-muted-foreground">You can return to this page to check your status. If your credentials need correcting, contact <a className="text-primary underline" href={`mailto:${appConfig.company.supportEmail}`}>support</a>.</p>
         {error && <p role="alert" className="mb-4 text-sm text-destructive">{error}</p>}
         <div className="flex flex-col gap-3 sm:flex-row"><Button onClick={refresh} disabled={checking} className="min-h-11">{checking ? 'Checking…' : 'Check verification'}</Button><Button variant="outline" onClick={signOut} disabled={checking} className="min-h-11">Sign out</Button></div>
       </section>

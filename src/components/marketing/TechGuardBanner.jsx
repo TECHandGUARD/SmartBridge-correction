@@ -1,3 +1,4 @@
+import { appConfig } from '@/lib/config';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
@@ -30,7 +31,7 @@ export default function TechGuardBanner() {
         {/* Left: Logo and Content */}
         <div className="flex items-center gap-6 flex-1">
           <div className="hidden sm:flex items-center justify-center w-16 h-16 bg-white/10 rounded-lg">
-            <img src="https://media.base44.com/images/public/69f6ba09033268ca85425d9c/de3a26233_tech-guard.png" alt="Tech & GUARD" className="w-10 h-10 object-contain" />
+            {appConfig.company.logoUrl ? <img src={appConfig.company.logoUrl} alt={appConfig.company.name} className="w-10 h-10 object-contain" /> : <span className="text-white font-bold">T&amp;G</span>}
           </div>
           <div>
             <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2">Tech & GUARD</h3>
@@ -42,7 +43,7 @@ export default function TechGuardBanner() {
 
         {/* Right: CTA Button */}
         <div className="flex-shrink-0">
-          <a href="https://www.techandguard.co.za" target="_blank" rel="noopener noreferrer" onClick={handleBannerClick}>
+          <a href={appConfig.company.website} target="_blank" rel="noopener noreferrer" onClick={handleBannerClick}>
             <Button 
               className="bg-secondary hover:bg-secondary/90 text-foreground font-semibold gap-2 whitespace-nowrap"
             >

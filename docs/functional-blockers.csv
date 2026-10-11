@@ -91,11 +91,11 @@ unresolved,src/components/tutor/TutorVerificationBadge.jsx,174,missing-function,
 unresolved,src/pages/AdminDashboard.jsx,157,missing-function,send-email
 unresolved,src/pages/AdminDashboard.jsx,183,missing-function,send-email
 fallback exists; policies/data required,src/pages/BursaryFinder.jsx,150,missing-rpc,find_matching_bursaries_v2
-unresolved source/live drift,supabase-functions/functions/discoverUniversityProspectuses/entry.ts,,model-lifecycle,repository: gemini-2.0-flash; corresponding retrieved live code: gemini-pro
-unresolved source/live drift,supabase-functions/functions/studentOpportunitiesAssistant/entry.ts,,model-lifecycle,repository: gemini-2.0-flash; corresponding retrieved live code: gemini-pro
-unresolved source/live drift,supabase-functions/functions/discoverApplicationDeadlines/entry.ts,,model-lifecycle,repository: gemini-2.0-flash; corresponding retrieved live code: gemini-pro
-unresolved source/live drift,supabase-functions/functions/generateQuiz/entry.ts,,model-lifecycle,repository: gemini-2.0-flash; corresponding retrieved live code: gemini-pro
-unresolved source/live drift,supabase-functions/functions/discoverOpportunityGuides/entry.ts,,model-lifecycle,repository: gemini-2.0-flash; corresponding retrieved live code: gemini-pro
+unresolved source/live drift,supabase-functions/functions/discoverUniversityProspectuses/entry.ts,,model-lifecycle,repository: requires GEMINI_MODEL configuration; corresponding retrieved live code: gemini-pro
+unresolved source/live drift,supabase-functions/functions/studentOpportunitiesAssistant/entry.ts,,model-lifecycle,repository: requires GEMINI_MODEL configuration; corresponding retrieved live code: gemini-pro
+unresolved source/live drift,supabase-functions/functions/discoverApplicationDeadlines/entry.ts,,model-lifecycle,repository: requires GEMINI_MODEL configuration; corresponding retrieved live code: gemini-pro
+unresolved source/live drift,supabase-functions/functions/generateQuiz/entry.ts,,model-lifecycle,repository: requires GEMINI_MODEL configuration; corresponding retrieved live code: gemini-pro
+unresolved source/live drift,supabase-functions/functions/discoverOpportunityGuides/entry.ts,,model-lifecycle,repository: requires GEMINI_MODEL configuration; corresponding retrieved live code: gemini-pro
 unresolved,src/components/admin/TutorVerificationHub.jsx,227,payload-type,"qualifications is ARRAY, payload is string"
 unresolved,supabase-functions/functions/approveOpportunityContent/entry.ts,,source/live drift,live guide approval writes nonexistent opportunity_guides.is_approved
 unresolved,amplify.yml,,hosting verification,SPA rewrite must be configured/verified on hosting

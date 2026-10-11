@@ -1,3 +1,4 @@
+import { appUrl, requiredEnv } from "../../shared/config.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
@@ -20,8 +21,8 @@ serve(async (req) => {
   try {
     // Create Supabase client with service role
     const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      requiredEnv("SUPABASE_URL"),
+      requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
       {
         auth: {
           autoRefreshToken: false,
@@ -156,7 +157,7 @@ serve(async (req) => {
             <p style="margin-top:0;">Hi there,</p>
             <p>This is a reminder that the following application deadline${entries.length > 1 ? 's are' : ' is'} <strong>7 days away</strong>. Don't miss out!</p>
             ${deadlineItems}
-            <p style="margin-top:20px;">Log in to <a href="https://smartbridgefet.co.za/opportunities" style="color:#1a7a45;font-weight:600;">SmartBridge FET</a> to update your application status and access resources to help you prepare.</p>
+            <p style="margin-top:20px;">Log in to <a href="${appUrl('/opportunities')}" style="color:#1a7a45;font-weight:600;">SmartBridge FET</a> to update your application status and access resources to help you prepare.</p>
             <p style="color:#888;font-size:13px;margin-bottom:0;">— The SmartBridge FET Team<br><em>Tech &amp; GUARD Pty Ltd</em></p>
           </div>
         </div>

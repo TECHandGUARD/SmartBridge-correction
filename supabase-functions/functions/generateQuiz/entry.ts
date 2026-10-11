@@ -1,3 +1,4 @@
+import { geminiSettings, requiredEnv } from "../../shared/config.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
@@ -20,8 +21,8 @@ serve(async (req) => {
   try {
     // Create Supabase client
     const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      requiredEnv("SUPABASE_URL"),
+      requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
       {
         auth: {
           autoRefreshToken: false,
@@ -107,18 +108,13 @@ Rules:
 Return a JSON response with 'questions' array and 'topic_summary' string.`;
 
     // Call Gemini API
-    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!geminiApiKey) {
-      throw new Error("GEMINI_API_KEY not configured");
-    }
-
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+    const { url: geminiUrl, apiKey: geminiApiKey } = geminiSettings();
 
     const fullPrompt = `${prompt}\n\nIMPORTANT: Return ONLY valid JSON. No markdown, no extra text.`;
 
     const geminiResponse = await fetch(geminiUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
       body: JSON.stringify({
         contents: [{
           parts: [{ text: fullPrompt }]

@@ -1,3 +1,4 @@
+import { getAdminNotificationEmails } from '@/lib/admin-notifications';
 // src/pages/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -175,21 +176,22 @@ export default function AdminDashboard() {
     }
   };
 
-  const sendBothAdminTestEmails = async () => {
+  const sendAdminTestEmails = async () => {
     setTestEmailSending(true);
-    const adminEmails = ['aneleq@techandguard.co.za', 'aneleqamata95@gmail.com'];
     try {
-      await Promise.all(adminEmails.map(email =>
-        supabase.functions.invoke('send-email', {
+      const adminEmails = await getAdminNotificationEmails(supabase);
+      await Promise.all(adminEmails.map(async email => {
+        const { error } = await supabase.functions.invoke('send-email', {
           body: {
             to: email,
             subject: '🔔 SmartBridge FET — Admin Notification Test',
             text: `This is a test of the admin notification system.\n\nYou are receiving this because you are a Super Admin on SmartBridge FET.\n\nWhen a new tutor registers, you will receive an email like this with their credentials and a link to verify them.\n\nSystem: ONLINE ✅\nTime: ${new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' })} SAST\n\n— SmartBridge FET Admin System`,
             from_name: 'SmartBridge FET'
           }
-        })
-      ));
-      toast.success('Test emails sent to both admin addresses!');
+        });
+        if (error) throw error;
+      }));
+      toast.success('Test emails sent to active administrator addresses!');
       setEmailLogs(prev => [
         { to: adminEmails.join(' & '), time: new Date().toLocaleTimeString('en-ZA'), status: 'sent ✅' },
         ...prev
@@ -541,10 +543,10 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium mb-2">Test Both Admin Addresses</p>
-                  <Button onClick={sendBothAdminTestEmails} disabled={testEmailSending} className="bg-primary gap-2">
+                  <p className="text-sm font-medium mb-2">Test Administrator Notifications</p>
+                  <Button onClick={sendAdminTestEmails} disabled={testEmailSending} className="bg-primary gap-2">
                     {testEmailSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    Send Test to Both Admins
+                    Send Test to Active Admins
                   </Button>
                 </div>
                 <div className="border-t border-border pt-4">

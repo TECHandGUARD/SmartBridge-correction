@@ -1,3 +1,4 @@
+import { requiredEnv } from "../../shared/config.ts";
 // supabase/functions/expire-subscriptions/index.ts
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -17,8 +18,8 @@ serve(async (req) => {
   try {
     // Create Supabase client with service role key
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      requiredEnv("SUPABASE_URL"),
+      requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
       {
         auth: {
           autoRefreshToken: false,

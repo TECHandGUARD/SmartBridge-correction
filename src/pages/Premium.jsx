@@ -1,3 +1,4 @@
+import { appConfig } from '@/lib/config';
 import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -11,7 +12,7 @@ const PLANS = [
 {
   id: 'student',
   label: 'Student Premium',
-  price: 20,
+  price: appConfig.prices.student,
   icon: GraduationCap,
   color: 'from-blue-600 to-blue-800',
   badge: 'bg-blue-100 text-blue-700',
@@ -30,7 +31,7 @@ const PLANS = [
 {
   id: 'parent',
   label: 'Parent Premium',
-  price: 50,
+  price: appConfig.prices.parent,
   icon: Users,
   color: 'from-green-600 to-green-800',
   badge: 'bg-green-100 text-green-700',
@@ -47,7 +48,7 @@ const PLANS = [
 {
   id: 'tutor_pro',
   label: 'Tutor Pro Plan',
-  price: 150,
+  price: appConfig.prices.tutor_pro,
   icon: Briefcase,
   color: 'from-primary to-green-dark',
   badge: 'bg-primary/10 text-primary',
@@ -62,11 +63,7 @@ const PLANS = [
   ]
 }];
 
-const YOCO_LINKS = {
-  student: 'https://pay.yoco.com/r/2A55BY',
-  parent: 'https://pay.yoco.com/r/4jppyY',
-  tutor_pro: 'https://pay.yoco.com/r/78MMPk'
-};
+const YOCO_LINKS = appConfig.checkout;
 
 export default function Premium() {
   const { user } = useAuth() || {};
@@ -78,7 +75,7 @@ export default function Premium() {
     // Pre-select plan based on role
     if (user?.role === 'parent') {
       setSelectedPlan('parent');
-    } else if (user?.role === 'sace_tutor' || user?.role === 'student_tutor') {
+    } else if (user?.role === 'sace_tutor' || user?.role === 'student_tutor' || user?.role === 'tutor') {
       setSelectedPlan('tutor_pro');
     } else {
       setSelectedPlan('student');
@@ -227,14 +224,14 @@ export default function Premium() {
                       <p className="font-playfair text-lg font-bold">Pay via Yoco</p>
                     </div>
                     <p className="text-xs text-muted-foreground">Click below to pay R{plan.price} via the secure Yoco payment portal. Use your account email as the reference. An administrator will confirm payment before activating access.</p>
-                    <a
-                      href={YOCO_LINKS[selectedPlan]}
+                    {YOCO_LINKS[plan.id] ? <a
+                      href={YOCO_LINKS[plan.id]}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg py-3 text-sm font-semibold transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" /> Pay R{plan.price} on Yoco Portal
-                    </a>
+                    </a> : <p role="status" className="text-sm text-muted-foreground">Online payment is currently unavailable. Please contact support.</p>}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 leading-relaxed">
                       💡 Payment is processed by <strong>Tech &amp; GUARD</strong> on behalf of SmartBridge FET. Please enter your <strong>email address as the reference</strong> on the Yoco page. Once paid, your account will be manually verified by our Admin during business hours.
                     </div>
@@ -249,12 +246,12 @@ export default function Premium() {
                       <p className="font-playfair text-lg font-bold">Pay via EFT</p>
                     </div>
                     <p className="text-xs text-muted-foreground">Transfer directly to our bank account. Use your email address as the payment reference.</p>
-                    <div className="space-y-2 bg-white rounded-lg border border-amber-200 p-3 text-xs">
+                    {appConfig.bank ? <div className="space-y-2 bg-white rounded-lg border border-amber-200 p-3 text-xs">
                       {[
-                        ['Bank', 'Standard Bank'],
-                        ['Account Name', 'TECH AND GUARD PTY LTD'],
-                        ['Account Number', '10270501728'],
-                        ['Branch Code', '051001'],
+                        ['Bank', appConfig.bank?.name],
+                        ['Account Name', appConfig.bank?.accountName],
+                        ['Account Number', appConfig.bank?.accountNumber],
+                        ['Branch Code', appConfig.bank?.branchCode],
                         ['Reference', user?.email || 'Your email address'],
                         ['Amount', `R${plan.price}`],
                       ].map(([k, v]) => (
@@ -270,7 +267,7 @@ export default function Premium() {
                           </div>
                         </div>
                       ))}
-                    </div>
+                    </div> : <p role="status" className="text-sm text-muted-foreground">EFT is currently unavailable. Please contact support.</p>}
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
                       ⏱ EFT payments are verified by Admin during business hours (Mon–Fri, 8am–5pm SAST).
                     </div>

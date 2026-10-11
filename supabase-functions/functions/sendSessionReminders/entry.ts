@@ -1,3 +1,4 @@
+import { appUrl, requiredEnv } from "../../shared/config.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
@@ -23,8 +24,8 @@ serve(async (req) => {
   try {
     // Create Supabase client with service role
     const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      requiredEnv("SUPABASE_URL"),
+      requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
       {
         auth: {
           autoRefreshToken: false,
@@ -114,7 +115,7 @@ ${booking.session_link ? `\n🔗 Join: ${booking.session_link}` : ''}
 Make sure you're prepared — have your notes and questions ready.
 
 Log in to view your session details:
-https://smartbridgefet.co.za/bookings
+${appUrl('/bookings')}
 
 Good luck! 🎓
 — The SmartBridge FET Team`.trim();

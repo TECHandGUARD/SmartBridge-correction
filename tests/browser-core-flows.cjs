@@ -2,7 +2,7 @@ const { chromium }=require('playwright');
 const {spawn}=require('node:child_process');
 const assert=require('node:assert/strict');
 (async()=>{
- const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5173','--strictPort'],{env:{...process.env,VITE_SUPABASE_URL:'https://smartbridge-test.supabase.co',VITE_SUPABASE_ANON_KEY:'test-publishable-key'},stdio:'ignore'});
+ const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5173','--strictPort'],{env:{...process.env,VITE_SUPABASE_URL:'https://smartbridge-test.supabase.co',VITE_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test',VITE_SUPABASE_ANON_KEY:''},stdio:'ignore'});
  let browser;
  try {
   let ready=false;
@@ -81,7 +81,10 @@ const assert=require('node:assert/strict');
  await page.goto('http://127.0.0.1:5173/premium');
  await page.getByText('After payment',{exact:true}).waitFor();
  assert.equal(await page.getByRole('button',{name:'Activate',exact:true}).count(),0);
- console.log('PASS: no self-activation of premium');
+ await page.getByText('Online payment is currently unavailable. Please contact support.',{exact:true}).waitFor();
+ await page.getByText('EFT is currently unavailable. Please contact support.',{exact:true}).waitFor();
+ assert.equal(await page.locator('a[href^="https://pay.yoco.com"]').count(),0);
+ console.log('PASS: no self-activation of premium; unset checkout/EFT settings show unavailable');
  await page.goto('http://127.0.0.1:5173/admin');
  await page.waitForURL('http://127.0.0.1:5173/');console.log('PASS: learner blocked from admin route');
  await page.goto('http://127.0.0.1:5173/reset-password');

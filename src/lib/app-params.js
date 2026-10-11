@@ -1,3 +1,4 @@
+import { appConfig } from './config.js';
 /**
  * ====================================================================
  * SUPABASE FUNCTIONS PARAMETER MANAGEMENT
@@ -71,12 +72,11 @@ const getAppParams = () => {
   }
   
   return {
-    supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
-    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+    supabaseUrl: appConfig.supabaseUrl,
+    anonKey: appConfig.supabaseKey,
     accessToken: getAppParamValue("access_token", { removeFromUrl: true }),
     fromUrl: getAppParamValue("from_url", { defaultValue: isNode ? '' : window.location.href }) || '',
-    functionsVersion: getAppParamValue("functions_version", { defaultValue: import.meta.env.VITE_SUPABASE_FUNCTIONS_VERSION || 'v1' }) || '',
-    appBaseUrl: getAppParamValue("app_base_url", { defaultValue: import.meta.env.VITE_APP_BASE_URL || 'https://smartbridge.co.za' }) || '',
+    appBaseUrl: appConfig.appBaseUrl,
   };
 };
 
