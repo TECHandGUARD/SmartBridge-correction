@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Button } from '@/components/ui/button';
 import { Star, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 

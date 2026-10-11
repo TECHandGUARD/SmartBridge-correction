@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabaseClient';  // ✅ Fixed import path
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trophy, TrendingUp, Mail } from 'lucide-react';
+import { Trophy, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function StudentLeaderboard() {

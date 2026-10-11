@@ -1,7 +1,7 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +29,7 @@ const TYPE_COLORS = {
 };
 
 export default function ResourcesLibrary() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -85,8 +85,7 @@ export default function ResourcesLibrary() {
       await supabase
         .from('caps_documents')
         .update({ download_count: (doc.download_count || 0) + 1 })
-        .eq('id', doc.id)
-        .catch(() => {});
+        .eq('id', doc.id);
 
       window.open(doc.file_url, '_blank');
     } catch (err) {

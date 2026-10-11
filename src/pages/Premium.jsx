@@ -1,12 +1,10 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, CheckCircle, Shield, Users, Loader2, CreditCard, GraduationCap, Briefcase, Copy, ExternalLink, AlertCircle } from 'lucide-react';
+import { Star, CheckCircle, Shield, Users, Loader2, CreditCard, GraduationCap, Briefcase, Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PLANS = [
@@ -71,11 +69,9 @@ const YOCO_LINKS = {
 };
 
 export default function Premium() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState(false);
-  const [payRef, setPayRef] = useState('');
   const [selectedPlan, setSelectedPlan] = useState(null);
 
   useEffect(() => {
@@ -116,83 +112,12 @@ export default function Premium() {
     loadSubscription();
   }, [loadSubscription]);
 
-  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active';
+  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active' && subscription.end_date >= new Date().toISOString().slice(0, 10);
   const plan = PLANS.find((p) => p.id === selectedPlan) || PLANS[0];
 
-  const activateSubscription = async (paymentRef) => {
-    const now = new Date();
-    const end = new Date(now);
-    end.setMonth(end.getMonth() + 1);
-    
-    const subData = {
-      user_email: user.email,
-      plan: 'premium',
-      status: 'active',
-      amount_paid: plan.price,
-      currency: 'ZAR',
-      payment_reference: paymentRef,
-      start_date: now.toISOString().split('T')[0],
-      end_date: end.toISOString().split('T')[0],
-      updated_at: new Date().toISOString()
-    };
-
-    try {
-      if (subscription) {
-        const { error } = await supabase
-          .from('subscriptions')
-          .update(subData)
-          .eq('id', subscription.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('subscriptions')
-          .insert([{ 
-            ...subData,
-            created_at: new Date().toISOString()
-          }]);
-
-        if (error) throw error;
-      }
-
-      // Log activity
-      await supabase
-        .from('activity_logs')
-        .insert({
-          event_type: 'payment_made',
-          user_email: user.email,
-          description: `${user.email} subscribed to ${plan.label} — R${plan.price}`,
-          created_at: new Date().toISOString()
-        })
-        .catch(() => {});
-
-      // Reload subscription
-      await loadSubscription();
-      toast.success(`🎉 ${plan.label} activated!`);
-    } catch (err) {
-      console.error('Error activating subscription:', err);
-      toast.error('Failed to activate subscription. Please contact support.');
-    }
-  };
-
-  const copyRef = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
-  };
-
-  const handleManualActivate = async () => {
-    if (!user) {
-      window.location.href = '/login';
-      return;
-    }
-    if (!payRef.trim()) {
-      toast.error('Please enter your payment reference.');
-      return;
-    }
-    setPaying(true);
-    await activateSubscription(payRef);
-    setPaying(false);
-    setPayRef('');
+  const copyRef = async (text) => {
+    try { await navigator.clipboard.writeText(text); toast.success('Copied to clipboard.'); }
+    catch { toast.error('Could not copy. Please select and copy the text.'); }
   };
 
   if (loading) {
@@ -301,7 +226,7 @@ export default function Premium() {
                       <CreditCard className="w-5 h-5 text-primary" />
                       <p className="font-playfair text-lg font-bold">Pay via Yoco</p>
                     </div>
-                    <p className="text-xs text-muted-foreground">Click below to pay R{plan.price} via the secure Yoco payment portal. Once paid, come back and enter your reference number to activate.</p>
+                    <p className="text-xs text-muted-foreground">Click below to pay R{plan.price} via the secure Yoco payment portal. Use your account email as the reference. An administrator will confirm payment before activating access.</p>
                     <a
                       href={YOCO_LINKS[selectedPlan]}
                       target="_blank"
@@ -311,7 +236,7 @@ export default function Premium() {
                       <ExternalLink className="w-4 h-4" /> Pay R{plan.price} on Yoco Portal
                     </a>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 leading-relaxed">
-                      💡 Payment is processed by <strong>Tech &amp; GUARD</strong> on behalf of SmartBridge FET. Please enter your <strong>email address as the reference</strong> on the Yoco page. Once paid, your account will be manually verified by our Admin within <strong>60 minutes</strong>.
+                      💡 Payment is processed by <strong>Tech &amp; GUARD</strong> on behalf of SmartBridge FET. Please enter your <strong>email address as the reference</strong> on the Yoco page. Once paid, your account will be manually verified by our Admin during business hours.
                     </div>
                   </CardContent>
                 </Card>
@@ -347,36 +272,16 @@ export default function Premium() {
                       ))}
                     </div>
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-                      ⏱ EFT payments are verified by Admin within <strong>60 minutes</strong> during business hours (Mon–Fri, 8am–5pm SAST).
+                      ⏱ EFT payments are verified by Admin during business hours during business hours (Mon–Fri, 8am–5pm SAST).
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Activate after payment */}
-                <Card className="border-green-200">
-                  <CardContent className="pt-5 pb-5 space-y-3">
-                    <p className="font-semibold text-sm flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" /> Already Paid? Activate Now
-                    </p>
-                    <p className="text-xs text-muted-foreground">Enter your Yoco transaction ID or EFT reference to activate your subscription immediately.</p>
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="e.g. YCO-12345678 or EFT ref" 
-                        value={payRef} 
-                        onChange={(e) => setPayRef(e.target.value)} 
-                        className="text-xs" 
-                      />
-                      <Button 
-                        onClick={handleManualActivate} 
-                        disabled={paying || !payRef.trim()} 
-                        className="bg-green-600 hover:bg-green-700 gap-1 whitespace-nowrap text-xs px-3"
-                      >
-                        {paying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
-                        Activate
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Card className="border-green-200"><CardContent className="pt-5 pb-5 space-y-3">
+                  <p className="font-semibold text-sm">After payment</p>
+                  <p className="text-xs text-muted-foreground">Keep your payment reference. Premium access becomes active after an administrator confirms payment. Refresh this page after confirmation.</p>
+                  <Button onClick={loadSubscription} variant="outline">Check membership status</Button>
+                </CardContent></Card>
 
                 <p className="text-xs text-center text-muted-foreground">
                   🔒 Payments processed by Tech &amp; GUARD Pty Ltd on behalf of SmartBridge FET. POPIA compliant.

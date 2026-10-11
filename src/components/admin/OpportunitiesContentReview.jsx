@@ -315,7 +315,7 @@ function ManualProspectusForm({ onSaved, onCancel }) {
               min="2024" 
               max="2030" 
               value={form.year} 
-              onChange={e => setForm(p => ({ ...p, year: e.target.value }))} 
+              onChange={e => setForm(p => ({ ...p, year: Number(e.target.value) }))}
             />
           </div>
           <div className="sm:col-span-2 space-y-1">

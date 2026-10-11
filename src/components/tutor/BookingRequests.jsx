@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarDays, Clock, CheckCircle, XCircle, User, BookOpen, ExternalLink, Search, Loader2, AlertCircle, DollarSign, Bell } from 'lucide-react';
+import { CalendarDays, Clock, CheckCircle, XCircle, User, BookOpen, ExternalLink, Search, Loader2, AlertCircle, Bell } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 const STATUS_STYLES = {
   pending: 'bg-amber-100 text-amber-700',
@@ -53,10 +53,10 @@ const hasOverlap = (booking1, booking2) => {
   
   // 15 minute buffer between sessions
   const buffer = 15 * 60 * 1000;
-  return (start1 < end2 + buffer && end1 > start2 - buffer);
+  return (start1.getTime() < (end2).getTime() + buffer && (end1).getTime() > (start2).getTime() - buffer);
 };
 
-export default function BookingRequests({ user, onBookingUpdate }) {
+export default function BookingRequests({ user, onBookingUpdate = undefined }) {
   const [bookings, setBookings] = useState([]);
   const [tutorProfile, setTutorProfile] = useState(null);
   const [processing, setProcessing] = useState(null);

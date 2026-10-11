@@ -1,3 +1,4 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
@@ -9,7 +10,6 @@ import { toast } from 'sonner';
 import ResourceFilter from '@/components/resources/ResourceFilter';
 import SubjectTutors from '@/components/subject/SubjectTutors';
 import ResourceRatingComponent from '@/components/resources/ResourceRating';
-import { useOutletContext } from 'react-router-dom';
 
 const typeIcons = {
   Notes: BookOpen,
@@ -22,7 +22,7 @@ const typeIcons = {
 
 export default function SubjectDetail() {
   const { code } = useParams();
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const subject = getSubjectByCode(code);
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);

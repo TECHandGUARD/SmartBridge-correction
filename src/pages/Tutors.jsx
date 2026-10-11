@@ -1,10 +1,10 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Star, CheckCircle, Mail, CalendarDays, Radio, MessageCircle, User, ShieldCheck, Video, Loader2 } from 'lucide-react';
+import { Search, Star, CheckCircle, CalendarDays, Radio, MessageCircle, User, ShieldCheck, Video, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import BookingModal from '@/components/tutor/BookingModal';
 import LiveTutorChat from '@/components/tutor/LiveTutorChat';
@@ -30,7 +30,7 @@ async function fetchTutorWithRatings(tutor) {
 }
 
 export default function Tutors() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const [tutors, setTutors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -43,7 +43,7 @@ export default function Tutors() {
   const loadLiveSessions = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('email, session_platform')
         .eq('in_session', true);
 
@@ -60,7 +60,7 @@ export default function Tutors() {
     try {
       // Load verified tutors
       const { data: tutorsList, error: tutorsError } = await supabase
-        .from('tutor_profiles')
+        .from('tutor_directory')
         .select('*')
         .eq('is_verified', true)
         .order('rating', { ascending: false });

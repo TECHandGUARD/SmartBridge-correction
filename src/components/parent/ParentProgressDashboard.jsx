@@ -9,12 +9,12 @@ import { jsPDF } from 'jspdf';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  LineChart, Line, CartesianGrid, Legend
+  LineChart, Line, CartesianGrid
 } from 'recharts';
 import { SUBJECTS } from '@/lib/subjects';
 import { toast } from 'sonner';
 
-export default function ParentProgressDashboard({ user, onLinked }) {
+export default function ParentProgressDashboard({ user, onLinked = undefined }) {
   const [childEmail, setChildEmail] = useState(user?.linked_student_email || '');
   const [linked, setLinked] = useState(user?.linked_student_email || '');
   const [progress, setProgress] = useState([]);
@@ -80,7 +80,7 @@ export default function ParentProgressDashboard({ user, onLinked }) {
     setLinking(true);
     try {
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ 
           linked_student_email: childEmail.trim(),
           updated_at: new Date().toISOString()
@@ -192,7 +192,7 @@ export default function ParentProgressDashboard({ user, onLinked }) {
     }
 
     // Footer
-    const pageCount = doc.internal.getNumberOfPages();
+    const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8); doc.setTextColor(150);
@@ -204,7 +204,7 @@ export default function ParentProgressDashboard({ user, onLinked }) {
 
   // Quiz score trend over time (last 10 results, sorted oldest first)
   const quizTrend = [...quizResults]
-    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    .sort((a, b) => (new Date(a.created_at)).getTime() - (new Date(b.created_at)).getTime())
     .slice(-10)
     .map((q, i) => ({
       attempt: `#${i + 1}`,

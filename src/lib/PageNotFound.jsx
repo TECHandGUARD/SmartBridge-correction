@@ -19,7 +19,7 @@ export default function PageNotFound() {
         }
 
         const { data: profile } = await supabase
-          .from('user_profiles')
+          .from('users')
           .select('role')
           .eq('email', session.user.email)
           .maybeSingle();

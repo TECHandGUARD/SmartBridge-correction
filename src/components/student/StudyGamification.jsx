@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Trophy, Flame, Loader2, AlertCircle, Award, Target, Star } from 'lucide-react';
+import { Trophy, Flame, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 // PropTypes definitions instead of TypeScript interfaces

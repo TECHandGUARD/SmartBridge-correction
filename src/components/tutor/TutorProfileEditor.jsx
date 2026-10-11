@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { 
   User, Plus, X, Save, Loader2, GraduationCap, DollarSign, ShieldCheck, 
   Sparkles, Globe, Trash2, AlertTriangle, Upload, Video, User as UserIcon, 
-  CheckCircle, Eye, Linkedin, Twitter, Globe as GlobeIcon, Info
+  CheckCircle, Eye, Globe as GlobeIcon, Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -88,7 +88,7 @@ const useProfileConfig = () => {
     loadConfig();
   }, []);
 
-  return { config, loading: configLoading };
+  return { config, loading };
 };
 
 // Auto-save draft key
@@ -249,7 +249,7 @@ export default function TutorProfileEditor({ profile, user, onProfileUpdate }) {
       )
       .subscribe();
     
-    return () => supabase.removeChannel(channel);
+    return () => { supabase.removeChannel(channel); };
   }, [profile?.id, onProfileUpdate]);
 
   const handleFormChange = (updater) => {

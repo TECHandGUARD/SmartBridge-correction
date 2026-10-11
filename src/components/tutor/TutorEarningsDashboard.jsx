@@ -1,3 +1,5 @@
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Wallet, TrendingUp, Calendar, Download, Info, Loader2, AlertCircle, Banknote, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  BarChart, Bar, Cell, PieChart, Pie, Legend
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, PieChart, Pie
 } from 'recharts';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -30,7 +31,7 @@ function getNextPayoutDate() {
   });
 }
 
-export default function TutorEarningsDashboard({ user, onRequestPayout }) {
+export default function TutorEarningsDashboard({ user, onRequestPayout = undefined }) {
   const [bookings, setBookings] = useState([]);
   const [payouts, setPayouts] = useState([]);
   const [bankDetails, setBankDetails] = useState(null);

@@ -106,7 +106,7 @@ export default function TutorVerificationHub() {
 
       // Fetch all user profiles
       const { data: allUsers, error: usersError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -156,7 +156,7 @@ export default function TutorVerificationHub() {
       
       // Update user profile role
       const { error: userError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ role: tutorType })
         .eq('email', tutor.user_email);
       
@@ -167,7 +167,7 @@ export default function TutorVerificationHub() {
         event_type: 'tutor_verified',
         user_email: tutor.user_email,
         description: `Admin verified tutor: ${tutor.full_name}`,
-      }).catch(() => {});
+      });
 
       // Send approval email to tutor
       const emailResult = await sendTutorApprovalEmail(tutor);
@@ -196,7 +196,7 @@ export default function TutorVerificationHub() {
         event_type: 'tutor_rejected',
         user_email: tutor.user_email,
         description: `Admin rejected tutor: ${tutor.full_name}`,
-      }).catch(() => {});
+      });
 
       setPendingProfiles(prev => prev.filter(t => t.id !== tutor.id));
       toast.success(`❌ ${tutor.full_name} rejected.`);

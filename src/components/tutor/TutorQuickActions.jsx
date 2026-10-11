@@ -13,7 +13,7 @@ const actions = [
   { key: 'sessions', label: 'Live Sessions', icon: Video, color: 'bg-indigo-100 text-indigo-700', activeColor: 'bg-indigo-600 text-white' },
 ];
 
-export default function TutorQuickActions({ onAction, activeSection, stats }) {
+export default function TutorQuickActions({ onAction, activeSection, stats = {} }) {
   return (
     <Card className="border-border sticky top-0 z-20 bg-card/95 backdrop-blur-sm">
       <CardContent className="pt-4 pb-3">

@@ -1,5 +1,4 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { BookOpen, TrendingUp, Brain, Target, FlaskConical, Bookmark, MessageCircle, ClipboardCheck } from 'lucide-react';
 
 const actions = [

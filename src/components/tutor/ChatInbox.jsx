@@ -1,3 +1,4 @@
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,9 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  MessageCircle, Send, ArrowLeft, Loader2, AlertCircle, 
-  Search, UserPlus, Paperclip, FileText, CheckCircle, XCircle,
-  Users, Clock, Filter, Plus
+  MessageCircle, Send, ArrowLeft, Loader2,
+  Search, UserPlus, Paperclip, FileText,
+  Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,7 +32,7 @@ export default function ChatInbox({ user }) {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [otherTyping, setOtherTyping] = useState(false);
   const bottomRef = useRef(null);
-  const typingTimeoutRef = useRef();
+  const typingTimeoutRef = useRef(null);
 
   // QUICK REPLIES TEMPLATES
   const QUICK_REPLIES = [
@@ -73,7 +74,7 @@ export default function ChatInbox({ user }) {
       });
       
       const rooms = Object.values(roomMap).map(r => {
-        const sorted = r.messages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const sorted = r.messages.sort((a, b) => (new Date(b.created_at)).getTime() - (new Date(a.created_at)).getTime());
         const other = sorted[0]?.sender_email === user.email ? null : sorted[0];
         const otherEmail = r.room_id.split('__').find(e => e !== user.email);
         return {
@@ -86,7 +87,7 @@ export default function ChatInbox({ user }) {
         };
       });
       
-      rooms.sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime));
+      rooms.sort((a, b) => (new Date(b.lastTime)).getTime() - (new Date(a.lastTime)).getTime());
       setConversations(rooms);
     } catch (err) {
       console.error('Error loading conversations:', err);
@@ -268,7 +269,7 @@ export default function ChatInbox({ user }) {
           table: 'chat_typing_status',
         },
         (payload) => {
-          if (activeRoom && payload.new?.room_id === activeRoom.room_id && payload.new?.user_email !== user.email) {
+          if ('room_id' in payload.new && activeRoom && payload.new?.room_id === activeRoom.room_id && payload.new?.user_email !== user.email) {
             setOtherTyping(payload.new?.is_typing || false);
           }
         }

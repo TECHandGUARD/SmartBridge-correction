@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  GraduationCap, Plus, Trash2, ExternalLink, ChevronDown, ChevronUp, FileEdit, Calculator, BarChart2, Loader2
+  GraduationCap, Plus, Trash2, ExternalLink, ChevronDown, ChevronUp, FileEdit, BarChart2, Loader2
 } from 'lucide-react';
 import ApplicationDocumentVault from './ApplicationDocumentVault';
 import APSCalculator from './APSCalculator';

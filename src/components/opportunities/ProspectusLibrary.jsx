@@ -227,7 +227,7 @@ export default function ProspectusLibrary({ isAdmin }) {
               type="number" 
               placeholder="Year (e.g. 2027)" 
               value={form.year} 
-              onChange={e => setForm({...form, year: e.target.value})} 
+              onChange={e => setForm({...form, year: Number(e.target.value)})}
             />
             <Input 
               placeholder="Application link (optional)" 

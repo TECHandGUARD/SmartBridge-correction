@@ -41,7 +41,7 @@ const useVerificationConfig = () => {
     loadConfig();
   }, []);
 
-  return { config, loading: configLoading };
+  return { config, loading };
 };
 
 export default function TutorVerificationBadge({ user, profile, onProfileUpdate }) {
@@ -116,7 +116,7 @@ export default function TutorVerificationBadge({ user, profile, onProfileUpdate 
         const { data, error } = await supabase
           .from('tutor_profiles')
           .insert({
-            user_email: user.email,
+            user_email: user.email, user_id: user.id,
             full_name: user.full_name || user.email,
             sace_number: trimmedSace,
             is_verified: false,
@@ -165,7 +165,7 @@ export default function TutorVerificationBadge({ user, profile, onProfileUpdate 
       const { data: currentUser } = await supabase.auth.getUser();
       if (currentUser?.user?.role !== 'tutor_pending') {
         await supabase
-          .from('user_profiles')
+          .from('users')
           .update({ role: 'tutor_pending', updated_at: new Date().toISOString() })
           .eq('email', user.email);
       }
@@ -194,14 +194,13 @@ You'll receive an email once verified.
       
       // Log activity
       await supabase
-        .from('activity_logs')
+        .from('activity_log')
         .insert({
           event_type: 'tutor_verification_requested',
-          user_email: user.email,
+          user_email: user.email, user_id: user.id,
           description: `Tutor verification requested - SACE: ${trimmedSace}`,
           created_at: new Date().toISOString()
-        })
-        .catch(err => console.error('Activity log error:', err));
+        });
       
       onProfileUpdate?.(tutorProfile);
       checkApplicationStatus();

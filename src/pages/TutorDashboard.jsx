@@ -1,11 +1,10 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
-import { SUBJECTS } from '@/lib/subjects';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, CheckCircle, FileText, Star, Trash2, Upload, ShieldCheck, Loader2 } from 'lucide-react';
+import { BookOpen, CheckCircle, FileText, Star, Trash2, ShieldCheck, Loader2 } from 'lucide-react';
 import usePremiumAccess from '@/hooks/usePremiumAccess';
 import DashboardPremiumGate from '@/components/ui/DashboardPremiumGate';
 import { toast } from 'sonner';
@@ -31,7 +30,7 @@ import LessonPlanner from '@/components/tutor/LessonPlanner';
 import { AnnouncementBanner } from '@/components/admin/AnnouncementManager';
 
 export default function TutorDashboard() {
-  const { user } = useOutletContext() || {};
+  const { user, checkUser } = useAuth();
   const { isPremium, isOnTrial, trialDaysLeft, loading: premLoading } = usePremiumAccess(user);
   const [profile, setProfile] = useState(null);
   const [resources, setResources] = useState([]);
@@ -262,7 +261,7 @@ export default function TutorDashboard() {
           <div className="mb-6 space-y-4">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <TutorAvailabilityManager user={user} />
-              <MeetingLinks user={user} />
+              <MeetingLinks user={user} onProfileUpdate={checkUser} />
               <TutorVerificationBadge user={user} profile={profile} onProfileUpdate={setProfile} />
             </div>
             <BookingCalendar user={user} />

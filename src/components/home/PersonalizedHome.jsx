@@ -4,15 +4,13 @@ import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  BookOpen, ArrowRight, Star, GraduationCap, Users,
-  Bell, TrendingUp, Calendar, FileText, Video, ClipboardList,
+  BookOpen, ArrowRight, Star, GraduationCap, Users, TrendingUp, Calendar, FileText, Video, ClipboardList,
   MessageSquare, Briefcase, Award, ChevronRight
 } from 'lucide-react';
 import PremiumBanner from './PremiumBanner';
 import PremiumBadge from '@/components/ui/PremiumBadge';
 import usePremiumAccess from '@/hooks/usePremiumAccess';
 import TrialBanner from '@/components/ui/TrialBanner';
-import { toast } from 'sonner';
 
 // Role-specific nav tiles — only what's relevant
 const ROLE_CONFIG = {

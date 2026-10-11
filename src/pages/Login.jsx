@@ -8,7 +8,7 @@ import { GraduationCap, Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ✅ Admin emails that bypass onboarding
-const ADMIN_EMAILS = ['aneleqamata95@gmail.com', 'aneleq@techandguard.co.za'];
+
 
 export default function Login() {
   const { signIn, signInWithGoogle, user, isLoadingAuth } = useAuth();
@@ -22,7 +22,7 @@ export default function Login() {
   useEffect(() => {
     if (user && !isLoadingAuth) {
       // ✅ ADMIN BYPASS: If user is admin, go straight to home
-      if (ADMIN_EMAILS.includes(user.email) || user.role === 'admin' || user.is_super_admin === true) {
+      if (user.role === 'admin' || user.is_super_admin === true) {
         navigate('/', { replace: true });
         return;
       }
@@ -61,7 +61,8 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      if (!result.success) setLoading(false);
     } catch (error) {
       console.error('Google sign in error:', error);
       toast.error('Failed to sign in with Google');

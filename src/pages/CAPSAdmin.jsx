@@ -40,7 +40,7 @@ export default function CAPSAdmin() {
 
   // Inline edit state
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
+  const [editForm, setEditForm] = useState({ ...EMPTY_FORM });
   const [editSaving, setEditSaving] = useState(false);
   const [replacingId, setReplacingId] = useState(null);
 
@@ -178,6 +178,7 @@ export default function CAPSAdmin() {
   const startEdit = (doc) => {
     setEditingId(doc.id);
     setEditForm({
+      file_url: doc.file_url || "",
       title: doc.title || '',
       description: doc.description || '',
       document_type: doc.document_type || '',
@@ -190,7 +191,7 @@ export default function CAPSAdmin() {
 
   const cancelEdit = () => { 
     setEditingId(null); 
-    setEditForm({}); 
+    setEditForm({ ...EMPTY_FORM });
   };
 
   const saveEdit = async (doc) => {

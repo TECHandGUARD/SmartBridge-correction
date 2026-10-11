@@ -56,3 +56,8 @@ Before you begin, ensure you have:
 ```bash
 git clone git@github.com:TECHandGUARD/SmartBridge-FET.git
 cd SmartBridge-FET
+
+
+## Technical repair and validation
+
+See [the technical repair report](docs/technical-repair.md) for setup checks, database migration deployment order, browser tests, and remaining launch blockers.

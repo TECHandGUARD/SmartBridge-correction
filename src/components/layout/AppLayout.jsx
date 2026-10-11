@@ -1,26 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import MobileHeader from './MobileHeader';
 import MobileBottomTabs from './MobileBottomTabs';
-import Onboarding from '@/pages/Onboarding';
+import { useAuth } from '@/lib/AuthContext';
+import { withTimeout } from '@/lib/auth-utils';
 // ✅ FIXED: Correct import path
 import TutorPendingScreen from '@/components/tutor/TutorPendingScreen';
 
-const TUTOR_ROLES = ['sace_tutor', 'student_tutor', 'tutor_pending'];
+const TUTOR_ROLES = ['sace_tutor', 'student_tutor', 'tutor_pending', 'tutor'];
 
 // ✅ Hardcoded admin emails for bypass
-const ADMIN_EMAILS = ['aneleqamata95@gmail.com', 'aneleq@techandguard.co.za'];
 
-function getDashboardPath(role) {
-  if (role === 'admin') return '/admin';
-  if (TUTOR_ROLES.includes(role)) return '/tutor-dashboard';
-  if (role === 'parent') return '/parent-dashboard';
-  return '/student-dashboard';
-}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -40,114 +34,22 @@ const pageVariants = {
 const pageTransition = { duration: 0.22, ease: 'easeInOut' };
 
 export default function AppLayout() {
-  const [user, setUser] = useState(null);
+  const { user, isLoadingAuth: loading, checkUser: fetchUser, isAdmin, signOut } = useAuth();
   const [tutorVerified, setTutorVerified] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [tutorError, setTutorError] = useState(false);
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const location = useLocation();
-
-  const fetchUser = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !authUser) {
-        setUser(null);
-        setTutorVerified(null);
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('email', authUser.email)
-        .single();
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Profile fetch error:', profileError);
-      }
-
-      // ✅ Check if user is in hardcoded admin list
-      const isHardcodedAdmin = ADMIN_EMAILS.includes(authUser.email);
-      const userData = {
-        ...authUser,
-        ...profile,
-        email: authUser.email,
-        full_name: profile?.full_name || authUser.user_metadata?.full_name,
-        // If hardcoded admin, force role to 'admin'
-        role: isHardcodedAdmin ? 'admin' : (profile?.role || 'user'),
-        onboarding_complete: isHardcodedAdmin ? true : (profile?.onboarding_complete || false),
-      };
-      
-      setUser(userData);
-
-      if (userData && TUTOR_ROLES.includes(userData.role)) {
-        const { data: profiles, error: tutorError } = await supabase
-          .from('tutor_profiles')
-          .select('*')
-          .eq('user_email', userData.email);
-        
-        if (!tutorError) {
-          const isProfileVerified = profiles?.length > 0 ? profiles[0].is_verified === true : false;
-          const isRoleCorrect = userData.role !== 'tutor_pending' && userData.role !== 'user';
-          setTutorVerified(isProfileVerified || isRoleCorrect);
-        } else {
-          setTutorVerified(null);
-        }
-      } else {
-        setTutorVerified(null);
-      }
-    } catch (error) {
-      console.error('Fetch user failed:', error);
-      setUser(null);
-      setTutorVerified(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchUser(); }, [fetchUser]);
-
-  const handleOnboardingComplete = async () => {
-    setLoading(true);
-    const maxAttempts = 10;
-    let attempts = 0;
-    let updatedUser = null;
-    
-    while (attempts < maxAttempts && !updatedUser) {
-      await new Promise(r => setTimeout(r, 500));
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (authUser) {
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('email', authUser.email)
-          .single();
-        
-        if (profile && profile.role !== 'user') {
-          updatedUser = { ...authUser, ...profile };
-        }
-      }
-      attempts++;
-    }
-    
-    setUser(updatedUser);
-    const role = updatedUser?.role;
-
-    if (TUTOR_ROLES.includes(role)) {
-      const { data: profiles } = await supabase
-        .from('tutor_profiles')
-        .select('*')
-        .eq('user_email', updatedUser.email);
-      const isProfileVerified = profiles?.length > 0 ? profiles[0].is_verified === true : false;
-      setTutorVerified(isProfileVerified);
-    } else {
-      setTutorVerified(null);
-      navigate(getDashboardPath(role), { replace: true });
-    }
-    setLoading(false);
-  };
+  useEffect(() => {
+    let cancelled = false;
+    setTutorVerified(null); setTutorError(false);
+    if (!user || isAdmin || !TUTOR_ROLES.includes(user.role)) return;
+    withTimeout(supabase.from('tutor_profiles').select('is_verified').eq('user_id', user.id).maybeSingle()).then(({ data, error }) => {
+      if (cancelled) return;
+      if (error) setTutorError(true);
+      else setTutorVerified(data?.is_verified === true && user.role !== 'tutor_pending');
+    }).catch(() => { if (!cancelled) setTutorError(true); });
+    return () => { cancelled = true; };
+  }, [user, isAdmin]);
 
   if (loading) return (
     <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -184,7 +86,7 @@ export default function AppLayout() {
   }
 
   // ✅ Admin bypass – skip onboarding and pending screens
-  const isAdmin = user.role === 'admin' || ADMIN_EMAILS.includes(user.email);
+
   if (isAdmin) {
     return isMobile ? (
       <div className="min-h-screen bg-background flex flex-col">
@@ -213,17 +115,10 @@ export default function AppLayout() {
     );
   }
 
-  // Onboarding for new users
-  const shouldOnboard = user.role === 'user';
-  if (shouldOnboard) {
-    return <Onboarding user={user} onComplete={handleOnboardingComplete} />;
-  }
-
-  // Tutor pending screen (only for non-admin tutor roles)
-  const isTutorRole = TUTOR_ROLES.includes(user.role);
-  const isTutorPending = isTutorRole && tutorVerified === false;
-  if (isTutorPending) {
-    return <TutorPendingScreen user={user} onRefresh={fetchUser} />;
+  if (TUTOR_ROLES.includes(user.role)) {
+    if (tutorError) return <div className="p-8 text-center" role="alert"><p>Could not check tutor verification. Please retry.</p><button onClick={fetchUser}>Retry</button><button onClick={signOut}>Sign out</button></div>;
+    if (tutorVerified === null) return <div className="p-8 text-center">Checking tutor verification…</div>;
+    if (!tutorVerified) return <TutorPendingScreen user={user} onRefresh={fetchUser} />;
   }
 
   // Normal layout for authenticated, onboarded users

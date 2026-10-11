@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { GitCompareArrows, X, ExternalLink, CheckCircle2, AlertCircle, Info, GraduationCap, ChevronDown, Loader2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { GitCompareArrows, X, ExternalLink, CheckCircle2, AlertCircle, Info, GraduationCap, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 // Static knowledge about NBT requirements & faculty APS per university
@@ -131,7 +129,7 @@ function Cell({ children, className = '' }) {
   return <td className={`px-4 py-3 text-sm align-top border-b border-border ${className}`}>{children}</td>;
 }
 
-function RowLabel({ label, sub }) {
+function RowLabel({ label, sub = null }) {
   return (
     <td className="px-4 py-3 text-xs font-semibold text-muted-foreground bg-muted/40 align-top border-b border-border whitespace-nowrap w-32">
       <div>{label}</div>
@@ -213,7 +211,7 @@ export default function UniversityComparison({ userEmail }) {
       const du = (d.university || '').toLowerCase();
       const un = uniName.toLowerCase();
       return du && (du.includes(un.split(' ')[0]) || un.includes(du.split(' ')[0]));
-    }).sort((a, b) => new Date(a.date) - new Date(b.date));
+    }).sort((a, b) => (new Date(a.date)).getTime() - (new Date(b.date)).getTime());
   };
 
   const getProspectusFor = (uniName) => {

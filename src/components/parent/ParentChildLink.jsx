@@ -23,7 +23,7 @@ export default function ParentChildLink({ user }) {
     try {
       // Update user profile with linked student email
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ 
           linked_student_email: childEmail.trim(),
           updated_at: new Date().toISOString()

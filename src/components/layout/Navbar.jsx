@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { BookOpen, Menu, X, Star, LogOut, User } from 'lucide-react';
 import AdminAlertBell from '@/components/admin/AdminAlertBell';
 import {

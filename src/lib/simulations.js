@@ -6,10 +6,9 @@
  * ====================================================================
  */
 
-import { SimulationType } from '@/components/SimulationCard';
 
 // Fallback static data in case of network issues
-export const STATIC_SIMULATIONS_FALLBACK: SimulationType[] = [
+export const STATIC_SIMULATIONS_FALLBACK = [
   {
     id: 'phet-forces-motion',
     title: 'Forces & Motion: Basics',

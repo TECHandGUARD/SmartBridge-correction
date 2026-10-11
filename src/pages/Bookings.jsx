@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Plus, Loader2, CheckCircle, XCircle, ExternalLink, Star, BookOpen, User } from 'lucide-react';
+import { Calendar, Clock, Plus, Loader2, XCircle, ExternalLink, Star, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import TutorReviewModal from '@/components/student/TutorReviewModal';
 
@@ -49,7 +49,7 @@ export default function Bookings() {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'tutor_bookings' }, 
         (payload) => {
-          if (payload.new && payload.new.student_email === user.email) {
+          if (payload.new && ('student_id' in payload.new ? payload.new.student_id : null) === user.id) {
             fetchBookingDashboardData();
           }
         }
@@ -66,8 +66,8 @@ export default function Bookings() {
       setLoading(true);
       
       const [bookingsQuery, tutorsQuery] = await Promise.all([
-        supabase.from('tutor_bookings').select('*').eq('student_email', user.email).order('created_at', { ascending: false }),
-        supabase.from('tutor_profiles').select('*').eq('is_verified', true)
+        supabase.from('tutor_bookings').select('*').eq('student_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('tutor_directory').select('*').eq('is_verified', true)
       ]);
 
       if (bookingsQuery.error) throw bookingsQuery.error;
@@ -87,7 +87,7 @@ export default function Bookings() {
   const estimatedCost = (selectedTutor?.hourly_rate || 0) * computedHourlyDuration;
 
   const handleCreateBooking = async () => {
-    if (!form.tutor_email || !form.date) {
+    if (!selectedTutor?.user_id || !form.date) {
       toast.error('Please specify target scheduling date and tutor requirements.');
       return;
     }
@@ -97,6 +97,9 @@ export default function Bookings() {
         .from('tutor_bookings')
         .insert([
           {
+            student_id: user.id,
+            tutor_id: selectedTutor.user_id,
+            tutor_profile_id: selectedTutor.id,
             student_email: user.email,
             tutor_email: form.tutor_email,
             tutor_name: selectedTutor?.full_name || 'Verified SACE Instructor',
@@ -105,7 +108,7 @@ export default function Bookings() {
             session_time: form.time,
             duration_hours: computedHourlyDuration,
             message: form.message.trim(),
-            amount_payable: estimatedCost,
+            amount: estimatedCost,
             status: 'pending'
           }
         ]);
@@ -332,7 +335,7 @@ export default function Bookings() {
                           <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" />{b.subject}</span>
                           <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{b.session_date}</span>
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{cleanTime} · {b.duration_hours}h</span>
-                          {b.amount_payable > 0 && <span className="flex items-center gap-1 text-blue-600 font-bold">R{b.amount_payable}</span>}
+                          {b.amount > 0 && <span className="flex items-center gap-1 text-blue-600 font-bold">R{b.amount}</span>}
                         </div>
                         {b.message && <p className="text-xs text-slate-400 mt-1 italic">"{b.message}"</p>}
                       </div>

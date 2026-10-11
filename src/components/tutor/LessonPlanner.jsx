@@ -8,8 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   ClipboardList, Plus, Pencil, Trash2, Lock, Crown, Calendar, BookOpen, 
-  Loader2, AlertCircle, Search, Filter, CheckCircle, Share2, Sparkles, 
-  Repeat, TrendingUp, FileText, Mail, LinkIcon, Clock, Download, Lightbulb,
+  Loader2, AlertCircle, Search, CheckCircle, Sparkles, Mail, LinkIcon, Download, Lightbulb,
   X, Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -75,7 +74,7 @@ const TEMPLATES = {
   }
 };
 
-export default function LessonPlanner({ user, onLessonUpdate }) {
+export default function LessonPlanner({ user, onLessonUpdate = undefined }) {
   const { isPremium, loading: premLoading } = usePremiumAccess(user);
   const [plans, setPlans] = useState([]);
   const [students, setStudents] = useState([]);

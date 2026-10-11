@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BarChart2, Search, TrendingUp, BookOpen, Bell, Loader2 } from 'lucide-react';
+import { BarChart2, Search, TrendingUp, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ParentSummaryReport() {

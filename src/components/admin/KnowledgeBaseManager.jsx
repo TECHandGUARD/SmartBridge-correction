@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,8 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Plus, Trash2, ExternalLink, Loader2, BookOpen, 
-  Search, Filter, Edit, Save, X, ChevronLeft, ChevronRight,
-  AlertTriangle, Upload, FileText, CheckCircle, SortAsc, SortDesc
+  Search, Edit, X, ChevronLeft, ChevronRight, CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -27,9 +26,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const SUBJECTS = [
   'Mathematics', 'Mathematical Literacy', 'Physical Sciences', 'Life Sciences',
@@ -388,8 +386,8 @@ export default function KnowledgeBaseManager({ user }) {
     
     // Sort
     filtered.sort((a, b) => {
-      if (sortBy === '-created_at') return new Date(b.created_at) - new Date(a.created_at);
-      if (sortBy === 'created_at') return new Date(a.created_at) - new Date(b.created_at);
+      if (sortBy === '-created_at') return (new Date(b.created_at)).getTime() - (new Date(a.created_at)).getTime();
+      if (sortBy === 'created_at') return (new Date(a.created_at)).getTime() - (new Date(b.created_at)).getTime();
       if (sortBy === 'title') return a.title.localeCompare(b.title);
       if (sortBy === '-title') return b.title.localeCompare(a.title);
       if (sortBy === 'subject') return (a.subject || '').localeCompare(b.subject || '');

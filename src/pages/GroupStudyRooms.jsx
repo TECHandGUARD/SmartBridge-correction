@@ -1,5 +1,5 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ const STUDY_ROOMS = SUBJECTS.slice(0, 8).map((s, i) => ({
 }));
 
 export default function GroupStudyRooms() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const [activeRoom, setActiveRoom] = useState(STUDY_ROOMS[0]);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');

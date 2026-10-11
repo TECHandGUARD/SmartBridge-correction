@@ -1,5 +1,5 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 const GRADES = ['All Grades', 'Grade 10', 'Grade 11', 'Grade 12'];
 
 export default function VideoLessons() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(null);

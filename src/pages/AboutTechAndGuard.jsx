@@ -11,7 +11,6 @@ import {
   CheckCircle,
   Award,
   Lock,
-  Users,
   GraduationCap
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';

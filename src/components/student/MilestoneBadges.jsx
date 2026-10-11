@@ -148,7 +148,7 @@ export default function MilestoneBadges({ user }) {
         const updatedBadges = [...currentBadges, ...newlyEarned];
         
         const { error: updateError } = await supabase
-          .from('user_profiles')
+          .from('users')
           .update({ 
             badges: updatedBadges,
             updated_at: new Date().toISOString()

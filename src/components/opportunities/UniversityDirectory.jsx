@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabaseClient';
 import { ExternalLink, GraduationCap, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 
 const FALLBACK_UNIVERSITIES = [
   { name: "University of Cape Town (UCT)", url: "https://www.uct.ac.za/apply", province: "Western Cape", type: "Traditional" },

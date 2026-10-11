@@ -4,14 +4,16 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables. Check your .env file.');
-  throw new Error('Missing Supabase configuration');
-}
+const validConnectionUrl = (() => {
+  try { const url = new URL(supabaseUrl); return url.protocol === 'https:' && !!url.hostname; }
+  catch { return false; }
+})();
+export const configurationError = !supabaseUrl || !supabaseAnonKey
+  ? 'The app is missing its connection settings. Please contact support.'
+  : !validConnectionUrl ? 'The app connection address is invalid. Please contact support.' : null;
 
 // Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = configurationError ? null : createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

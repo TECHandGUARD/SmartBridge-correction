@@ -49,7 +49,7 @@ export default function AdminUserViewer({ users, subscriptions }) {
     setUpdatingTrial(true);
     try {
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ trial_started_at: new Date().toISOString() })
         .eq('id', selectedUser.id);
       
@@ -70,7 +70,7 @@ export default function AdminUserViewer({ users, subscriptions }) {
     try {
       const pastDate = new Date(Date.now() - TRIAL_MS - 1000).toISOString();
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ trial_started_at: pastDate })
         .eq('id', selectedUser.id);
       

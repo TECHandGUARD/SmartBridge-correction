@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabaseClient';  // ✅ Fixed import path
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DollarSign, CheckCircle, Clock, Send, Download, Zap, RefreshCw, AlertCircle } from 'lucide-react';
+import { DollarSign, CheckCircle, Send, Download, Zap, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PLATFORM_COMMISSION_STANDARD = 0.10; // 10%
@@ -125,7 +125,7 @@ export default function AutomatedBillingPayouts() {
       user_email: tutor.user_email,
       description: `Payout processed for ${tutor.full_name}: R${tutor.netPayout.toFixed(2)} net (${tutor.bookingCount} sessions)`,
       metadata: { gross: tutor.grossRevenue, commission: tutor.commission, net: tutor.netPayout },
-    }).catch(() => {});
+    });
     
     setProcessedIds(prev => new Set([...prev, tutor.id]));
   };

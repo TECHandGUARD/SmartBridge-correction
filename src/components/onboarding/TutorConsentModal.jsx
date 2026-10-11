@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
 
 // Agreement version tracking
 const AGREEMENT_VERSION = '1.0.0';
@@ -12,7 +9,7 @@ const AGREEMENT_EFFECTIVE_DATE = '2025-01-01';
 
 export default function TutorConsentModal({ open, onAccept, onDecline, user }) {
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
-  const [recordingConsent, setRecordingConsent] = useState(false);
+  const recordingConsent = false;
 
   // Reset scroll state each time modal opens
   useEffect(() => {
@@ -26,85 +23,11 @@ export default function TutorConsentModal({ open, onAccept, onDecline, user }) {
     }
   };
 
-  // Function to record consent in database
-  const recordConsent = async () => {
-    if (!user?.email) {
-      console.error('Cannot record consent: No user email');
-      return false;
-    }
-
-    try {
-      // Check if consent already recorded for this version
-      const { data: existingConsent, error: checkError } = await supabase
-        .from('consent_records')
-        .select('*')
-        .eq('user_email', user.email)
-        .eq('agreement_type', 'tutor_service_agreement')
-        .eq('version', AGREEMENT_VERSION);
-
-      if (checkError) throw checkError;
-
-      if (existingConsent && existingConsent.length > 0) {
-        console.log('Consent already recorded for version', AGREEMENT_VERSION);
-        return true;
-      }
-
-      // Record new consent
-      const { error: insertError } = await supabase
-        .from('consent_records')
-        .insert({
-          user_email: user.email,
-          user_name: user.full_name || user.email,
-          agreement_type: 'tutor_service_agreement',
-          version: AGREEMENT_VERSION,
-          effective_date: AGREEMENT_EFFECTIVE_DATE,
-          accepted_at: new Date().toISOString(),
-          ip_address: 'recorded-on-client',
-          user_agent: navigator.userAgent
-        });
-
-      if (insertError) throw insertError;
-
-      // Also log activity
-      const { error: logError } = await supabase
-        .from('activity_logs')
-        .insert({
-          event_type: 'tutor_consent_accepted',
-          user_email: user.email,
-          description: `Accepted Tutor Service Agreement v${AGREEMENT_VERSION}`,
-        });
-
-      if (logError) console.error('Failed to log activity:', logError);
-
-      return true;
-    } catch (error) {
-      console.error('Failed to record consent:', error);
-      return false;
-    }
-  };
-
-  // Handle accept with consent recording
-  const handleAccept = async () => {
-    setRecordingConsent(true);
-    
-    // Record consent in database
-    const consentRecorded = await recordConsent();
-    
-    if (!consentRecorded) {
-      toast.warning('Could not record consent. Your acceptance has been noted, but please contact support if you experience issues.');
-    }
-    
-    setRecordingConsent(false);
-    onAccept();
-  };
-
-  // Handle decline
-  const handleDecline = () => {
-    onDecline();
-  };
+  // Onboarding records acceptance in the same transaction as the tutor application.
+  const handleAccept = () => { onAccept(); };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleDecline(); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onDecline(); }}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col gap-0 p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -202,7 +125,7 @@ export default function TutorConsentModal({ open, onAccept, onDecline, user }) {
         </div>
 
         <div className="px-6 py-4 border-t border-border flex-shrink-0 flex flex-col sm:flex-row gap-3">
-          <Button variant="outline" className="flex-1" onClick={handleDecline} disabled={recordingConsent}>
+          <Button variant="outline" className="flex-1" onClick={onDecline} disabled={recordingConsent}>
             Decline
           </Button>
           <Button

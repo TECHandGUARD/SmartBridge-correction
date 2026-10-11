@@ -8,14 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Search, Pencil, Check, X, ExternalLink, Loader2, BookOpen, FileText, Plus, Trash2 } from 'lucide-react';
+import { Search, Pencil, Check, X, ExternalLink, Loader2, BookOpen, FileText, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const SUBJECTS = ['Mathematics', 'Mathematical Literacy', 'Physical Sciences', 'Life Sciences', 'Geography', 'History', 'Accounting', 'Business Studies', 'Economics', 'English Home Language', 'Life Orientation'];
 const GRADES = ['Grade 10', 'Grade 11', 'Grade 12'];
 const RESOURCE_TYPES = ['Notes', 'Past Paper', 'Study Guide', 'Worksheet', 'Video', 'Other'];
 
-function EditableField({ label, value, onChange, type = 'text', options }) {
+function EditableField({ label, value, onChange, type = 'text', options = [] }) {
   if (options) return (
     <div className="space-y-1">
       <Label className="text-xs text-muted-foreground">{label}</Label>

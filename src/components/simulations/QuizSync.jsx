@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Zap, ExternalLink, Play, AlertTriangle, Loader2, Trash2, Plus } from 'lucide-react';
+import { Zap, Play, AlertTriangle, Loader2, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function QuizSync({ simulation, isAdmin = false }) {

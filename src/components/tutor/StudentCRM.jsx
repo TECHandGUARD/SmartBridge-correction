@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Plus, ArrowLeft, Search, FileText, BookOpen, Smile, Save, Loader2 } from 'lucide-react';
+import { Users, Plus, ArrowLeft, Search, FileText, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MOOD_ICONS = {
@@ -96,7 +96,7 @@ export default function StudentCRM({ user }) {
   );
 
   const studentNotes = selectedStudent
-    ? notes.filter(n => n.student_email === selectedStudent.email).sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    ? notes.filter(n => n.student_email === selectedStudent.email).sort((a, b) => (new Date(b.created_at)).getTime() - (new Date(a.created_at)).getTime())
     : [];
 
   const handleAddNote = async () => {

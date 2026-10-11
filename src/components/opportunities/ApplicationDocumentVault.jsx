@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Upload, File, Trash2, CheckCircle2, Clock, XCircle, AlertCircle, ChevronDown, ChevronUp, FolderOpen, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const DOC_TYPES = [
@@ -26,7 +25,7 @@ const STATUS_CONFIG = {
 function DocTypeRow({ docType, doc, appId, studentEmail, universityName, onRefresh }) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const fileRef = useRef();
+  const fileRef = useRef(null);
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];

@@ -1,5 +1,6 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { SUBJECTS } from '@/lib/subjects';
 import usePremiumAccess from '@/hooks/usePremiumAccess';
@@ -35,7 +36,7 @@ import CounselorChat from '@/components/counselor/CounselorChat';
 import { AnnouncementBanner } from '@/components/admin/AnnouncementManager';
 
 export default function StudentDashboard() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const { isPremium, isOnTrial, trialDaysLeft, loading: premLoading } = usePremiumAccess(user);
   const [resources, setResources] = useState([]);
   const [tutors, setTutors] = useState([]);
@@ -136,7 +137,7 @@ export default function StudentDashboard() {
     try {
       // Update user profile to mark as deleted
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ role: 'deleted', updated_at: new Date().toISOString() })
         .eq('email', user.email);
 
@@ -282,7 +283,7 @@ export default function StudentDashboard() {
               <AIStudyAssistant user={user} />
             </DashboardPremiumGate>
             <DashboardPremiumGate isPremium={isPremium} isLoading={premLoading} featureName="Interactive Flashcards">
-              <InteractiveFlashcards />
+              <InteractiveFlashcards studentEmail={user.email} />
             </DashboardPremiumGate>
           </div>
         )}

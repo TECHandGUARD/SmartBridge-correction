@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CalendarDays, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function BookingModal({ tutor, user, open, onClose, onBookingCreated }) {
+export default function BookingModal({ tutor, user, open, onClose, onBookingCreated = undefined }) {
   const [form, setForm] = useState({ 
     subject: tutor?.subjects?.[0] || '', 
     date: '', 
@@ -111,14 +111,13 @@ export default function BookingModal({ tutor, user, open, onClose, onBookingCrea
       
       // Log activity
       await supabase
-        .from('activity_logs')
+        .from('activity_log')
         .insert({
           event_type: 'booking_made',
-          user_email: user.email,
+          user_email: user.email, user_id: user.id,
           description: `${user.email} booked ${tutor.full_name} for ${form.subject} on ${form.date}`,
           created_at: new Date().toISOString()
-        })
-        .catch(err => console.error('Activity log error:', err));
+        });
       
       // Send notification to tutor via Edge Function
       const { error: notifyError } = await supabase.functions.invoke('send-email', {
@@ -233,7 +232,7 @@ Please log in to confirm or decline this booking.
             {/* Duration */}
             <div>
               <Label>Duration (hours)</Label>
-              <Select value={String(form.duration_hours)} onValueChange={v => setForm(f => ({ ...f, duration_hours: v }))}>
+              <Select value={String(form.duration_hours)} onValueChange={v => setForm(f => ({ ...f, duration_hours: Number(v) }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

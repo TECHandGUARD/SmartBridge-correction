@@ -1,11 +1,10 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Link, useOutletContext } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Download, Lock, Star, BookOpen, FileText, File, Bookmark, Loader2 } from 'lucide-react';
+import { Search, Download, BookOpen, FileText, File, Bookmark, Loader2 } from 'lucide-react';
 import PremiumBadge from '@/components/ui/PremiumBadge';
 import usePremiumAccess from '@/hooks/usePremiumAccess';
 import TrialBanner from '@/components/ui/TrialBanner';
@@ -21,7 +20,7 @@ const typeIcons = {
 };
 
 export default function ResourceSearch() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const [query, setQuery] = useState('');
   const [resources, setResources] = useState([]);
   const [bookmarked, setBookmarked] = useState(new Set());

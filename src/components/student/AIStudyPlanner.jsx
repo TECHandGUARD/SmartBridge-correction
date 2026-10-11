@@ -98,7 +98,7 @@ export default function AIStudyPlanner({ user }) {
       
       if (error) throw error;
       
-      setExams(prev => [...prev, data].sort((a, b) => new Date(a.exam_date) - new Date(b.exam_date)));
+      setExams(prev => [...prev, data].sort((a, b) => (new Date(a.exam_date)).getTime() - (new Date(b.exam_date)).getTime()));
       setNewExam({ subject: '', grade: 'Grade 12', exam_date: '', exam_type: 'Test', notes: '' });
       setShowAddExam(false);
       toast.success('Exam added!');
@@ -207,7 +207,7 @@ Respond with a structured JSON study plan.`,
     return 'bg-green-100 text-green-700 border-green-200';
   };
 
-  const daysUntil = (dateStr) => Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
+  const daysUntil = (dateStr) => Math.ceil(((new Date(dateStr)).getTime() - (new Date()).getTime()) / (1000 * 60 * 60 * 24));
 
   return (
     <Card className="border-border">

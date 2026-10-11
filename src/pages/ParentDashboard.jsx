@@ -1,12 +1,13 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { SUBJECTS } from '@/lib/subjects';
 import usePremiumAccess from '@/hooks/usePremiumAccess';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, BookOpen, TrendingUp, Star, ArrowRight, Crown, Loader2 } from 'lucide-react';
+import { Users, BookOpen, TrendingUp, Star, ArrowRight, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import ParentQuickActions from '@/components/parent/ParentQuickActions';
 import DashboardPremiumGate from '@/components/ui/DashboardPremiumGate';
@@ -16,7 +17,7 @@ import ParentChildLink from '@/components/parent/ParentChildLink';
 import ParentProgressDashboard from '@/components/parent/ParentProgressDashboard';
 
 export default function ParentDashboard() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const { isPremium, isOnTrial, trialDaysLeft, loading: premLoading } = usePremiumAccess(user);
   const [tutors, setTutors] = useState([]);
   const [loading, setLoading] = useState(true);

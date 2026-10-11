@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Users, FileText, DollarSign, Activity, Shield, TrendingUp,
+  Settings, Users, FileText, DollarSign, Activity, Shield, TrendingUp,
   BookOpen, Mail, Send, Loader2, RefreshCw, Star, Megaphone, Database, Cpu,
   BarChart2, Trophy, UserCheck, GraduationCap, ToggleLeft, ShieldCheck
 } from 'lucide-react';
@@ -33,7 +33,7 @@ import KnowledgeBaseManager from '@/components/admin/KnowledgeBaseManager';
 import SystemConfigPanel from '@/components/admin/SystemConfigPanel';
 
 // ✅ Hardcoded admin emails
-const ADMIN_EMAILS = ['aneleqamata95@gmail.com', 'aneleq@techandguard.co.za'];
+
 
 export default function AdminDashboard() {
   const { user, isAdmin } = useAuth();
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
     try {
       // Fetch users from user_profiles
       const { data: usersData } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(200);
@@ -211,7 +211,7 @@ export default function AdminDashboard() {
   }
 
   // If not admin or super admin, show access denied
-  const isSuperAdmin = ADMIN_EMAILS.includes(user?.email) || user?.is_super_admin === true;
+  const isSuperAdmin = user?.is_super_admin === true;
   if (!isSuperAdmin && user?.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -335,7 +335,7 @@ export default function AdminDashboard() {
                           </tr>
                         );
                       })}
-                      {users.length === 0 && <tr><td colSpan="4" className="text-center py-8 text-muted-foreground">No users found.</td></tr>}
+                      {users.length === 0 && <tr><td colSpan={4} className="text-center py-8 text-muted-foreground">No users found.</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -589,4 +589,4 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-}v
+}

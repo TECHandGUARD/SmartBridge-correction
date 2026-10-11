@@ -28,9 +28,9 @@ function TestDateCard({ testDate, registration, onRegister, onRefresh, userEmail
   const [band, setBand] = useState(registration?.overall_band ?? '');
   const [savingResults, setSavingResults] = useState(false);
 
-  const daysUntil = Math.ceil((new Date(testDate.test_date) - new Date()) / 86400000);
+  const daysUntil = Math.ceil(((new Date(testDate.test_date)).getTime() - (new Date()).getTime()) / 86400000);
   const regDeadlineDays = testDate.registration_deadline
-    ? Math.ceil((new Date(testDate.registration_deadline) - new Date()) / 86400000)
+    ? Math.ceil(((new Date(testDate.registration_deadline)).getTime() - (new Date()).getTime()) / 86400000)
     : null;
   const isPast = daysUntil < 0;
   const isRegistered = !!registration;

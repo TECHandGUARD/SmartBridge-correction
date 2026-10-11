@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabaseClient';
 import { ExternalLink, BookOpen, FileText, Globe, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 
 // Fallback static resources in case database is empty
 const FALLBACK_RESOURCES = [

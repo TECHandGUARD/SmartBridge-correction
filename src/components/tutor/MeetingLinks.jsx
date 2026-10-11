@@ -29,7 +29,7 @@ export default function MeetingLinks({ user, onProfileUpdate }) {
       setLoading(true);
       try {
         const { data, error } = await supabase
-          .from('user_profiles')
+          .from('users')
           .select('zoom_link, teams_link, in_session, session_platform')
           .eq('email', user.email)
           .single();
@@ -90,7 +90,7 @@ export default function MeetingLinks({ user, onProfileUpdate }) {
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({
           zoom_link: zoomLink || null,
           teams_link: teamsLink || null,
@@ -116,7 +116,7 @@ export default function MeetingLinks({ user, onProfileUpdate }) {
     
     try {
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({
           in_session: newVal,
           session_platform: newVal ? platform : null,
