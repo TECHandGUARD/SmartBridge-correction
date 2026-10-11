@@ -27,7 +27,7 @@ export default function WeeklyEmailReport({ parentUser }) {
     try {
       // Load student progress from Supabase
       const { data: progress, error: progError } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('*')
         .eq('user_email', childEmail.trim());
       

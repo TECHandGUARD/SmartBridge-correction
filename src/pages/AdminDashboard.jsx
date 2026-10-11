@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
       // Fetch activity logs
       const { data: logsData } = await supabase
-        .from('activity_logs')
+        .from('activity_log')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100);

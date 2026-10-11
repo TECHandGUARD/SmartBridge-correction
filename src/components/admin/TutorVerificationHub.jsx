@@ -163,7 +163,7 @@ export default function TutorVerificationHub() {
       if (userError) console.error('Error updating user role:', userError);
 
       // Log activity
-      await supabase.from('activity_logs').insert({
+      await supabase.from('activity_log').insert({
         event_type: 'tutor_verified',
         user_email: tutor.user_email,
         description: `Admin verified tutor: ${tutor.full_name}`,
@@ -192,7 +192,7 @@ export default function TutorVerificationHub() {
     setProcessing(tutor.id);
     try {
       // Log rejection
-      await supabase.from('activity_logs').insert({
+      await supabase.from('activity_log').insert({
         event_type: 'tutor_rejected',
         user_email: tutor.user_email,
         description: `Admin rejected tutor: ${tutor.full_name}`,

@@ -58,7 +58,7 @@ export default function AIStudyPlanner({ user }) {
       
       // Load term dates from system configuration
       const { data: configData, error: configError } = await supabase
-        .from('system_configurations')
+        .from('system_configuration')
         .select('*')
         .eq('is_active', true)
         .eq('key', 'academic_term_dates');

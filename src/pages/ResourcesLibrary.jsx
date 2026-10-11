@@ -112,7 +112,7 @@ export default function ResourcesLibrary() {
     toast.info('Preparing ZIP file, please wait…');
     try {
       // Use Supabase Edge Function for ZIP download
-      const { data, error: functionError } = await supabase.functions.invoke('downloadCAPSZip', {
+      const { data, error: functionError } = await supabase.functions.invoke('download-caps-zip', {
         body: { subject, grade, document_type }
       });
 

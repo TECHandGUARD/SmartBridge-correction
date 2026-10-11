@@ -24,13 +24,13 @@ const useVerificationConfig = () => {
     const loadConfig = async () => {
       try {
         const { data, error } = await supabase
-          .from('system_configurations')
-          .select('config_value')
-          .eq('config_key', 'tutor_verification_config')
+          .from('system_configuration')
+          .select('value')
+          .eq('key', 'tutor_verification_config')
           .single();
         
-        if (!error && data?.config_value) {
-          setConfig(prev => ({ ...prev, ...data.config_value }));
+        if (!error && data?.value) {
+          setConfig(prev => ({ ...prev, ...data.value }));
         }
       } catch (err) {
         console.warn('Using default verification config:', err);

@@ -91,7 +91,7 @@ export default function TutorStudentProgressChart({ user, onContactParent = unde
       
       // Load student progress with date filter
       let progressQuery = supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('*')
         .in('user_email', studentEmails);
       
@@ -155,7 +155,7 @@ export default function TutorStudentProgressChart({ user, onContactParent = unde
         prevEnd.setDate(prevEnd.getDate() - 1);
         
         const { data: prevData } = await supabase
-          .from('student_progress')
+          .from('study_progress')
           .select('*')
           .in('user_email', studentEmails)
           .gte('last_access', prevStart.toISOString().split('T')[0])

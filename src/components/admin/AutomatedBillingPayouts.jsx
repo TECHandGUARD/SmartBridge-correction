@@ -34,7 +34,7 @@ export default function AutomatedBillingPayouts() {
       
       // Load previously paid tutors from activity logs
       const { data: paidLogs } = await supabase
-        .from('activity_logs')
+        .from('activity_log')
         .select('user_email')
         .eq('event_type', 'payout_processed');
       
@@ -120,7 +120,7 @@ export default function AutomatedBillingPayouts() {
   };
 
   const markTutorPaid = async (tutor) => {
-    await supabase.from('activity_logs').insert({
+    await supabase.from('activity_log').insert({
       event_type: 'payout_processed',
       user_email: tutor.user_email,
       description: `Payout processed for ${tutor.full_name}: R${tutor.netPayout.toFixed(2)} net (${tutor.bookingCount} sessions)`,

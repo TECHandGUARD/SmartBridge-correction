@@ -18,6 +18,7 @@ alter function public.sync_user_update() set search_path = public, pg_temp;
 revoke execute on function public.sync_user_update() from public, anon, authenticated;
 alter function public.update_updated_at_column() set search_path = public, pg_temp;
 revoke execute on function public.update_updated_at_column() from public, anon, authenticated;
+revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
 
 -- A user may choose a non-privileged role once, at initial onboarding only.
 create or replace function public.protect_privileged_columns()
@@ -31,7 +32,8 @@ begin
     or new.is_active is distinct from old.is_active
     or new.id is distinct from old.id
     or new.email is distinct from old.email
-    or new.linked_student_email is distinct from old.linked_student_email then
+    or new.linked_student_email is distinct from old.linked_student_email
+    or (old.onboarding_complete and new.trial_started_at is distinct from old.trial_started_at) then
     raise exception 'Only an administrator may change account privileges or linked learners';
   end if;
   if old.onboarding_complete and not coalesce(new.onboarding_complete,false) then

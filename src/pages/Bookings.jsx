@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { bookingRequest as prepareRequest } from '@/lib/booking-request';
+import { createBooking } from '@/lib/bookings';
+import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -82,38 +84,22 @@ export default function Bookings() {
     }
   };
 
+  const bookingRequest = useRef(null);
   const selectedTutor = tutors.find(t => t.user_email === form.tutor_email);
   const computedHourlyDuration = parseFloat(form.duration_hours) || 1;
   const estimatedCost = (selectedTutor?.hourly_rate || 0) * computedHourlyDuration;
 
   const handleCreateBooking = async () => {
+    if (isSaving) return;
     if (!selectedTutor?.user_id || !form.date) {
       toast.error('Please specify target scheduling date and tutor requirements.');
       return;
     }
     try {
       setIsSaving(true);
-      const { error: insertError } = await supabase
-        .from('tutor_bookings')
-        .insert([
-          {
-            student_id: user.id,
-            tutor_id: selectedTutor.user_id,
-            tutor_profile_id: selectedTutor.id,
-            student_email: user.email,
-            tutor_email: form.tutor_email,
-            tutor_name: selectedTutor?.full_name || 'Verified SACE Instructor',
-            subject: form.subject,
-            session_date: form.date,
-            session_time: form.time,
-            duration_hours: computedHourlyDuration,
-            message: form.message.trim(),
-            amount: estimatedCost,
-            status: 'pending'
-          }
-        ]);
-
-      if (insertError) throw insertError;
+      bookingRequest.current = prepareRequest(bookingRequest.current, selectedTutor, form);
+      await createBooking(selectedTutor, form, bookingRequest.current.id);
+      bookingRequest.current = null;
 
       toast.success('Lesson reservation dispatched to instructor inbox successfully!');
       setForm({ tutor_email: '', subject: 'Mathematics', date: '', time: '14:00', duration_hours: '1', message: '' });
@@ -316,7 +302,7 @@ export default function Bookings() {
         ) : (
           <div className="space-y-3">
             {bookings.map((b) => {
-              const cleanTime = b.session_time?.slice(0, 5) || b.session_time;
+              const cleanTime = b.time?.slice(0, 5) || b.time;
               return (
                 <Card key={b.id} className="border-slate-200 hover:shadow-md transition-shadow bg-white">
                   <CardContent className="pt-4 pb-4">
@@ -333,7 +319,7 @@ export default function Bookings() {
                         </div>
                         <div className="flex flex-wrap gap-3 text-xs text-slate-500">
                           <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" />{b.subject}</span>
-                          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{b.session_date}</span>
+                          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{b.date}</span>
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{cleanTime} · {b.duration_hours}h</span>
                           {b.amount > 0 && <span className="flex items-center gap-1 text-blue-600 font-bold">R{b.amount}</span>}
                         </div>

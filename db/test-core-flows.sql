@@ -1,4 +1,4 @@
--- Run after repair-core-flows.sql in the SAME transaction, then ROLLBACK.
+-- Run after the core-flow migration in the SAME transaction, then ROLLBACK.
 -- Auth fixtures exist only inside the transaction. No auth HTTP calls/emails are made.
 insert into auth.users(id,email,raw_user_meta_data) values
  ('00000000-0000-4000-8000-000000000101','repair-student@example.invalid','{"role":"admin","full_name":"Repair Student"}'),
@@ -14,6 +14,8 @@ do $$ begin
  if exists(select 1 from public.users where id='00000000-0000-4000-8000-000000000102') then raise exception 'Cross-account read'; end if;
  begin update public.users set is_super_admin=true where id=auth.uid(); raise exception 'Privilege escalation succeeded';
  exception when raise_exception then if sqlerrm='Privilege escalation succeeded' then raise; end if; end;
+ begin update public.users set trial_started_at=now()+interval '1 day' where id=auth.uid(); raise exception 'Trial reset succeeded';
+ exception when raise_exception then if sqlerrm='Trial reset succeeded' then raise; end if; end;
  begin update public.users set onboarding_complete=false where id=auth.uid(); raise exception 'Onboarding reset succeeded';
  exception when raise_exception then if sqlerrm='Onboarding reset succeeded' then raise; end if; end;
  begin insert into public.subscriptions(user_email,plan,status) values('repair-student@example.invalid','premium','active'); raise exception 'Unverified activation succeeded';

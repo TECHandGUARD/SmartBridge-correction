@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import useParentLinks from '@/hooks/useParentLinks';
+import ParentChildLink from './ParentChildLink';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { TrendingUp, BookOpen, Star, Calendar, Trophy, Loader2, RefreshCw, Link2, Download } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import {
@@ -15,24 +16,29 @@ import { SUBJECTS } from '@/lib/subjects';
 import { toast } from 'sonner';
 
 export default function ParentProgressDashboard({ user, onLinked = undefined }) {
-  const [childEmail, setChildEmail] = useState(user?.linked_student_email || '');
-  const [linked, setLinked] = useState(user?.linked_student_email || '');
+  const { links } = useParentLinks(user);
+  const [selectedId, setSelectedId] = useState('');
+  const approved = links.filter(link => link.status === 'approved');
+  const activeLink = approved.find(link => link.student_id === selectedId) || approved[0];
+  const linked = activeLink?.student_email || '';
+  const learnerId = activeLink?.student_id;
+  const requestGeneration = useRef(0);
   const [progress, setProgress] = useState([]);
   const [quizResults, setQuizResults] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [linking, setLinking] = useState(false);
 
-  const loadChildData = useCallback(async (email) => {
-    if (!email) return;
+  const loadChildData = useCallback(async (studentId) => {
+    if (!studentId) return;
     
+    const request = ++requestGeneration.current;
     setLoading(true);
     try {
       // Load student progress
       const { data: prog, error: progError } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('*')
-        .eq('student_email', email);
+        .eq('student_id', studentId);
       
       if (progError) throw progError;
       
@@ -40,7 +46,7 @@ export default function ParentProgressDashboard({ user, onLinked = undefined }) 
       const { data: quiz, error: quizError } = await supabase
         .from('quiz_results')
         .select('*')
-        .eq('student_email', email)
+        .eq('student_id', studentId)
         .order('created_at', { ascending: false })
         .limit(20);
       
@@ -50,55 +56,32 @@ export default function ParentProgressDashboard({ user, onLinked = undefined }) 
       const { data: book, error: bookError } = await supabase
         .from('tutor_bookings')
         .select('*')
-        .eq('student_email', email)
+        .eq('student_id', studentId)
         .order('created_at', { ascending: false })
         .limit(10);
       
       if (bookError) throw bookError;
       
+      if (request !== requestGeneration.current) return;
       setProgress(prog || []);
       setQuizResults(quiz || []);
       setBookings(book || []);
     } catch (err) {
+      if (request !== requestGeneration.current) return;
+      setProgress([]); setQuizResults([]); setBookings([]);
       console.error('Error loading child data:', err);
       toast.error('Failed to load child progress data');
     } finally {
-      setLoading(false);
+      if (request === requestGeneration.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (linked) loadChildData(linked);
-  }, [linked, loadChildData]);
-
-  const saveLink = async () => {
-    if (!childEmail.trim()) {
-      toast.error('Enter your child\'s email.');
-      return;
-    }
-    
-    setLinking(true);
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({ 
-          linked_student_email: childEmail.trim(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('email', user.email);
-      
-      if (error) throw error;
-      
-      setLinked(childEmail.trim());
-      toast.success('Child account linked!');
-      if (onLinked) onLinked();
-    } catch (err) {
-      console.error('Link error:', err);
-      toast.error(`Failed to link account: ${err.message}`);
-    } finally {
-      setLinking(false);
-    }
-  };
+    ++requestGeneration.current;
+    setProgress([]); setQuizResults([]); setBookings([]);
+    if (learnerId) loadChildData(learnerId);
+    return () => { ++requestGeneration.current; };
+  }, [learnerId, loadChildData]);
 
   const chartData = progress.map(p => ({
     subject: SUBJECTS.find(s => s.name === p.subject)?.icon + ' ' + (p.subject?.substring(0, 8) || p.subject),
@@ -215,30 +198,17 @@ export default function ParentProgressDashboard({ user, onLinked = undefined }) 
   return (
     <div className="space-y-4">
       {/* Link control */}
-      {!linked ? (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-5 pb-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <Link2 className="w-5 h-5 text-primary" />
-              <p className="font-semibold">Link Your Child's Account</p>
-            </div>
-            <p className="text-sm text-muted-foreground">Enter your child's SmartBridge FET email to see their full progress.</p>
-            <div className="flex gap-2">
-              <Input type="email" placeholder="child@example.com" value={childEmail} onChange={e => setChildEmail(e.target.value)} />
-              <Button onClick={saveLink} disabled={linking} className="bg-primary gap-2 whitespace-nowrap">
-                {linking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
-                Link
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
+      <ParentChildLink user={user} />
+      {approved.length > 1 && <select aria-label="Learner report" value={learnerId} onChange={event => setSelectedId(event.target.value)}>
+        {approved.map(link => <option key={link.id} value={link.student_id}>{link.student_email}</option>)}
+      </select>}
+      {!linked ? <p className="text-sm text-muted-foreground">Reports become available after the learner approves your request.</p> : (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
             <Badge className="bg-green-100 text-green-700 gap-1"><Link2 className="w-3 h-3" /> Linked: {linked}</Badge>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => loadChildData(linked)} disabled={loading}>
+            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => loadChildData(learnerId)} disabled={loading}>
               <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Refresh
             </Button>
             <Button size="sm" className="h-7 text-xs gap-1 bg-primary" onClick={downloadPDF} disabled={loading || progress.length === 0}>

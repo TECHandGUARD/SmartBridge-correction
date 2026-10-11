@@ -107,7 +107,7 @@ export default function WeeklyGoals({ user }) {
       const [goalsQuery, quizzesQuery, progressQuery, bookingsQuery] = await Promise.all([
         supabase.from('weekly_goals').select('*').eq('student_email', user.email).eq('week_start_date', currentMondayStr),
         supabase.from('quiz_results').select('completed_at, subject').eq('student_email', user.email),
-        supabase.from('student_progress').select('last_accessed, subject').eq('user_email', user.email),
+        supabase.from('study_progress').select('last_accessed, subject').eq('user_email', user.email),
         supabase.from('tutor_bookings').select('status, session_date').eq('student_email', user.email)
       ]);
 

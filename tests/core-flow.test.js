@@ -17,3 +17,11 @@ test('hung requests time out instead of leaving an indefinite loader', async () 
   await assert.rejects(withTimeout(new Promise(() => {}),10),/timed out/);
   assert.equal(await withTimeout(Promise.resolve('ok'),10),'ok');
 });
+
+import { bookingRequest } from '../src/lib/booking-request.js';
+test('an uncertain booking retry keeps its ID, but a changed session has a new intent', () => {
+  const tutor={id:'tutor-1'},form={subject:'Math',date:'2027-01-02',time:'14:00',duration_hours:1,message:''};
+  const first=bookingRequest(null,tutor,form);
+  assert.equal(bookingRequest(first,tutor,{...form,duration_hours:'1'}).id,first.id);
+  assert.notEqual(bookingRequest(first,tutor,{...form,time:'15:00'}).id,first.id);
+});

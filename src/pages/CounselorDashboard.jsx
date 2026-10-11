@@ -238,7 +238,7 @@ export default function CounselorDashboard() {
     try {
       toast.loading(`Dispatching portfolio reminder to ${student.email}...`);
       
-      const { error } = await supabase.functions.invoke('sendCounselorReminders', {
+      const { error } = await supabase.functions.invoke('send-counselor-reminders', {
         body: {
           students: [{
             email: student.email,

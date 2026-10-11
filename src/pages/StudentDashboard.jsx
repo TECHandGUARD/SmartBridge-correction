@@ -1,3 +1,4 @@
+import ParentChildLink from '@/components/parent/ParentChildLink';
 import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
@@ -69,7 +70,7 @@ export default function StudentDashboard() {
 
       // Load tutors
       const { data: tutorsData, error: tutorsError } = await supabase
-        .from('tutor_profiles')
+        .from('tutor_directory')
         .select('*')
         .eq('is_verified', true)
         .order('rating', { ascending: false })
@@ -218,6 +219,8 @@ export default function StudentDashboard() {
             )}
           </div>
         </div>
+
+        <ParentChildLink user={user} />
 
         {/* Platform Announcements */}
         {announcements.length > 0 && (

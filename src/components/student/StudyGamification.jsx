@@ -42,7 +42,7 @@ export default function StudyGamification({ user }) {
 
       const [quizQuery, progressQuery] = await Promise.all([
         supabase.from('quiz_results').select('percentage, score').eq('student_email', user.email),
-        supabase.from('student_progress').select('study_sessions, last_access').eq('user_email', user.email)
+        supabase.from('study_progress').select('study_sessions, last_access').eq('user_email', user.email)
       ]);
 
       if (quizQuery.error) throw quizQuery.error;

@@ -30,7 +30,7 @@ export default function SystemConfigPanel() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('system_configurations')
+        .from('system_configuration')
         .select('*')
         .order('created_at', { ascending: false });
       
@@ -41,8 +41,8 @@ export default function SystemConfigPanel() {
       // If no configs exist, seed defaults
       if (configData.length === 0) {
         const { data: seededData, error: seedError } = await supabase
-          .from('system_configurations')
-          .insert(DEFAULT_CONFIGS)
+          .from('system_configuration')
+          .upsert(DEFAULT_CONFIGS.map(config => ({ ...config, value: JSON.parse(config.value) })), { onConflict: "key", ignoreDuplicates: true })
           .select();
         
         if (seedError) throw seedError;
@@ -82,7 +82,7 @@ export default function SystemConfigPanel() {
     setSaving(config.id);
     try {
       const { error } = await supabase
-        .from('system_configurations')
+        .from('system_configuration')
         .update({ value: parsed })
         .eq('id', config.id);
       
@@ -104,7 +104,7 @@ export default function SystemConfigPanel() {
     try {
       const newStatus = !config.is_active;
       const { error } = await supabase
-        .from('system_configurations')
+        .from('system_configuration')
         .update({ is_active: newStatus })
         .eq('id', config.id);
       

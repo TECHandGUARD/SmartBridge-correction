@@ -71,7 +71,7 @@ const useProfileConfig = () => {
     const loadConfig = async () => {
       try {
         const { data, error } = await supabase
-          .from('system_configurations')
+          .from('system_configuration')
           .select('value')
           .eq('key', 'tutor_profile_config')
           .single();

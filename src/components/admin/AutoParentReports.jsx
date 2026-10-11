@@ -23,7 +23,7 @@ export default function AutoParentReports() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('*')
         .order('study_sessions', { ascending: false });
       

@@ -219,7 +219,7 @@ export default function BookingRequests({ user, onBookingUpdate = undefined }) {
       ));
       
       await sendEmailNotification(booking, 'confirmed');
-      toast.success('Booking confirmed! Student notified.');
+      toast.success('Booking confirmed.');
       if (onBookingUpdate) onBookingUpdate();
     } catch (err) {
       console.error('Error accepting booking:', err);

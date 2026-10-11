@@ -26,7 +26,7 @@ export default function ProgressCharts({ user }) {
 
       // Fetch from Supabase using correct field names
       const { data, error: dbError } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('subject, study_sessions, last_access')
         .eq('user_email', user.email);
 

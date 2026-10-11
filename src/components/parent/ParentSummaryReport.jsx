@@ -25,7 +25,7 @@ export default function ParentSummaryReport() {
     try {
       // Load student progress
       const { data: prog, error: progError } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('*')
         .eq('student_email', email.trim());
       

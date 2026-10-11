@@ -277,42 +277,11 @@ export default function LessonPlanner({ user, onLessonUpdate = undefined }) {
       
       if (updateError) throw updateError;
       
-      // Update student progress
-      if (plan.student_email) {
-        const { data: existing } = await supabase
-          .from('student_progress')
-          .select('*')
-          .eq('user_email', plan.student_email)
-          .eq('subject', plan.subject)
-          .maybeSingle();
-        
-        if (existing) {
-          await supabase
-            .from('student_progress')
-            .update({ 
-              study_sessions: (existing.study_sessions || 0) + 1,
-              last_access: new Date().toISOString().split('T')[0],
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existing.id);
-        } else {
-          await supabase
-            .from('student_progress')
-            .insert({
-              user_email: plan.student_email,
-              subject: plan.subject,
-              grade: plan.grade,
-              study_sessions: 1,
-              last_access: new Date().toISOString().split('T')[0]
-            });
-        }
-      }
-      
       setPlans(prev => prev.map(p => 
         p.id === plan.id ? { ...p, status: 'completed' } : p
       ));
       
-      toast.success('Plan marked complete! Student progress updated.');
+      toast.success('Plan marked complete.');
       if (onLessonUpdate) onLessonUpdate();
     } catch (err) {
       console.error('Error completing plan:', err);

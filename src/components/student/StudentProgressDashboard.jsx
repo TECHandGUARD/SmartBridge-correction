@@ -66,7 +66,7 @@ export default function StudentProgressDashboard({ user }) {
       setError(null);
 
       const { data, error: dbError } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('subject, grade_level, study_sessions, last_access, notes')
         .eq('user_email', user.email);
 

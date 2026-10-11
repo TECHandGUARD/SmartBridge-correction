@@ -272,7 +272,7 @@ export default function Premium() {
                       ))}
                     </div>
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-                      ⏱ EFT payments are verified by Admin during business hours during business hours (Mon–Fri, 8am–5pm SAST).
+                      ⏱ EFT payments are verified by Admin during business hours (Mon–Fri, 8am–5pm SAST).
                     </div>
                   </CardContent>
                 </Card>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ const SUBJECT_OPTIONS = [
 ];
 
 export default function InteractiveFlashcards({ studentEmail }) {
+  const completionId = useRef(null);
   const [subject, setSubject] = useState('Mathematics');
   const [cards, setCards] = useState([]);
   const [index, setIndex] = useState(0);
@@ -41,7 +42,7 @@ export default function InteractiveFlashcards({ studentEmail }) {
       
       if (error) throw error;
       setCards(data || []);
-      setSessionComplete(false);
+      setSessionComplete(false); completionId.current = null;
       setIndex(0);
       setKnownIds([]);
       setReviewIds([]);
@@ -97,21 +98,12 @@ export default function InteractiveFlashcards({ studentEmail }) {
       
       if (analyticsError) console.error('Analytics error:', analyticsError);
       
-      // Also update student_progress for gamification
-      const { error: progressError } = await supabase
-        .from('student_progress')
-        .upsert({
-          user_email: studentEmail,
-          subject: subject,
-          study_sessions: 1,
-          last_access: new Date().toISOString().split('T')[0],
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_email,subject'
-        });
-      
-      if (progressError) console.error('Progress update error:', progressError);
-      
+      completionId.current ||= crypto.randomUUID();
+      const { error: progressError } = await supabase.rpc('log_study_session', {
+        chosen_subject: subject, chosen_grade: null, request_id: completionId.current,
+      });
+      if (progressError) toast.error(`Flashcards completed, but progress was not saved: ${progressError.message}`);
+
       toast.success(`Flashcard session complete! ${finalKnownCount}/${cards.length} mastered.`);
     } catch (err) {
       console.error('Failed processing score analytics sync.', err);
@@ -157,7 +149,7 @@ export default function InteractiveFlashcards({ studentEmail }) {
     setFlipped(false);
     setKnownIds([]);
     setReviewIds([]);
-    setSessionComplete(false);
+    setSessionComplete(false); completionId.current = null;
     toast.info('Flashcard session reset. Starting fresh!');
   };
 

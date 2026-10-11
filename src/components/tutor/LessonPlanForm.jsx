@@ -249,7 +249,7 @@ export default function LessonPlanForm({ user, plan, students, upcomingBookings 
 
       // Link to StudentProgress if exists
       const { data: progRecords } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('id')
         .eq('user_email', form.student_email)
         .eq('subject', form.subject)

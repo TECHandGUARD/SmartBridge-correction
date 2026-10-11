@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { SUBJECTS } from '@/lib/subjects';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { TrendingUp, Plus, BookOpen, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GradeProgressTracker({ user }) {
+  const logRequest = useRef(null);
   const [progress, setProgress] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -21,9 +22,9 @@ export default function GradeProgressTracker({ user }) {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('*')
-        .eq('user_email', user.email);  // Using user_email
+        .eq('student_id', user.id);
       
       if (error) throw error;
       setProgress(data || []);
@@ -40,6 +41,7 @@ export default function GradeProgressTracker({ user }) {
   }, [loadProgress]);
 
   const save = async () => {
+    if (saving) return;
     if (!form.subject) {
       toast.error('Please select a subject');
       return;
@@ -47,34 +49,14 @@ export default function GradeProgressTracker({ user }) {
     
     setSaving(true);
     try {
-      const existing = progress.find(p => p.subject === form.subject && p.grade === form.grade);
-      const today = new Date().toISOString().split('T')[0];
-      
-      if (existing) {
-        const { error } = await supabase
-          .from('student_progress')
-          .update({
-            study_sessions: (existing.study_sessions || 0) + 1,
-            last_access: today,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existing.id);
-        
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('student_progress')
-          .insert({
-            user_email: user.email,  // Using user_email
-            subject: form.subject,
-            grade: form.grade,
-            study_sessions: 1,
-            last_access: today
-          });
-        
-        if (error) throw error;
-      }
-      
+      const fingerprint = JSON.stringify([form.subject, form.grade]);
+      if (logRequest.current?.fingerprint !== fingerprint) logRequest.current = { fingerprint, id: crypto.randomUUID() };
+      const { error } = await supabase.rpc('log_study_session', {
+        chosen_subject: form.subject, chosen_grade: form.grade, request_id: logRequest.current.id,
+      });
+      if (error) throw error;
+      logRequest.current = null;
+
       await loadProgress();
       setShowForm(false);
       setForm({ subject: '', grade: 'Grade 10' });
