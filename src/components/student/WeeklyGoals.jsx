@@ -1,3 +1,4 @@
+import { getWeekStartDateString, computeProgressValue } from '@/lib/weekly-goals';
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { supabase } from '@/lib/supabaseClient';
@@ -29,50 +30,6 @@ const GOAL_TYPES = [
 
 const SUBJECT_OPTIONS = ['Mathematics', 'Physical Sciences', 'Life Sciences', 'Accounting', 'Economics', 'History', 'Geography', 'Business Studies'];
 
-// FIXED: Removed TypeScript return type annotation
-function getWeekStartDateString() {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const targetMonday = new Date(d.setDate(d.getDate() + diff));
-  return targetMonday.toISOString().split('T')[0];
-}
-
-function computeProgressValue(goal, quizzes, progress, bookings) {
-  const startTime = new Date(goal.week_start_date + 'T00:00:00Z').getTime();
-  const endTime = startTime + (7 * 24 * 60 * 60 * 1000);
-
-  switch (goal.goal_type) {
-    case 'quizzes_completed': {
-      return quizzes.filter(q => {
-        const time = new Date(q.completed_at).getTime();
-        return time >= startTime && time < endTime && (!goal.subject || q.subject === goal.subject);
-      }).length;
-    }
-    case 'study_sessions': {
-      return progress.filter(p => {
-        const time = new Date(p.last_accessed).getTime();
-        return time >= startTime && time < endTime && (!goal.subject || p.subject === goal.subject);
-      }).length;
-    }
-    case 'subjects_studied': {
-      const activeWeekSubjects = progress.filter(p => {
-        const time = new Date(p.last_accessed).getTime();
-        return time >= startTime && time < endTime;
-      }).map(p => p.subject);
-      return new Set(activeWeekSubjects).size;
-    }
-    case 'tutoring_sessions': {
-      return bookings.filter(b => {
-        const time = new Date(b.session_date + 'T00:00:00Z').getTime();
-        return time >= startTime && time < endTime && b.status === 'completed';
-      }).length;
-    }
-    default:
-      return 0;
-  }
-}
-
 export default function WeeklyGoals({ user }) {
   const [goals, setGoals] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
@@ -88,8 +45,8 @@ export default function WeeklyGoals({ user }) {
   const [form, setForm] = useState({
     goal_type: 'quizzes_completed',
     subject: 'All',
-    target_value: '3',
-    custom_label: ''
+    target: '3',
+    label: ''
   });
 
   const currentMondayStr = getWeekStartDateString();
@@ -105,10 +62,10 @@ export default function WeeklyGoals({ user }) {
       setError(null);
 
       const [goalsQuery, quizzesQuery, progressQuery, bookingsQuery] = await Promise.all([
-        supabase.from('weekly_goals').select('*').eq('student_email', user.email).eq('week_start_date', currentMondayStr),
+        supabase.from('weekly_goals').select('*').eq('student_email', user.email).eq('week_start', currentMondayStr),
         supabase.from('quiz_results').select('completed_at, subject').eq('student_email', user.email),
-        supabase.from('study_progress').select('last_accessed, subject').eq('user_email', user.email),
-        supabase.from('tutor_bookings').select('status, session_date').eq('student_email', user.email)
+        supabase.from('study_sessions').select('date, subject').eq('student_id', user.id),
+        supabase.from('tutor_bookings').select('status, date, subject').eq('student_email', user.email)
       ]);
 
       if (goalsQuery.error) throw goalsQuery.error;
@@ -131,7 +88,7 @@ export default function WeeklyGoals({ user }) {
 
   const handleAddGoalSubmit = async (e) => {
     e.preventDefault();
-    const targetNum = parseInt(form.target_value) || 0;
+    const targetNum = parseInt(form.target) || 0;
     if (targetNum < 1) {
       toast.error('Target must be at least 1');
       return;
@@ -140,7 +97,7 @@ export default function WeeklyGoals({ user }) {
     try {
       setIsSubmitting(true);
       const goalTypeMeta = GOAL_TYPES.find(t => t.value === form.goal_type);
-      const computedLabel = form.custom_label.trim() || 
+      const computedLabel = form.label.trim() ||
         `${goalTypeMeta?.label}${form.subject !== 'All' ? ` (${form.subject})` : ''}`;
 
       const { data, error: insertError } = await supabase
@@ -148,11 +105,12 @@ export default function WeeklyGoals({ user }) {
         .insert([
           {
             student_email: user.email,
+            student_id: user.id,
             goal_type: form.goal_type,
             subject: form.subject === 'All' ? '' : form.subject,
-            target_value: targetNum,
-            week_start_date: currentMondayStr,
-            custom_label: computedLabel
+            target: targetNum,
+            week_start: currentMondayStr,
+            label: computedLabel
           }
         ])
         .select()
@@ -162,7 +120,7 @@ export default function WeeklyGoals({ user }) {
 
       if (data) {
         setGoals(prev => [...prev, data]);
-        setForm({ goal_type: 'quizzes_completed', subject: 'All', target_value: '3', custom_label: '' });
+        setForm({ goal_type: 'quizzes_completed', subject: 'All', target: '3', label: '' });
         setShowForm(false);
         toast.success('Goal added successfully!');
       }
@@ -279,8 +237,8 @@ export default function WeeklyGoals({ user }) {
                   <Input
                     type="number"
                     min={1}
-                    value={form.target_value}
-                    onChange={e => setForm({ ...form, target_value: e.target.value })}
+                    value={form.target}
+                    onChange={e => setForm({ ...form, target: e.target.value })}
                     className="text-xs h-8"
                     placeholder="e.g., 5"
                   />
@@ -289,8 +247,8 @@ export default function WeeklyGoals({ user }) {
                 <div className="space-y-1">
                   <Label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">Custom Label</Label>
                   <Input
-                    value={form.custom_label}
-                    onChange={e => setForm({ ...form, custom_label: e.target.value })}
+                    value={form.label}
+                    onChange={e => setForm({ ...form, label: e.target.value })}
                     className="text-xs h-8"
                     placeholder="Optional custom name"
                   />
@@ -314,7 +272,7 @@ export default function WeeklyGoals({ user }) {
               {goals.map(goal => {
                 const goalType = GOAL_TYPES.find(t => t.value === goal.goal_type);
                 const current = computeProgressValue(goal, quizzes, progress, bookings);
-                const pct = Math.min(100, Math.round((current / goal.target_value) * 100));
+                const pct = Math.min(100, Math.round((current / goal.target) * 100));
                 const done = pct >= 100;
                 
                 return (
@@ -323,13 +281,13 @@ export default function WeeklyGoals({ user }) {
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-lg">{goalType?.icon || '🎯'}</span>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold truncate">{goal.custom_label}</p>
+                          <p className="text-sm font-semibold truncate">{goal.label}</p>
                           {goal.subject && <p className="text-xs text-muted-foreground">{goal.subject}</p>}
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <span className={`text-xs font-bold ${done ? 'text-green-600' : 'text-foreground'}`}>
-                          {current}/{goal.target_value}
+                          {current}/{goal.target}
                           <span className="font-normal text-muted-foreground ml-1">{goalType?.unit}</span>
                         </span>
                         {done && <span className="text-green-600 text-sm">✅</span>}
@@ -340,7 +298,7 @@ export default function WeeklyGoals({ user }) {
                     </div>
                     <Progress value={pct} className={`h-2 ${done ? '[&>div]:bg-green-500' : '[&>div]:bg-primary'}`} />
                     <p className="text-xs text-muted-foreground mt-1">
-                      {done ? '🎉 Goal complete!' : `${pct}% — ${goal.target_value - current} more to go`}
+                      {done ? '🎉 Goal complete!' : `${pct}% — ${goal.target - current} more to go`}
                     </p>
                   </div>
                 );

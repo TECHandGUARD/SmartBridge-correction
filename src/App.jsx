@@ -126,7 +126,7 @@ const AuthenticatedApp = () => {
         <Route 
           path="/onboarding" 
           element={
-            <ProtectedRoute allowedRoles={['user', 'student', 'parent', 'sace_tutor', 'student_tutor', 'tutor_pending', 'admin']}>
+            <ProtectedRoute allowedRoles={['user', 'student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'tutor_pending', 'admin']}>
               <OnboardingRoute />
             </ProtectedRoute>
           } 
@@ -184,7 +184,7 @@ const AuthenticatedApp = () => {
             path="/student-dashboard" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <StudentDashboard />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -208,7 +208,7 @@ const AuthenticatedApp = () => {
             path="/tutor-dashboard" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <TutorDashboard />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -232,7 +232,7 @@ const AuthenticatedApp = () => {
             path="/bookings" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <Bookings />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -243,7 +243,7 @@ const AuthenticatedApp = () => {
             path="/search" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <ResourceSearch />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -254,7 +254,7 @@ const AuthenticatedApp = () => {
             path="/quiz" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <PracticeQuiz />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -265,7 +265,7 @@ const AuthenticatedApp = () => {
             path="/study-rooms" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <GroupStudyRooms />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -276,7 +276,7 @@ const AuthenticatedApp = () => {
             path="/videos" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <VideoLessons />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -287,7 +287,7 @@ const AuthenticatedApp = () => {
             path="/resources-library" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <ResourcesLibrary />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -298,7 +298,7 @@ const AuthenticatedApp = () => {
             path="/forum" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <CommunityForum />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -309,7 +309,7 @@ const AuthenticatedApp = () => {
             path="/bursaries" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <BursaryFinder />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>
@@ -320,7 +320,7 @@ const AuthenticatedApp = () => {
             path="/opportunities" 
             element={
               <RequireAuthAndOnboarding>
-                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'admin']}>
+                <ProtectedRoute allowedRoles={['student', 'parent', 'sace_tutor', 'student_tutor', 'tutor', 'admin']}>
                   <StudentOpportunities />
                 </ProtectedRoute>
               </RequireAuthAndOnboarding>

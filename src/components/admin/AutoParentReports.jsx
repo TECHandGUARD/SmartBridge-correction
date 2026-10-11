@@ -62,7 +62,7 @@ export default function AutoParentReports() {
     const { data: reminders } = await supabase
       .from('study_reminders')
       .select('*')
-      .eq('user_email', studentEmail)
+      .eq('student_email', studentEmail)
       .eq('is_active', true);
 
     const reminderLines = (reminders || []).map(r => `• ${r.subject} — ${r.day_of_week} at ${r.reminder_time || r.time}`).join('\n');

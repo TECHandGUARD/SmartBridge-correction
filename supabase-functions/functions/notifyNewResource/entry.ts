@@ -43,7 +43,7 @@ serve(async (req) => {
 
     // Fetch all users to notify
     const { data: users, error: usersError } = await supabaseClient
-      .from('user_profiles')
+      .from('users')
       .select('email, full_name');
 
     if (usersError) {

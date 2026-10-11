@@ -15,7 +15,7 @@ export default function TechGuardBanner() {
         .insert({
           banner_name: "tech_guard",
           user_email: userEmail || null,
-          clicked_at: new Date().toISOString()
+          click_timestamp: new Date().toISOString()
         });
       
       console.log('Banner click tracked');

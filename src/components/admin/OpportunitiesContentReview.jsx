@@ -54,7 +54,7 @@ function ManualDeadlineForm({ onSaved, onCancel }) {
           description: form.description || null,
           link: form.link || null,
           is_approved: true,
-          status: 'approved'
+          is_active: true
         }]);
       
       if (error) throw error;
@@ -166,10 +166,10 @@ function ManualGuideForm({ onSaved, onCancel }) {
           title: form.title,
           description: form.description || null,
           category: form.category,
-          external_link: form.external_link || null,
-          source: form.source || null,
-          is_approved: true,
-          status: 'approved'
+          file_url: form.external_link || null,
+          metadata: { source: form.source || null },
+          is_pending: false,
+          is_active: true
         }]);
       
       if (error) throw error;
@@ -276,7 +276,7 @@ function ManualProspectusForm({ onSaved, onCancel }) {
           file_url: form.file_url || null,
           application_link: form.application_link || null,
           is_approved: true,
-          status: 'approved'
+          is_active: true
         }]);
       
       if (error) throw error;

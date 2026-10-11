@@ -114,7 +114,7 @@ export default function AdminDashboard() {
       const { data: bannerData } = await supabase
         .from('banner_clicks')
         .select('*')
-        .order('clicked_at', { ascending: false })
+        .order('click_timestamp', { ascending: false })
         .limit(1000);
       setBannerClicks(bannerData || []);
 

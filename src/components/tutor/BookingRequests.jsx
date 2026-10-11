@@ -88,9 +88,9 @@ export default function BookingRequests({ user, onBookingUpdate = undefined }) {
       
       // Load tutor profile for session links
       const { data: profileData, error: profileError } = await supabase
-        .from('tutor_profiles')
+        .from('users')
         .select('zoom_link, teams_link')
-        .eq('user_email', user.email)
+        .eq('id', user.id)
         .maybeSingle();
       
       if (profileError) throw profileError;

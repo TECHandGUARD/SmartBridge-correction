@@ -22,7 +22,7 @@ export default function usePremiumAccess(user) {
     const verify = async () => {
       try {
         const { data, error: queryError } = await withTimeout(supabase.from('subscriptions')
-          .select('id,status,end_date').eq('user_id', user.id).eq('status', 'active')
+          .select('id,status,end_date').eq('user_id', user.id).eq('plan', 'premium').eq('status', 'active')
           .gte('end_date', new Date().toISOString().slice(0, 10)).limit(1));
         if (queryError) throw queryError;
         const trialEnd = new Date(user.trial_started_at || '').getTime() + 3 * 86400000;

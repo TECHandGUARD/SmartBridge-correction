@@ -45,7 +45,7 @@ serve(async (req) => {
 
     const [configsResult, resourcesResult] = await Promise.all([
       supabaseClient
-        .from("system_configurations")
+        .from("system_configuration")
         .select("*")
         .eq("is_active", true),
       supabaseClient

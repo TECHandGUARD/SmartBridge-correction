@@ -48,9 +48,9 @@ export default function AIStudyAssistant({ user }) {
     try {
       // Load from unified_resources table (includes both admin and tutor resources)
       const { data, error } = await supabase
-        .from('unified_resources')
+        .from('resources')
         .select('*')
-        .eq('is_active', true)
+        .eq('is_approved', true)
         .order('created_at', { ascending: false })
         .limit(20);
       

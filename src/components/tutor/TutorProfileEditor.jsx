@@ -115,19 +115,19 @@ export default function TutorProfileEditor({ profile, user, onProfileUpdate }) {
     grades: profile?.grades || [],
     qualifications: profile?.qualifications || [],
     specializations: profile?.specializations || [],
-    session_price_per_hour: profile?.session_price_per_hour || '',
+    session_price_per_hour: profile?.session_price_per_hour ?? profile?.hourly_rate ?? '',
     group_session_price: profile?.group_session_price || '',
     teaching_languages: profile?.teaching_languages || [],
   });
 
   const [socialLinks, setSocialLinks] = useState({
-    linkedin: profile?.linkedin || '',
-    twitter: profile?.twitter || '',
-    website: profile?.website || '',
+    linkedin: profile?.metadata?.social_links?.linkedin || '',
+    twitter: profile?.metadata?.social_links?.twitter || '',
+    website: profile?.metadata?.social_links?.website || '',
   });
 
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
-  const [videoUrl, setVideoUrl] = useState(profile?.video_url || '');
+  const [videoUrl, setVideoUrl] = useState(profile?.metadata?.video_url || '');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -331,7 +331,7 @@ export default function TutorProfileEditor({ profile, user, onProfileUpdate }) {
       }, 200);
       
       const { error: uploadError } = await supabase.storage
-        .from('tutor-avatars')
+        .from('avatars')
         .upload(fileName, file);
       
       clearInterval(interval);
@@ -339,7 +339,7 @@ export default function TutorProfileEditor({ profile, user, onProfileUpdate }) {
       if (uploadError) throw uploadError;
       
       const { data: { publicUrl } } = supabase.storage
-        .from('tutor-avatars')
+        .from('avatars')
         .getPublicUrl(fileName);
       
       setAvatarUrl(publicUrl);
@@ -379,13 +379,13 @@ export default function TutorProfileEditor({ profile, user, onProfileUpdate }) {
       const fileName = `tutor-videos/${user.email}_${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
-        .from('tutor-videos')
+        .from('videos')
         .upload(fileName, file);
       
       if (uploadError) throw uploadError;
       
       const { data: { publicUrl } } = supabase.storage
-        .from('tutor-videos')
+        .from('videos')
         .getPublicUrl(fileName);
       
       setVideoUrl(publicUrl);
@@ -441,13 +441,11 @@ export default function TutorProfileEditor({ profile, user, onProfileUpdate }) {
         qualifications: form.qualifications,
         specializations: form.specializations,
         session_price_per_hour: hourlyPrice,
+        hourly_rate: hourlyPrice,
         group_session_price: groupPrice,
         teaching_languages: form.teaching_languages,
         avatar_url: avatarUrl,
-        video_url: videoUrl,
-        linkedin: socialLinks.linkedin || null,
-        twitter: socialLinks.twitter || null,
-        website: socialLinks.website || null,
+        metadata: { ...profile.metadata, video_url: videoUrl, social_links: socialLinks },
         updated_at: new Date().toISOString(),
       };
       

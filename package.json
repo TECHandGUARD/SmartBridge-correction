@@ -11,7 +11,8 @@
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
     "test": "node --test tests/core-flow.test.js",
-    "test:e2e": "node tests/browser-core-flows.cjs"
+    "test:e2e": "node tests/browser-core-flows.cjs",
+    "test:e2e:audit": "node tests/browser-core-flows.cjs --all-pages"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

@@ -38,13 +38,13 @@ export default function LiveTutorChat({ user, tutorEmail, tutorName, onClose }) 
       
       // Mark unread messages as read
       const unreadMessages = (data || []).filter(m => 
-        m.sender_email !== user.email && !m.read
+        m.sender_email !== user.email && !m.is_read
       );
       
       for (const msg of unreadMessages) {
         await supabase
           .from('chat_messages')
-          .update({ read: true, read_at: new Date().toISOString() })
+          .update({ is_read: true, read_at: new Date().toISOString() })
           .eq('id', msg.id);
       }
     } catch (err) {
@@ -84,7 +84,7 @@ export default function LiveTutorChat({ user, tutorEmail, tutorName, onClose }) 
           if (newMessage.sender_email !== user.email) {
             supabase
               .from('chat_messages')
-              .update({ read: true, read_at: new Date().toISOString() })
+              .update({ is_read: true, read_at: new Date().toISOString() })
               .eq('id', newMessage.id)
               .then(() => {});
           }
@@ -155,10 +155,11 @@ export default function LiveTutorChat({ user, tutorEmail, tutorName, onClose }) 
         .insert({
           room_id: chatRoomId,
           sender_email: user.email,
+          sender_id: user.id,
           sender_name: user.full_name || user.email,
           recipient_email: tutorEmail,
-          content: input.trim(),
-          read: false,
+          message: input.trim(),
+          is_read: false,
           created_at: new Date().toISOString()
         })
         .select()
@@ -288,7 +289,7 @@ export default function LiveTutorChat({ user, tutorEmail, tutorName, onClose }) 
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[75%] rounded-xl px-3 py-2 text-xs ${isMe ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-foreground'}`}>
-                      <p className="break-words">{msg.content}</p>
+                      <p className="break-words">{msg.message}</p>
                       <div className="flex items-center justify-end gap-1 mt-0.5">
                         <p className={`text-[10px] ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                           {new Date(msg.created_at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}

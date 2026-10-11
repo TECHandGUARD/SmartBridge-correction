@@ -62,7 +62,7 @@ serve(async (req) => {
     // Fetch guardrail and relevant resources in parallel
     const [configsResult, resourcesResult] = await Promise.all([
       supabaseClient
-        .from('system_configurations')
+        .from('system_configuration')
         .select('*')
         .eq('is_active', true),
       supabaseClient

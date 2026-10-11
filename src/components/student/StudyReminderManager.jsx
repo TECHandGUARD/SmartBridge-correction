@@ -28,7 +28,7 @@ export default function StudyReminderManager({ user }) {
   const [form, setForm] = useState({ 
     subject: 'Mathematics', 
     day_of_week: 'Monday', 
-    reminder_time: '16:00' 
+    time: '16:00'
   });
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function StudyReminderManager({ user }) {
 
       const { data, error: dbError } = await supabase
         .from('study_reminders')
-        .select('id, subject, day_of_week, reminder_time, is_active')
+        .select('id, subject, day_of_week, time, is_active')
         .eq('student_email', user.email)
         .order('created_at', { ascending: true });
 
@@ -71,9 +71,10 @@ export default function StudyReminderManager({ user }) {
         .insert([
           {
             student_email: user.email,
+            student_id: user.id,
             subject: form.subject,
             day_of_week: form.day_of_week,
-            reminder_time: form.reminder_time,
+            time: form.time,
             is_active: true
           }
         ])
@@ -84,10 +85,10 @@ export default function StudyReminderManager({ user }) {
 
       if (data) {
         setReminders(prev => [...prev, data]);
-        toast.success(`Reminder set for ${form.subject} on ${form.day_of_week}s at ${form.reminder_time}!`);
+        toast.success(`Reminder set for ${form.subject} on ${form.day_of_week}s at ${form.time}!`);
       }
       setShowForm(false);
-      setForm({ subject: 'Mathematics', day_of_week: 'Monday', reminder_time: '16:00' });
+      setForm({ subject: 'Mathematics', day_of_week: 'Monday', time: '16:00' });
     } catch (err) {
       console.error('Error adding reminder:', err);
       setError(err.message || 'Failed to add reminder');
@@ -211,8 +212,8 @@ export default function StudyReminderManager({ user }) {
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1">Time</label>
                 <Input 
                   type="time" 
-                  value={form.reminder_time} 
-                  onChange={e => setForm(f => ({ ...f, reminder_time: e.target.value }))} 
+                  value={form.time}
+                  onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
                   className="text-xs h-8"
                 />
               </div>
@@ -233,7 +234,7 @@ export default function StudyReminderManager({ user }) {
           <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-0.5">
             {reminders.map(r => {
               const matchedIcon = SUBJECT_OPTIONS.find(s => s.name === r.subject)?.icon || '📚';
-              const cleanTimeLabel = r.reminder_time.slice(0, 5);
+              const cleanTimeLabel = r.time.slice(0, 5);
               
               return (
                 <div key={r.id} className="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-border bg-card hover:bg-muted/30 transition-all shadow-sm">

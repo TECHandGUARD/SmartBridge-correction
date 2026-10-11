@@ -8,7 +8,7 @@ const corsHeaders = {
 
 /**
  * Chat Configuration Function
- * Fetches chat configuration settings from system_configurations table.
+ * Fetches chat configuration settings from system_configuration table.
  * Used by AI chat components to load suggestions, welcome messages, and prompts.
  */
 serve(async (req) => {
@@ -51,7 +51,7 @@ serve(async (req) => {
 
     // Fetch all active system configurations
     const { data: configs, error: configsError } = await supabaseClient
-      .from('system_configurations')
+      .from('system_configuration')
       .select('*')
       .eq('is_active', true);
 

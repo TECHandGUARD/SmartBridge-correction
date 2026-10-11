@@ -25,3 +25,18 @@ test('an uncertain booking retry keeps its ID, but a changed session has a new i
   assert.equal(bookingRequest(first,tutor,{...form,duration_hours:'1'}).id,first.id);
   assert.notEqual(bookingRequest(first,tutor,{...form,time:'15:00'}).id,first.id);
 });
+
+import { getWeekStartDateString, computeProgressValue } from '../src/lib/weekly-goals.js';
+test('weekly goals count individual sessions, distinct subjects and completed subject bookings within the week', () => {
+  const goal={week_start:'2026-10-05',goal_type:'study_sessions',subject:'Mathematics'};
+  const sessions=[{date:'2026-10-05',subject:'Mathematics'},{date:'2026-10-05',subject:'Mathematics'},{date:'2026-10-11',subject:'History'},{date:'2026-10-12',subject:'Mathematics'}];
+  assert.equal(computeProgressValue(goal,[],sessions,[]),2);
+  assert.equal(computeProgressValue({...goal,goal_type:'subjects_studied',subject:''},[],sessions,[]),2);
+  const bookings=[{date:'2026-10-06',subject:'Mathematics',status:'completed'},{date:'2026-10-06',subject:'History',status:'completed'},{date:'2026-10-07',subject:'Mathematics',status:'confirmed'}];
+  assert.equal(computeProgressValue({...goal,goal_type:'tutoring_sessions'},[],[],bookings),1);
+  assert.equal(computeProgressValue({...goal,goal_type:'quizzes_completed'},[{completed_at:'2026-10-11T12:00:00',subject:'Mathematics'},{completed_at:'2026-10-12T00:00:00',subject:'Mathematics'}],[],[]),1);
+});
+test('week start uses the local calendar even near midnight and on Sunday', () => {
+  assert.equal(getWeekStartDateString(new Date(2026,9,11,0,10)),'2026-10-05');
+  assert.equal(getWeekStartDateString(new Date(2026,9,12,0,10)),'2026-10-12');
+});

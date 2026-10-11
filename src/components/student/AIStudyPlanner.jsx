@@ -48,7 +48,7 @@ export default function AIStudyPlanner({ user }) {
     try {
       // Load exams for this student
       const { data: examsData, error: examsError } = await supabase
-        .from('exam_schedules')
+        .from('exam_schedule')
         .select('*')
         .eq('student_email', user.email)
         .order('exam_date', { ascending: true });
@@ -84,7 +84,7 @@ export default function AIStudyPlanner({ user }) {
     
     try {
       const { data, error } = await supabase
-        .from('exam_schedules')
+        .from('exam_schedule')
         .insert({
           student_email: user.email,
           subject: newExam.subject,
@@ -111,7 +111,7 @@ export default function AIStudyPlanner({ user }) {
   const removeExam = async (id) => {
     try {
       const { error } = await supabase
-        .from('exam_schedules')
+        .from('exam_schedule')
         .delete()
         .eq('id', id);
       

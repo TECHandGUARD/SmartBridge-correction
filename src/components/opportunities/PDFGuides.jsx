@@ -40,7 +40,8 @@ export default function PDFGuides({ isAdmin }) {
       const { data: dbGuides, error } = await supabase
         .from('opportunity_guides')
         .select('*')
-        .eq('is_approved', true)
+        .eq('is_active', true)
+        .eq('is_pending', false)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -107,8 +108,8 @@ export default function PDFGuides({ isAdmin }) {
           description: form.description || null,
           category: form.category,
           file_url: publicUrl,
-          is_approved: true,
-          status: 'approved'
+          is_pending: false,
+          is_active: true
         });
       
       if (insertError) throw insertError;

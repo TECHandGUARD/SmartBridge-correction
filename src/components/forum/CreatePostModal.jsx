@@ -35,7 +35,7 @@ export default function CreatePostModal({ user, onClose, onCreated }) {
           university_tag: universityTag || null,
           author_email: user.email,
           author_name: user.full_name || user.email,
-          author_role: user.role || 'student',
+          author_id: user.id,
           likes: 0,
           liked_by: [],
           comment_count: 0,

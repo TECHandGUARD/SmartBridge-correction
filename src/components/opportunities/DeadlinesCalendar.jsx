@@ -89,7 +89,7 @@ export default function DeadlinesCalendar({ isAdmin }) {
           description: form.description || null,
           link: form.link || null,
           is_approved: true,
-          status: 'approved'
+          is_active: true
         });
       
       if (error) throw error;

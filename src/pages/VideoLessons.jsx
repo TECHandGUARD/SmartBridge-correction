@@ -75,13 +75,13 @@ export default function VideoLessons() {
     const fileName = `video-lessons/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
     
     const { error: uploadError } = await supabase.storage
-      .from('video-lessons')
+      .from('videos')
       .upload(fileName, file);
 
     if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
-      .from('video-lessons')
+      .from('videos')
       .getPublicUrl(fileName);
 
     return publicUrl;

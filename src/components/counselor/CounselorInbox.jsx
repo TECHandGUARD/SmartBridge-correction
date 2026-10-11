@@ -98,7 +98,7 @@ export default function CounselorInbox({ counselorEmail, counselorName, studentE
 
   const unreadCounts = {};
   for (const [email, msgs] of Object.entries(threadsByStudent)) {
-    unreadCounts[email] = msgs.filter(m => m.sender_email !== counselorEmail && !m.read).length;
+    unreadCounts[email] = msgs.filter(m => m.sender_email !== counselorEmail && !m.is_read).length;
   }
 
   useEffect(() => {
@@ -119,7 +119,7 @@ export default function CounselorInbox({ counselorEmail, counselorName, studentE
           sender_email: counselorEmail,
           sender_name: counselorName || counselorEmail,
           recipient_email: activeStudent,
-          content: input.trim(),
+          message: input.trim(),
         }]);
       
       if (error) throw error;
@@ -195,7 +195,7 @@ export default function CounselorInbox({ counselorEmail, counselorName, studentE
                         </div>
                         {last && (
                           <p className="text-[10px] text-muted-foreground truncate">
-                            {last.sender_email === counselorEmail ? 'You: ' : ''}{last.content}
+                            {last.sender_email === counselorEmail ? 'You: ' : ''}{last.message}
                           </p>
                         )}
                       </div>
@@ -238,7 +238,7 @@ export default function CounselorInbox({ counselorEmail, counselorName, studentE
                         <div className={`max-w-[78%] rounded-xl px-3 py-2 text-xs ${
                           isMe ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'
                         }`}>
-                          <p className="leading-relaxed">{msg.content}</p>
+                          <p className="leading-relaxed">{msg.message}</p>
                           <p className={`text-[10px] mt-0.5 ${isMe ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
                             {new Date(msg.created_at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
                           </p>

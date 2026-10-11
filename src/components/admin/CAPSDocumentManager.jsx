@@ -102,8 +102,8 @@ export default function CAPSDocumentManager() {
           subject: form.subject,
           grade: form.grade,
           year: form.year ? Number(form.year) : null,
-          official_number: form.official_doc_number,
-          is_public: true,
+          official_doc_number: form.official_doc_number,
+          is_active: true,
           download_count: 0,
         });
       

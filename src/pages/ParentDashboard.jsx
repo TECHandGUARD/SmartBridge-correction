@@ -33,7 +33,7 @@ export default function ParentDashboard() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('tutor_profiles')
+        .from('tutor_directory')
         .select('*')
         .eq('is_verified', true)
         .order('rating', { ascending: false })

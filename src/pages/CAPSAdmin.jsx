@@ -101,13 +101,13 @@ export default function CAPSAdmin() {
     const fileName = `${safeSubject}/${safeGrade}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
     
     const { error: uploadError } = await supabase.storage
-      .from('caps-documents')
+      .from('caps_documents')
       .upload(fileName, file);
 
     if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
-      .from('caps-documents')
+      .from('caps_documents')
       .getPublicUrl(fileName);
 
     return publicUrl;
@@ -242,7 +242,7 @@ export default function CAPSAdmin() {
       // 1. Delete old file from storage
       const oldStoragePath = getStoragePathFromUrl(doc.file_url);
       if (oldStoragePath) {
-        await supabase.storage.from('caps-documents').remove([oldStoragePath]);
+        await supabase.storage.from('caps_documents').remove([oldStoragePath]);
       }
 
       // 2. Upload new file
@@ -274,7 +274,7 @@ export default function CAPSAdmin() {
       // 1. Delete file from storage
       const storagePath = getStoragePathFromUrl(doc.file_url);
       if (storagePath) {
-        await supabase.storage.from('caps-documents').remove([storagePath]);
+        await supabase.storage.from('caps_documents').remove([storagePath]);
       }
 
       // 2. Delete from database
@@ -310,7 +310,7 @@ export default function CAPSAdmin() {
         .filter(Boolean);
       
       if (storagePaths.length) {
-        await supabase.storage.from('caps-documents').remove(storagePaths);
+        await supabase.storage.from('caps_documents').remove(storagePaths);
       }
 
       // 2. Delete all from database

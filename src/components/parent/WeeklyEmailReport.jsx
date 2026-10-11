@@ -37,7 +37,7 @@ export default function WeeklyEmailReport({ parentUser }) {
       const { data: reminders, error: remError } = await supabase
         .from('study_reminders')
         .select('*')
-        .eq('user_email', childEmail.trim())
+        .eq('student_email', childEmail.trim())
         .eq('is_active', true);
       
       if (remError) throw remError;

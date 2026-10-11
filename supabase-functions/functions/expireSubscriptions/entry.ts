@@ -49,12 +49,12 @@ serve(async (req) => {
 
     // Check if user is admin (from user_profiles table)
     const { data: profile, error: profileError } = await supabaseClient
-      .from('user_profiles')
-      .select('role')
+      .from('users')
+      .select('is_super_admin')
       .eq('email', user.email)
       .single();
 
-    if (profileError || !profile || profile.role !== 'admin') {
+    if (profileError || !profile || profile.is_super_admin !== true) {
       return new Response(
         JSON.stringify({ error: 'Forbidden - Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -94,7 +94,7 @@ serve(async (req) => {
 
     // Log this activity
     await supabaseClient
-      .from('activity_logs')
+      .from('activity_log')
       .insert({
         event_type: 'subscription_expiry_cron',
         user_email: user.email,
