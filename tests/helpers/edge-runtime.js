@@ -10,7 +10,7 @@ export function edgeRuntime(name, {client, env={}, fetch, Date: Clock=Date}={}) 
     if(cache.has(file))return cache.get(file);
     const exports={};cache.set(file,exports);
     const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-    const context={exports,module:{exports},Request,Response,Headers,URL,Date:Clock,TextEncoder,Uint8Array,AbortSignal,crypto:webcrypto,Deno:{env:{get:key=>values[key]}},console:{log(){},warn(){},error(){}},setTimeout:(fn)=>{fn();return 1;},fetch:fetch || (()=>{throw new Error('Unexpected network request');}),require(specifier){
+    const context={exports,module:{exports},Request,Response,Headers,URL,Date:Clock,TextEncoder,TextDecoder,Uint8Array,AbortSignal,atob,btoa,crypto:webcrypto,Deno:{env:{get:key=>values[key]}},console:{log(){},warn(){},error(){}},setTimeout:(fn)=>{fn();return 1;},fetch:fetch || (()=>{throw new Error('Unexpected network request');}),require(specifier){
       if(specifier.includes('/http/server.ts'))return {serve:fn=>{handler=fn;}};
       if(specifier.includes('@supabase/supabase-js'))return {createClient:()=>client};
       if(specifier.includes('jszip'))return {default:class {}};
@@ -26,9 +26,9 @@ export function edgeRuntime(name, {client, env={}, fetch, Date: Clock=Date}={}) 
 }
 export function fakeClient(profile={id:'user-id',role:'student',is_active:true,is_super_admin:false}, resolve=()=>({data:[],error:null})) {
   const calls=[];
-  const client={calls,auth:{getUser:async()=>({data:{user:{id:'user-id',user_metadata:{role:'admin'}}},error:null})},from(table){
+  const client={calls,rpc:async(name,args)=>{const call={table:name,operation:'rpc',data:args};calls.push(call);return ['consume_api_quota','email_recipients_allowed','record_email_acceptance'].includes(name)?{data:true,error:null}:resolve(call);},auth:{getUser:async()=>({data:{user:{id:'user-id',email:'user@example.test',user_metadata:{role:'admin'}}},error:null})},from(table){
     const call={table,operation:'select',data:null,filters:[],single:false};
-    const query={select(){return query;},eq(...args){call.filters.push(args);return query;},not(){return query;},order(){return query;},gte(){return query;},lte(){return query;},limit(){return query;},in(){return query;},maybeSingle(){call.single=true;return query;},single(){call.single=true;return query;},insert(data){call.operation='insert';call.data=data;return query;},update(data){call.operation='update';call.data=data;return query;},upsert(data){call.operation='upsert';call.data=data;return query;},then(ok,no){calls.push(call);return Promise.resolve(table==='users'?{data:profile,error:null}:resolve(call)).then(ok,no);}};
+    const query={select(){return query;},eq(...args){call.filters.push(args);return query;},not(){return query;},order(){return query;},gte(){return query;},lte(){return query;},limit(){return query;},in(){return query;},maybeSingle(){call.single=true;return query;},single(){call.single=true;return query;},insert(data){call.operation='insert';call.data=data;return query;},update(data){call.operation='update';call.data=data;return query;},upsert(data){call.operation='upsert';call.data=data;return query;},then(ok,no){calls.push(call);return Promise.resolve(table==='users'?{data:typeof profile==='function'?profile(call):profile,error:null}:resolve(call)).then(ok,no);}};
     return query;
   }};return client;
 }

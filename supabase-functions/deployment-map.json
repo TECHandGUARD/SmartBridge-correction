@@ -16,6 +16,40 @@
       "dependencies": [
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": []
+    },
+    {
+      "slug": "create-checkout",
+      "entrypoint": "supabase-functions/functions/createCheckout/entry.ts",
+      "access": "user",
+      "verify_jwt": true,
+      "provider": "Yoco",
+      "deployed_version": null,
+      "deployed_verify_jwt": null,
+      "deployed_bundle_sha256": null,
+      "retrieved_entrypoint_sha256": null,
+      "reconciled_entrypoint_sha256": "619b497aefc5f0a6bbafe2d560d81bcdbfd1f5d1b1c3587fe958f1776727945d",
+      "dependencies": [
+        "supabase-functions/shared/api.ts",
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/payments.ts",
+        "supabase-functions/shared/webhook.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b",
+        "supabase-functions/shared/payments.ts": "5ec0b869484d0d62125dc3673db8ec29ef8b77dc3a53b4571934d62b0d1c5b61",
+        "supabase-functions/shared/webhook.ts": "dc9a114bf283e8f0140e743763d0bb9b2d6171d2a8776d2319af7ed25ba602c1"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -28,10 +62,19 @@
       "deployed_version": 9,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "a943f31b72effc4969b32e5ca7e7aea18f77771901b092ef421d331beeede0db",
-      "reconciled_entrypoint_sha256": "c5e2c8a5c9192c7f0b51c4923d0234471a22a1f9976c573860d2bbe52cd53adb",
+      "reconciled_entrypoint_sha256": "d54ad3be91379493f5266b29673f87feb8aaaa6e3fe8db133a77e195d38f23c7",
       "dependencies": [
+        "supabase-functions/shared/api.ts",
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -44,10 +87,19 @@
       "deployed_version": 8,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "4d232b4891effb99a4dd24b8fdc01d01baecc30166ea4f3a9dff63767bfcaca7",
-      "reconciled_entrypoint_sha256": "2240a4d031cc55c68f8fe46babef5e875ec3f6b20836f2e40f9226aa3b15eced",
+      "reconciled_entrypoint_sha256": "90275fb5abe1124e6706986328c079f3e8800971064ca5cd6e92f48be0d5d107",
       "dependencies": [
+        "supabase-functions/shared/api.ts",
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -60,10 +112,19 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "aca075eed0cdde16381cc73d8ddaca6d0b64cd30abff46c27fa68b4b31394ccb",
-      "reconciled_entrypoint_sha256": "4d54d234da1196861428a1b44441c02063aa98600d328ca7b65b59862a1c3e5f",
+      "reconciled_entrypoint_sha256": "3cc579c6b27b985076f598c33595110258124bb1a7b69712c2ff8080cf5c1602",
       "dependencies": [
+        "supabase-functions/shared/api.ts",
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -80,7 +141,12 @@
       "dependencies": [
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
-      ]
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": []
     },
     {
       "slug": "expire-subscriptions",
@@ -96,6 +162,38 @@
       "dependencies": [
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": []
+    },
+    {
+      "slug": "generate-lesson-plan",
+      "entrypoint": "supabase-functions/functions/generateLessonPlan/entry.ts",
+      "access": "verified-tutor",
+      "verify_jwt": true,
+      "provider": "Gemini",
+      "deployed_version": null,
+      "deployed_verify_jwt": null,
+      "deployed_bundle_sha256": null,
+      "retrieved_entrypoint_sha256": null,
+      "reconciled_entrypoint_sha256": "f425276d22b337626ea6a6c83151d1400e65d85735bdbeec13260cb11cccc239",
+      "dependencies": [
+        "supabase-functions/shared/ai.ts",
+        "supabase-functions/shared/api.ts",
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/ai.ts": "90543698efeed3aa1d4d9d8b7aed91d88835bc73878b0901cec65444525e197f",
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -108,10 +206,19 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "18ce245f3e6ef2f0b3acde44865858d8da65105f07b8d7dc3cec688c456efbcd",
-      "reconciled_entrypoint_sha256": "598837bc35a510e75b014aa32ff0a38d8b3dc4961da7513e0484893a1bb5b9a9",
+      "reconciled_entrypoint_sha256": "499078637f588e48621c2ed1ce591dafa8f538e81e353ed38f7a8bbe287fd73c",
       "dependencies": [
+        "supabase-functions/shared/api.ts",
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -128,7 +235,12 @@
       "dependencies": [
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
-      ]
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": []
     },
     {
       "slug": "get-chatbot-configuration",
@@ -144,6 +256,38 @@
       "dependencies": [
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": []
+    },
+    {
+      "slug": "invoke-llm",
+      "entrypoint": "supabase-functions/functions/invokeLLM/entry.ts",
+      "access": "user",
+      "verify_jwt": true,
+      "provider": "Gemini",
+      "deployed_version": null,
+      "deployed_verify_jwt": null,
+      "deployed_bundle_sha256": null,
+      "retrieved_entrypoint_sha256": null,
+      "reconciled_entrypoint_sha256": "03715a47293e6d6042349f0fcd5541504ee3b89e1756136f0a5cef1898d871d0",
+      "dependencies": [
+        "supabase-functions/shared/ai.ts",
+        "supabase-functions/shared/api.ts",
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/ai.ts": "90543698efeed3aa1d4d9d8b7aed91d88835bc73878b0901cec65444525e197f",
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -156,11 +300,19 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "f4c610f21484d1f008bff81b6cd8bb0d78e4fa21d7bc7e1fdd3b7f41667d6118",
-      "reconciled_entrypoint_sha256": "fa17fe13aaf6792e7136522c5fb186d55ed72e1bcefd4745a3f803d370b128a4",
+      "reconciled_entrypoint_sha256": "9d786feddbfbbbf015ce9be61660cc1aa64ad5a7a497689f4ca1c28dbbd7fcca",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -173,11 +325,19 @@
       "deployed_version": 8,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "1d925741bed6604a51b61604051419b31e84257a2f9b536891aa49709313327f",
-      "reconciled_entrypoint_sha256": "489580b377a9a7173d79aa5c5ec725de6dea73a542a00be6d391dc24ecd7b559",
+      "reconciled_entrypoint_sha256": "d5ba08fc3b2a666a03cdec04dfe401597ac7ac8022b44d1188601727d9eadde9",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -190,11 +350,19 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "d980fab3ea47978a6bd036e1d0cc30579e151531d2e71308cfa97fed53a398a0",
-      "reconciled_entrypoint_sha256": "6d2d23c2cf7e28210d7f7c442eb9cab453d1d5aa8b233677c8f7384c84f7205b",
+      "reconciled_entrypoint_sha256": "8a49248bcb0fc46d4ef4cfdfeffd3c631a9282b4cb535bc8ae9fbc5b686e6a4c",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -207,11 +375,19 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "125a63a6dc283bfcf0eb90f466e02bea90bf006c4dfd287c1e4068471efb7b4d",
-      "reconciled_entrypoint_sha256": "8faa6972e9f704fbf506bd99401170aba300cacb6bdd100c8d4758351c2f645f",
+      "reconciled_entrypoint_sha256": "ae4b4bc1d6669847a59ba6215a8bf07dd63d223469d25722d5452be76ef01222",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -224,11 +400,19 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "215a1aee28bcef77d567b80181e4d43e7ce63cef665ecd6ac97972abb40434ea",
-      "reconciled_entrypoint_sha256": "754abdb8a9f50fb5eed0a5aa7e251da4b3be25e12bc60af7f406de0a9eef4b2e",
+      "reconciled_entrypoint_sha256": "1070a6004fa0bd708f07a82f6b6ee742583abcf08ff34aab55b966cc305d0c9a",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -241,11 +425,46 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "f6ba9b5fafaab047600dd12c415276c1d2459f9ece1e67beeeb6149572c0965b",
-      "reconciled_entrypoint_sha256": "4d34c40080be22480a57bfb72f9d414972dd3e3679acf7ba9a3682ace97822a2",
+      "reconciled_entrypoint_sha256": "4049f7d74fdc8b017321c1ae064eeed71452980f57bc68f51f643576406c80b1",
       "dependencies": [
         "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
+      ]
+    },
+    {
+      "slug": "resend-webhook",
+      "entrypoint": "supabase-functions/functions/resendWebhook/entry.ts",
+      "access": "signed-webhook",
+      "verify_jwt": false,
+      "provider": "Resend",
+      "deployed_version": null,
+      "deployed_verify_jwt": null,
+      "deployed_bundle_sha256": null,
+      "retrieved_entrypoint_sha256": null,
+      "reconciled_entrypoint_sha256": "acaf2050f5322ccc2b325f751f3f30415ad8657fcfe71b3cc698358d5a30f89d",
+      "dependencies": [
+        "supabase-functions/shared/api.ts",
+        "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/webhook.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b",
+        "supabase-functions/shared/webhook.ts": "dc9a114bf283e8f0140e743763d0bb9b2d6171d2a8776d2319af7ed25ba602c1"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -258,11 +477,19 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "dba1ae84a0f3ecfc636e57d9a8f5925d7bb475232c6319c46ef55eebd40afdf6",
-      "reconciled_entrypoint_sha256": "d70d850fca9b7ae6cf21aca2fa1afaad6bf8125fecc242f80f6abe114015a136",
+      "reconciled_entrypoint_sha256": "caf13a78c562eb7d4b567fdc16c221982f169a85033484f1c41e17183ef40182",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -275,11 +502,46 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "012b3fa628de70162b30b30bc59cee5f3932a505e8b8f8143789f5cbf809b74b",
-      "reconciled_entrypoint_sha256": "598c697062b3312adcbbec9c427fc69b7b1091ccfcdc5e8d8fda737340791b74",
+      "reconciled_entrypoint_sha256": "966c73e5da73dd73712aec12429485e44fc98dcf530641566bb9a01d4fcb5bdd",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
+      ]
+    },
+    {
+      "slug": "send-email",
+      "entrypoint": "supabase-functions/functions/sendEmail/entry.ts",
+      "access": "scoped-user",
+      "verify_jwt": true,
+      "provider": "Resend",
+      "deployed_version": null,
+      "deployed_verify_jwt": null,
+      "deployed_bundle_sha256": null,
+      "retrieved_entrypoint_sha256": null,
+      "reconciled_entrypoint_sha256": "b3e80f477ee93aa06712bbadfd13e6805b184892117229203ad7dbde4547f6ba",
+      "dependencies": [
+        "supabase-functions/shared/api.ts",
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -292,11 +554,19 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "58cb117d60fad7054524590d44abdcc4f81d477b410dd418bf3ff77dd3b4fea2",
-      "reconciled_entrypoint_sha256": "2e23f8599ef4cbbb9f300dd675d85ecbca6e7de26640b59e8912c017bc344b09",
+      "reconciled_entrypoint_sha256": "0e05c63636f425c46c231626e6cb27f33e9f3a148203d5406b5f3ebeefaf4287",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -309,11 +579,19 @@
       "deployed_version": 8,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "49be5703f88b022f5fd73caddd8b2a9865e42003a5bd610e09c08f7ffe83aeec",
-      "reconciled_entrypoint_sha256": "b98be84820e1ed57658f3b9d2c2f473b3a4a4a862cba26c79666564e5d3ec8a7",
+      "reconciled_entrypoint_sha256": "ce78f548383372cc2e4fc592a7ae19581e578039298afa7c757f3610019b90ed",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -326,11 +604,19 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "12187864906449a155ba226ae246409c46cd2ddf13eb991b1f93e1102d0e380d",
-      "reconciled_entrypoint_sha256": "dae4d71fe1cdf3e99397079dd9c674c5d5af0ff67d952aac7a186cb5fd5be9f9",
+      "reconciled_entrypoint_sha256": "f5d4097366ca3428385b6976dca720e5b7c5c86fdd8e8aa8e866ef9d14570eb7",
       "dependencies": [
         "supabase-functions/shared/config.ts",
-        "supabase-functions/shared/http.ts",
-        "supabase-functions/shared/email.ts"
+        "supabase-functions/shared/email.ts",
+        "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/email.ts": "ef93ab2c0f51cd006b0df4d28d76f2a9f1ab350aa156abd660e03b8100734723",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     },
     {
@@ -343,11 +629,50 @@
       "deployed_version": 7,
       "deployed_verify_jwt": true,
       "deployed_bundle_sha256": "cc65f34bec12902f298e64db59abd0cae256da105448330ffce907ccc74d99f2",
-      "reconciled_entrypoint_sha256": "4cf15034e76641050261fedcf06ab4ae0a0009ed9cf827a3de6f9b172f09a1e4",
+      "reconciled_entrypoint_sha256": "3d2e741c3f52649c336fb26c36a5419f328c6c45b6cd59bcf94a751b2be9f442",
       "dependencies": [
+        "supabase-functions/shared/api.ts",
         "supabase-functions/shared/config.ts",
         "supabase-functions/shared/http.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
+      ]
+    },
+    {
+      "slug": "yoco-webhook",
+      "entrypoint": "supabase-functions/functions/yocoWebhook/entry.ts",
+      "access": "signed-webhook",
+      "verify_jwt": false,
+      "provider": "Yoco",
+      "deployed_version": null,
+      "deployed_verify_jwt": null,
+      "deployed_bundle_sha256": null,
+      "retrieved_entrypoint_sha256": null,
+      "reconciled_entrypoint_sha256": "bf90aa54d96e94dcd916f61803ed63421f4219969015d28a87fbb1518230d0c2",
+      "dependencies": [
+        "supabase-functions/shared/api.ts",
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/payments.ts",
+        "supabase-functions/shared/webhook.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b",
+        "supabase-functions/shared/payments.ts": "5ec0b869484d0d62125dc3673db8ec29ef8b77dc3a53b4571934d62b0d1c5b61",
+        "supabase-functions/shared/webhook.ts": "dc9a114bf283e8f0140e743763d0bb9b2d6171d2a8776d2319af7ed25ba602c1"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql"
       ]
     }
-  ]
+  ],
+  "updated_date": "2026-10-13"
 }

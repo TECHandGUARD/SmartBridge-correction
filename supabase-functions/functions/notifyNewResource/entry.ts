@@ -113,7 +113,7 @@ The SmartBridge FET Team`;
             html: bodyHtml,
             text: bodyText,
           }),
-        });
+        }, supabase);
 
         if (resendResponse.ok) {
           sent++;

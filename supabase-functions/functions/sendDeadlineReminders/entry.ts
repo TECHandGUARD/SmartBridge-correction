@@ -188,7 +188,7 @@ Tech & GUARD Pty Ltd`;
             html: bodyHtml,
             text: bodyText,
           }),
-        });
+        }, supabase);
 
         if (resendResponse.ok) {
           const emailResult = await resendResponse.json();

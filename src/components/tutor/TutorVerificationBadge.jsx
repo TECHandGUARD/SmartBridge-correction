@@ -172,22 +172,7 @@ export default function TutorVerificationBadge({ user, profile, onProfileUpdate 
       
       // Send confirmation email via Edge Function
       const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: user.email,
-          subject: '📋 Tutor Verification Request Received',
-          body: `
-Hi ${user.full_name || 'there'},
-
-We've received your SACE verification request (${trimmedSace}).
-
-An admin will review it within ${config?.verificationHours || 48} hours.
-
-You'll receive an email once verified.
-
-— SmartBridge FET
-          `,
-          from_name: 'SmartBridge FET'
-        }
+        body: {kind: 'verification-status'}
       });
       
       if (emailError) console.error('Email error:', emailError);

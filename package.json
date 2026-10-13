@@ -15,7 +15,9 @@
     "test:e2e:audit": "node tests/browser-core-flows.cjs --all-pages",
     "check:env": "node scripts/check-env.js",
     "test:e2e:config": "node tests/browser-config.cjs",
-    "check:edge": "node scripts/check-edge.js"
+    "check:edge": "node scripts/check-edge.js",
+    "check:api": "node scripts/check-api-contracts.js",
+    "prepare:edge": "node scripts/prepare-edge-deployment.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

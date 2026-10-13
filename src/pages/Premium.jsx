@@ -1,6 +1,6 @@
 import { appConfig } from '@/lib/config';
 import { useAuth } from '@/lib/AuthContext';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +70,33 @@ export default function Premium() {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [checkingOut, setCheckingOut] = useState(false);
+  const paymentIntent = useRef(null);
+
+  const beginCheckout = async (plan) => {
+    if(!user?.id) { toast.error('Please sign in first.'); return; }
+    setCheckingOut(true);
+    const storageKey = `smartbridge-checkout:${appConfig.supabaseUrl}:${user.id}:${plan.id}`;
+    if(!paymentIntent.current) {
+      try { const saved=sessionStorage.getItem(storageKey); if(saved && /^[0-9a-f-]{36}$/i.test(saved)) paymentIntent.current={product:plan.id,userId:user.id,id:saved}; } catch { /* In-memory retry remains available. */ }
+    }
+    if(paymentIntent.current?.product !== plan.id || paymentIntent.current?.userId !== user.id) {
+      paymentIntent.current = {product: plan.id, userId: user.id, id: crypto.randomUUID()};
+      try { sessionStorage.setItem(storageKey,paymentIntent.current.id); } catch { /* In-memory retry remains available. */ }
+    }
+    try {
+      const {data,error} = await supabase.functions.invoke('create-checkout', {
+        body: {product: plan.id, request_id: paymentIntent.current.id}
+      });
+      if(error) throw error;
+      if(data?.status === 'paid') { paymentIntent.current=null; try { sessionStorage.removeItem(storageKey); } catch { /* No stored intent. */ } toast.info('Payment already received. Refresh your account status.'); await loadSubscription(); return; }
+      if(data?.amount_cents !== Math.round(plan.price * 100)) throw new Error('The plan price has changed. Contact support before paying.');
+      const redirect = new URL(data.redirect_url);
+      if(redirect.protocol !== 'https:' || !['c.yoco.com','pay.yoco.com'].includes(redirect.hostname) || redirect.username || redirect.password) throw new Error('Invalid payment redirect.');
+      window.location.assign(redirect.href);
+    } catch(error) { toast.error(error.message || 'Checkout unavailable. Please retry.'); }
+    finally { setCheckingOut(false); }
+  };
 
   useEffect(() => {
     // Pre-select plan based on role
@@ -223,8 +250,8 @@ export default function Premium() {
                       <CreditCard className="w-5 h-5 text-primary" />
                       <p className="font-playfair text-lg font-bold">Pay via Yoco</p>
                     </div>
-                    <p className="text-xs text-muted-foreground">Click below to pay R{plan.price} via the secure Yoco payment portal. Use your account email as the reference. An administrator will confirm payment before activating access.</p>
-                    {YOCO_LINKS[plan.id] ? <a
+                    <p className="text-xs text-muted-foreground">{appConfig.paymentsApiEnabled ? `Pay R${plan.price} for one month of access. This is a one-off payment and does not renew automatically. Access updates after payment verification.` : `Click below to pay R${plan.price} via Yoco. Use your account email as the reference. An administrator will confirm payment before activating access.`}</p>
+                    {appConfig.paymentsApiEnabled ? <Button className="w-full" disabled={!user || checkingOut} onClick={() => beginCheckout(plan)}>{checkingOut ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CreditCard className="w-4 h-4 mr-2" />}Pay R{plan.price} securely</Button> : YOCO_LINKS[plan.id] ? <a
                       href={YOCO_LINKS[plan.id]}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -233,7 +260,7 @@ export default function Premium() {
                       <ExternalLink className="w-4 h-4" /> Pay R{plan.price} on Yoco Portal
                     </a> : <p role="status" className="text-sm text-muted-foreground">Online payment is currently unavailable. Please contact support.</p>}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 leading-relaxed">
-                      💡 Payment is processed by <strong>Tech &amp; GUARD</strong> on behalf of SmartBridge FET. Please enter your <strong>email address as the reference</strong> on the Yoco page. Once paid, your account will be manually verified by our Admin during business hours.
+                      {appConfig.paymentsApiEnabled ? 'Payment returning you to this page does not confirm activation. Refresh your account after verification; contact support if it remains pending.' : <>Payment is processed by <strong>Tech &amp; GUARD</strong> on behalf of SmartBridge FET. Use your account email as the reference. An administrator will verify it during business hours.</>}
                     </div>
                   </CardContent>
                 </Card>

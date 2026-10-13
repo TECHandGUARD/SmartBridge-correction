@@ -98,7 +98,7 @@ We apologise for any inconvenience and hope to welcome you to SmartBridge FET so
         html: bodyHtml,
         text: bodyText,
       }),
-    });
+    }, supabase);
 
     if (!resendResponse.ok) {
       const errorText = await resendResponse.text();

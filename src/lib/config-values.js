@@ -46,7 +46,9 @@ export function readPublicConfig(env = {}, currentOrigin = '') {
     errors.push('VITE_SUPPORT_EMAIL must be a valid email address.');
     supportEmail = 'aneleq@techandguard.co.za';
   }
+  if(value('VITE_PAYMENTS_API_ENABLED') && !['true','false'].includes(value('VITE_PAYMENTS_API_ENABLED'))) errors.push('VITE_PAYMENTS_API_ENABLED must be true or false.');
   const config = {
+    paymentsApiEnabled: value('VITE_PAYMENTS_API_ENABLED') === 'true',
     supabaseUrl, supabaseKey: publicKey ? supabaseKey : '',
     appBaseUrl: url('VITE_APP_BASE_URL', currentOrigin, '', true),
     company: {

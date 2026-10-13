@@ -1,3 +1,4 @@
+import {consumeQuota,readJson} from '../../shared/api.ts';
 import { serverConnection, geminiSettings } from "../../shared/config.ts";
 import { withHttp, authorize } from "../../shared/http.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -8,7 +9,8 @@ serve(withHttp(async (req) => {
     const connection = serverConnection();
     const supabase = createClient(connection.url, connection.key, {auth:{persistSession:false, autoRefreshToken:false}});
     const user = await authorize(req, supabase, 'user');
-    const { subject, grade, topic, question_count = 5 } = await req.json();
+    await consumeQuota(supabase,user.id,'ai');
+    const { subject, grade, topic, question_count = 5 } = await readJson(req);
 
     if (!subject || !grade || !topic) {
       return new Response(

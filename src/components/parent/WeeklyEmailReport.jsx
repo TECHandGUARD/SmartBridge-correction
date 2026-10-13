@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { SUBJECTS } from '@/lib/subjects';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,62 +24,8 @@ export default function WeeklyEmailReport({ parentUser }) {
     setSending(true);
 
     try {
-      // Load student progress from Supabase
-      const { data: progress, error: progError } = await supabase
-        .from('study_progress')
-        .select('*')
-        .eq('user_email', childEmail.trim());
-      
-      if (progError) throw progError;
-
-      // Load study reminders from Supabase
-      const { data: reminders, error: remError } = await supabase
-        .from('study_reminders')
-        .select('*')
-        .eq('student_email', childEmail.trim())
-        .eq('is_active', true);
-      
-      if (remError) throw remError;
-
-      const totalSessions = (progress || []).reduce((s, p) => s + (p.study_sessions || 0), 0);
-      
-      const subjectLines = (progress || [])
-        .sort((a, b) => (b.study_sessions || 0) - (a.study_sessions || 0))
-        .map(p => {
-          const sub = SUBJECTS.find(s => s.name === p.subject);
-          return `• ${sub?.icon || '📚'} ${p.subject} (${p.grade || 'N/A'}): ${p.study_sessions || 0} sessions${p.last_access ? `, last studied ${p.last_access}` : ''}`;
-        }).join('\n');
-
-      const reminderLines = (reminders || []).map(r => `• ${r.subject} — ${r.day_of_week} at ${r.time}`).join('\n');
-
-      const body = `Hi,
-
-Here is your child's SmartBridge FET weekly progress summary for ${new Date().toLocaleDateString('en-ZA', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}.
-
-📊 OVERALL SUMMARY
-• Subjects active: ${progress?.length || 0}
-• Total study sessions logged: ${totalSessions}
-• Active reminders set: ${reminders?.length || 0}
-
-📚 SUBJECT ACTIVITY
-${subjectLines || 'No subjects tracked yet.'}
-
-🔔 ACTIVE STUDY REMINDERS
-${reminderLines || 'No reminders set.'}
-
-Keep encouraging your child to stay consistent — small daily sessions make a big difference!
-
-Warm regards,
-SmartBridge FET Team`;
-
-      // Call Supabase Edge Function to send email
       const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: parentUser.email,
-          subject: `SmartBridge Weekly Update — ${childEmail.trim()}`,
-          body: body,
-          from_name: 'SmartBridge FET',
-        }
+        body: {kind: 'parent-report', student_email: childEmail.trim()}
       });
 
       if (emailError) throw emailError;

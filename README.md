@@ -71,3 +71,5 @@ See [environment setup](docs/environment-configuration.md) for public settings, 
 See [the technical repair report](docs/technical-repair.md) for setup checks, database migration deployment order, browser tests, and remaining launch blockers.
 
 Backend source reconciliation and staging rollout: [docs/backend-reconciliation.md](docs/backend-reconciliation.md).
+
+API contracts, payment/email callbacks and activation requirements: [docs/api-integrations.md](docs/api-integrations.md).

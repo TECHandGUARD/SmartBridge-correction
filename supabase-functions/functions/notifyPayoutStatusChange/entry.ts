@@ -118,7 +118,7 @@ SmartBridge FET Team
         html: bodyHtml,
         text: bodyText,
       }),
-    });
+    }, supabase);
 
     if (!resendResponse.ok) {
       const errorText = await resendResponse.text();

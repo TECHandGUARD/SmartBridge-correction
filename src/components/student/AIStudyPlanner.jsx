@@ -156,37 +156,7 @@ Align study blocks with the current academic term if term context is provided ab
 Include short breaks. Limit to 3-4 study blocks per day (each 45-60 min). Allow at least 1 rest day or light day.
 
 Respond with a structured JSON study plan.`,
-          response_json_schema: {
-            type: 'object',
-            properties: {
-              weekly_plan: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    day: { type: 'string' },
-                    date: { type: 'string' },
-                    total_hours: { type: 'number' },
-                    sessions: {
-                      type: 'array',
-                      items: {
-                        type: 'object',
-                        properties: {
-                          time: { type: 'string' },
-                          subject: { type: 'string' },
-                          duration_min: { type: 'number' },
-                          focus: { type: 'string' },
-                          priority: { type: 'string', enum: ['High', 'Medium', 'Low'] }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              tips: { type: 'array', items: { type: 'string' } },
-              summary: { type: 'string' }
-            }
-          }
+          task: 'study-plan'
         }
       });
       

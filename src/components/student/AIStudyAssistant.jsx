@@ -99,7 +99,7 @@ Reference CAPS topics and exam tips when relevant.${subjectNote}${gradeNote}${co
       const { data, error } = await supabase.functions.invoke('invoke-llm', {
         body: {
           prompt: `${systemContext}\n\nStudent question: ${userText}`,
-          model: 'claude-3-sonnet-20241022',
+          task: 'study-assistant',
           user_email: user?.email,
           subject: subject || null,
           grade: grade || null

@@ -141,7 +141,7 @@ serve(withHttp(async (req) => {
         html: bodyHtml,
         text: bodyText,
       }),
-    });
+    }, supabase);
 
     if (!resendResponse.ok) {
       const errorText = await resendResponse.text();

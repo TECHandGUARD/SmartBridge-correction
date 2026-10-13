@@ -86,7 +86,7 @@ serve(withHttp(async (req) => {
         html: emailHtml,
         text: `Hi there,\n\nGreat news! Your tutoring session has been confirmed.\n\n📚 Subject: ${data.subject}\n👨‍🏫 Tutor: ${data.tutor_name || "Your tutor"}\n📅 Date: ${data.date}\n⏰ Time: ${data.time}\n⏱ Duration: ${data.duration_hours || 1} hour(s)\n${data.session_link ? `\n🔗 Join link: ${data.session_link}\n` : ""}\n${data.message ? `\nNote from tutor: "${data.message}"\n` : ""}\nLog in to manage your bookings:\n${APP_URL}/bookings\n\nGood luck with your studies!\nThe SmartBridge FET Team`,
       }),
-    });
+    }, supabase);
 
     if (!resendResponse.ok) {
       const errorText = await resendResponse.text();

@@ -297,30 +297,7 @@ export default function LessonPlanner({ user, onLessonUpdate = undefined }) {
     
     try {
       const { error } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: plan.student_email,
-          subject: `📚 Lesson Plan: ${plan.session_title}`,
-          body: `
-Hi ${plan.student_name || 'Student'},
-
-Here's the lesson plan for our session on ${plan.session_date ? format(parseISO(plan.session_date), 'dd MMM yyyy') : 'our upcoming session'}:
-
-📖 Topic: ${plan.session_title}
-🎯 Objectives:
-${plan.objectives?.map(o => `• ${o}`).join('\n')}
-
-📚 Resources to review:
-${plan.resources_used?.map(r => `• ${r}`).join('\n')}
-
-✏️ Homework:
-${plan.homework_assigned || 'No homework assigned'}
-
-See you in the session!
-
-${user.full_name}
-`,
-          from_name: user.full_name
-        }
+        body: {kind: 'lesson-plan', plan_id: plan.id}
       });
       
       if (error) throw error;

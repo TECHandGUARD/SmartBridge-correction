@@ -5,8 +5,8 @@ import {edgeRuntime,fakeClient} from './helpers/edge-runtime.js';
 const names=fs.readdirSync('supabase-functions/functions');
 const request=(body={},headers={Authorization:'Bearer test-user'})=>new Request('https://example.test/function',{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(body)});
 
-test('all 21 function handlers handle preflight and reject missing authentication before querying or sending', async()=>{
- for(const name of names){
+test('all user/job function handlers handle preflight and reject missing authentication before querying or sending', async()=>{
+ for(const name of names.filter(name=>!['yocoWebhook','resendWebhook'].includes(name))){
   const client=fakeClient();const runtime=edgeRuntime(name,{client});
   const preflight=await runtime.handle(new Request('https://example.test/function',{method:'OPTIONS'}));
   assert.equal(preflight.status,200,name);assert.ok(preflight.headers.get('Access-Control-Allow-Headers').includes('x-job-secret'));

@@ -38,4 +38,8 @@ Read-only inspection found 47 public noninternal triggers, consisting of timesta
 4. Configure booking/resource/payout webhooks and reminder/expiry scheduling with `x-job-secret`. Verify transitions, South African reminder timing and failures using test accounts. Do not point staging schedules at production.
 5. Verify provider delivery and failure reporting, then review rollout. Provider idempotency has a limited retention window; persistent event/outbox deduplication is still needed for later webhook replays. Bounce/suppression handling, reminder preferences and high-volume sending remain unfinished.
 
-The absent `invoke-llm`, `generate-lesson-plan` and generic `send-email` functions remain absent. This reconciliation does not certify all premium-download authorization, account ownership rules, payment processing or every data-dependent feature. See [functional audit](functional-audit.md) and [environment configuration](environment-configuration.md).
+At this original checkpoint, `invoke-llm`, `generate-lesson-plan` and generic `send-email` were absent; the follow-up below implements staged replacements. This reconciliation does not certify all premium-download authorization, account ownership rules, payment processing or every data-dependent feature. See [functional audit](functional-audit.md) and [environment configuration](environment-configuration.md).
+
+## API follow-up — 13 October
+
+Six additional endpoints, shared quota controls, signed payment/email callbacks and delivery suppression are now staged. The updated deployment map contains 27 functions and transitive shared dependencies. Apply the fourth migration before revised AI/email functions. The 21-function reconciliation checks above describe the earlier checkpoint. Current validation and rollout limits are documented in [API integrations](api-integrations.md).

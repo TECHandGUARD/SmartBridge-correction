@@ -1,3 +1,4 @@
+import {consumeQuota,readJson} from '../../shared/api.ts';
 import { serverConnection, geminiSettings } from "../../shared/config.ts";
 import { withHttp, authorize } from "../../shared/http.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -8,6 +9,7 @@ serve(withHttp(async (req) => {
     const connection = serverConnection();
     const supabase = createClient(connection.url, connection.key, {auth:{persistSession:false, autoRefreshToken:false}});
     const user = await authorize(req, supabase, 'admin');
+    await consumeQuota(supabase,user.id,'ai');
     const currentYear = new Date().getFullYear();
     const targetYear = currentYear + 1;
 
@@ -35,6 +37,7 @@ serve(withHttp(async (req) => {
     const geminiResponse = await fetch(
       geminiUrl,
       {
+        signal: AbortSignal.timeout(25000),
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
         body: JSON.stringify({

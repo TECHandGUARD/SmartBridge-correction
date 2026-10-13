@@ -63,33 +63,33 @@ staged migration required,src/pages/StudentDashboard.jsx,73,missing-table,tutor_
 staged migration required,src/pages/Tutors.jsx,62,missing-table,tutor_directory
 unresolved,ChatService.ts,286,missing-storage-bucket,chat-attachments
 unresolved,ChatService.ts,292,missing-storage-bucket,chat-attachments
-unresolved,src/components/admin/AdminAlertBell.jsx,33,missing-function,send-email
-unresolved,src/components/admin/AutoParentReports.jsx,70,missing-function,send-email
-unresolved,src/components/admin/AutomatedBillingPayouts.jsx,83,missing-function,send-email
+implemented; deployment required,src/components/admin/AdminAlertBell.jsx,33,missing-function,send-email
+implemented; deployment required,src/components/admin/AutoParentReports.jsx,70,missing-function,send-email
+implemented; deployment required,src/components/admin/AutomatedBillingPayouts.jsx,83,missing-function,send-email
 unresolved,src/components/admin/KnowledgeBaseManager.jsx,158,missing-storage-bucket,educational_resources
 unresolved,src/components/admin/KnowledgeBaseManager.jsx,164,missing-storage-bucket,educational_resources
-unresolved,src/components/admin/StudentLeaderboard.jsx,63,missing-function,send-email
-unresolved,src/components/admin/TutorPayoutDashboard.jsx,54,missing-function,send-email
-unresolved,src/components/admin/TutorVerificationHub.jsx,33,missing-function,send-email
+implemented; deployment required,src/components/admin/StudentLeaderboard.jsx,63,missing-function,send-email
+implemented; deployment required,src/components/admin/TutorPayoutDashboard.jsx,54,missing-function,send-email
+implemented; deployment required,src/components/admin/TutorVerificationHub.jsx,33,missing-function,send-email
 unresolved,src/components/opportunities/ApplicationDocumentVault.jsx,60,missing-storage-bucket,application_documents
 unresolved,src/components/opportunities/ApplicationDocumentVault.jsx,67,missing-storage-bucket,application_documents
 unresolved,src/components/opportunities/ApplicationDocumentVault.jsx,123,missing-storage-bucket,application_documents
 unresolved,src/components/opportunities/NBTScheduler.jsx,101,missing-storage-bucket,nbt_results
 unresolved,src/components/opportunities/NBTScheduler.jsx,107,missing-storage-bucket,nbt_results
-unresolved,src/components/parent/WeeklyEmailReport.jsx,77,missing-function,send-email
-unresolved,src/components/student/AIStudyAssistant.jsx,99,missing-function,invoke-llm
-unresolved,src/components/student/AIStudyPlanner.jsx,146,missing-function,invoke-llm
-unresolved,src/components/tutor/BookingRequests.jsx,156,missing-function,send-email
+implemented; deployment required,src/components/parent/WeeklyEmailReport.jsx,77,missing-function,send-email
+implemented; deployment required,src/components/student/AIStudyAssistant.jsx,99,missing-function,invoke-llm
+implemented; deployment required,src/components/student/AIStudyPlanner.jsx,146,missing-function,invoke-llm
+implemented; deployment required,src/components/tutor/BookingRequests.jsx,156,missing-function,send-email
 unresolved,src/components/tutor/ChatInbox.jsx,421,missing-storage-bucket,chat-attachments
 unresolved,src/components/tutor/ChatInbox.jsx,427,missing-storage-bucket,chat-attachments
-unresolved,src/components/tutor/LessonPlanForm.jsx,182,missing-function,generate-lesson-plan
-unresolved,src/components/tutor/LessonPlanner.jsx,299,missing-function,send-email
-unresolved,src/components/tutor/LessonPlanner.jsx,343,missing-function,generate-lesson-plan
+implemented; deployment required,src/components/tutor/LessonPlanForm.jsx,182,missing-function,generate-lesson-plan
+implemented; deployment required,src/components/tutor/LessonPlanner.jsx,299,missing-function,send-email
+implemented; deployment required,src/components/tutor/LessonPlanner.jsx,343,missing-function,generate-lesson-plan
 unresolved,src/components/tutor/ResourceTemplateUploader.jsx,97,missing-storage-bucket,tutor-resources
 unresolved,src/components/tutor/ResourceTemplateUploader.jsx,105,missing-storage-bucket,tutor-resources
-unresolved,src/components/tutor/TutorVerificationBadge.jsx,174,missing-function,send-email
-unresolved,src/pages/AdminDashboard.jsx,157,missing-function,send-email
-unresolved,src/pages/AdminDashboard.jsx,183,missing-function,send-email
+implemented; deployment required,src/components/tutor/TutorVerificationBadge.jsx,174,missing-function,send-email
+implemented; deployment required,src/pages/AdminDashboard.jsx,157,missing-function,send-email
+implemented; deployment required,src/pages/AdminDashboard.jsx,183,missing-function,send-email
 fallback exists; policies/data required,src/pages/BursaryFinder.jsx,150,missing-rpc,find_matching_bursaries_v2
 unresolved source/live drift,supabase-functions/functions/discoverUniversityProspectuses/entry.ts,,model-lifecycle,repository: requires GEMINI_MODEL configuration; corresponding retrieved live code: gemini-pro
 unresolved source/live drift,supabase-functions/functions/studentOpportunitiesAssistant/entry.ts,,model-lifecycle,repository: requires GEMINI_MODEL configuration; corresponding retrieved live code: gemini-pro

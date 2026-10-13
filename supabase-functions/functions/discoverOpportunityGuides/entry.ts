@@ -1,3 +1,4 @@
+import {consumeQuota,readJson} from '../../shared/api.ts';
 import { serverConnection, geminiSettings } from "../../shared/config.ts";
 import { withHttp, authorize } from "../../shared/http.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -8,6 +9,7 @@ serve(withHttp(async (req) => {
     const connection = serverConnection();
     const supabase = createClient(connection.url, connection.key, {auth:{persistSession:false, autoRefreshToken:false}});
     const user = await authorize(req, supabase, 'admin');
+    await consumeQuota(supabase,user.id,'ai');
     const prompt = `
       Search for high-quality, freely available PDF guides and study resources for South African Grade 12 students preparing for tertiary education. Focus on:
       1. NBT (National Benchmark Test) preparation guides and practice papers
@@ -33,6 +35,7 @@ serve(withHttp(async (req) => {
     const geminiResponse = await fetch(
       geminiUrl,
       {
+        signal: AbortSignal.timeout(25000),
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
         body: JSON.stringify({

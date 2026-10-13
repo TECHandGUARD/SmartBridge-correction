@@ -151,23 +151,10 @@ export default function BookingRequests({ user, onBookingUpdate = undefined }) {
     };
   }, [user?.email, loadData]);
 
-  const sendEmailNotification = async (booking, action, customMessage = null) => {
+  const sendEmailNotification = async (booking) => {
     try {
       const { error } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: booking.student_email,
-          subject: action === 'confirmed' 
-            ? `✅ Session Confirmed — ${booking.subject} with ${user.full_name}`
-            : action === 'cancelled'
-            ? `❌ Session Cancelled — ${booking.subject}`
-            : `📝 Session Update — ${booking.subject}`,
-          body: customMessage || (
-            action === 'confirmed'
-              ? `Hi,\n\nYour tutoring session has been confirmed!\n\n📚 Subject: ${booking.subject}\n📅 Date: ${formatDateTime(booking.date, booking.time)}\n⏱ Duration: ${booking.duration_hours}h\n\nYour tutor will share the session link before the session.\n\n— SmartBridge FET / Tech & GUARD Pty Ltd`
-              : `Hi,\n\nYour tutoring session has been cancelled.\n\n📚 Subject: ${booking.subject}\n📅 Date: ${formatDateTime(booking.date, booking.time)}\n\nPlease book another time.\n\n— SmartBridge FET / Tech & GUARD Pty Ltd`
-          ),
-          from_name: 'SmartBridge FET'
-        }
+        body: {kind: 'booking-status', booking_id: booking.id}
       });
       if (error) console.error('Email notification error:', error);
     } catch (err) {
@@ -218,7 +205,7 @@ export default function BookingRequests({ user, onBookingUpdate = undefined }) {
         b.id === booking.id ? { ...b, status: 'confirmed', session_link: sessionLink } : b
       ));
       
-      await sendEmailNotification(booking, 'confirmed');
+      await sendEmailNotification(booking);
       toast.success('Booking confirmed.');
       if (onBookingUpdate) onBookingUpdate();
     } catch (err) {
@@ -248,11 +235,7 @@ export default function BookingRequests({ user, onBookingUpdate = undefined }) {
         b.id === booking.id ? { ...b, status: 'cancelled', cancellation_reason: reason } : b
       ));
       
-      const customMessage = reason 
-        ? `Hi,\n\nYour tutoring session has been cancelled.\n\n📚 Subject: ${booking.subject}\n📅 Date: ${formatDateTime(booking.date, booking.time)}\n\nReason: ${reason}\n\nPlease book another time.\n\n— SmartBridge FET / Tech & GUARD Pty Ltd`
-        : null;
-      
-      await sendEmailNotification(booking, 'cancelled', customMessage);
+      await sendEmailNotification(booking);
       toast.info('Booking declined.');
       if (onBookingUpdate) onBookingUpdate();
     } catch (err) {
