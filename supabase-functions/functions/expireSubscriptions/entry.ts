@@ -1,121 +1,58 @@
-import { requiredEnv } from "../../shared/config.ts";
-// supabase/functions/expire-subscriptions/index.ts
+import { serverConnection } from "../../shared/config.ts";
+import { withHttp, authorize } from "../../shared/http.ts";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
+serve(withHttp(async (req) => {
   try {
-    // Create Supabase client with service role key
-    const supabaseClient = createClient(
-      requiredEnv("SUPABASE_URL"),
-      requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-
-    // Get the authorization header to verify admin role
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Get the user from the auth token
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if user is admin (from user_profiles table)
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('users')
-      .select('is_super_admin')
-      .eq('email', user.email)
-      .single();
-
-    if (profileError || !profile || profile.is_super_admin !== true) {
-      return new Response(
-        JSON.stringify({ error: 'Forbidden - Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
+    const connection = serverConnection();
+    const supabase = createClient(connection.url, connection.key, {auth:{persistSession:false, autoRefreshToken:false}});
+    const user = await authorize(req, supabase, 'job');
     const today = new Date().toISOString().split('T')[0];
 
-    // Get active subscriptions
-    const { data: activeSubs, error: subsError } = await supabaseClient
-      .from('subscriptions')
-      .select('*')
-      .eq('status', 'active');
+    // Get all active subscriptions
+    const { data: activeSubs, error: subsError } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("status", "active");
 
     if (subsError) {
-      throw new Error(`Failed to fetch subscriptions: ${subsError.message}`);
+      return new Response(
+        JSON.stringify({ error: subsError.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    // Find expired subscriptions
-    const expired = (activeSubs || []).filter(s => s.end_date && s.end_date < today);
+    // Filter expired subscriptions
+    const expired = activeSubs?.filter(s => s.end_date && s.end_date < today) || [];
 
     // Update expired subscriptions to inactive
-    let deactivatedCount = 0;
-    for (const sub of expired) {
-      const { error: updateError } = await supabaseClient
-        .from('subscriptions')
-        .update({ 
-          status: 'inactive',
+    let deactivated = 0;
+    for (const s of expired) {
+      const { error: updateError } = await supabase
+        .from("subscriptions")
+        .update({
+          status: "inactive",
           updated_at: new Date().toISOString()
         })
-        .eq('id', sub.id);
+        .eq("id", s.id);
 
-      if (!updateError) {
-        deactivatedCount++;
-      }
+      if (!updateError) deactivated++;
     }
 
-    // Log this activity
-    await supabaseClient
-      .from('activity_log')
-      .insert({
-        event_type: 'subscription_expiry_cron',
-        user_email: user.email,
-        description: `Deactivated ${deactivatedCount} expired subscription(s)`,
-      });
-
     return new Response(
-      JSON.stringify({ 
-        expired: deactivatedCount, 
-        message: `Deactivated ${deactivatedCount} expired subscription(s).`,
-        total_expired_found: expired.length
+      JSON.stringify({
+        expired: expired.length,
+        deactivated,
+        message: `Deactivated ${deactivated} expired subscription(s).`
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { "Content-Type": "application/json" } }
     );
 
   } catch (error) {
-    console.error('Error:', error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-});
+}));

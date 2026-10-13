@@ -69,3 +69,5 @@ See [environment setup](docs/environment-configuration.md) for public settings, 
 ## Technical repair and validation
 
 See [the technical repair report](docs/technical-repair.md) for setup checks, database migration deployment order, browser tests, and remaining launch blockers.
+
+Backend source reconciliation and staging rollout: [docs/backend-reconciliation.md](docs/backend-reconciliation.md).

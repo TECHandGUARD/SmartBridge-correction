@@ -1,0 +1,353 @@
+{
+  "retrieved_date": "2026-10-11",
+  "production_changed": false,
+  "functions": [
+    {
+      "slug": "approve-opportunity-content",
+      "entrypoint": "supabase-functions/functions/approveOpportunityContent/entry.ts",
+      "access": "admin",
+      "verify_jwt": true,
+      "provider": null,
+      "retrieved_entrypoint_sha256": "99efb435f06563251d09027a5affa1423cd214ed5b9ac74f188bf2e93c669d5a",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "4d66fe45745987c9e163c87b3be8e7691dcc1ffa88cf79addd11e52db8cc3d96",
+      "reconciled_entrypoint_sha256": "51dd6ca88311af35f8a692ac638cbfed2f06a00b4c8b7780b339dd416539a37f",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    },
+    {
+      "slug": "discover-application-deadlines",
+      "entrypoint": "supabase-functions/functions/discoverApplicationDeadlines/entry.ts",
+      "access": "admin",
+      "verify_jwt": true,
+      "provider": "Gemini",
+      "retrieved_entrypoint_sha256": "f92949c504cc787ff52216dd830e33050f69969e14c43e7b5cc8a189e051c705",
+      "deployed_version": 9,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "a943f31b72effc4969b32e5ca7e7aea18f77771901b092ef421d331beeede0db",
+      "reconciled_entrypoint_sha256": "c5e2c8a5c9192c7f0b51c4923d0234471a22a1f9976c573860d2bbe52cd53adb",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    },
+    {
+      "slug": "discover-opportunity-guides",
+      "entrypoint": "supabase-functions/functions/discoverOpportunityGuides/entry.ts",
+      "access": "admin",
+      "verify_jwt": true,
+      "provider": "Gemini",
+      "retrieved_entrypoint_sha256": "0bd57d37f046d3f5d906e4d06de577f75cb074ddcbaeedb37245d05b42af21f3",
+      "deployed_version": 8,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "4d232b4891effb99a4dd24b8fdc01d01baecc30166ea4f3a9dff63767bfcaca7",
+      "reconciled_entrypoint_sha256": "2240a4d031cc55c68f8fe46babef5e875ec3f6b20836f2e40f9226aa3b15eced",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    },
+    {
+      "slug": "discover-university-prospectuses",
+      "entrypoint": "supabase-functions/functions/discoverUniversityProspectuses/entry.ts",
+      "access": "admin",
+      "verify_jwt": true,
+      "provider": "Gemini",
+      "retrieved_entrypoint_sha256": "d7d371693f4a915f2526ade2736ccb5fdf7f00308dd758f48a14d4c1e46fddb7",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "aca075eed0cdde16381cc73d8ddaca6d0b64cd30abff46c27fa68b4b31394ccb",
+      "reconciled_entrypoint_sha256": "4d54d234da1196861428a1b44441c02063aa98600d328ca7b65b59862a1c3e5f",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    },
+    {
+      "slug": "download-caps-zip",
+      "entrypoint": "supabase-functions/functions/downloadCAPSZip/entry.ts",
+      "access": "user",
+      "verify_jwt": true,
+      "provider": null,
+      "retrieved_entrypoint_sha256": "6c0eb19e6b1144f88b105172fbd259cf1e751526473dd2c4e2e94057e0a2e13f",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "75f6ef725f427c0dfcb72c9b39159599228e09170df27cd7744ccc545080ae1d",
+      "reconciled_entrypoint_sha256": "08060d3b406d6b80253e05bca51d45af6ccb70dd343a4158fa751ce2e04a7662",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    },
+    {
+      "slug": "expire-subscriptions",
+      "entrypoint": "supabase-functions/functions/expireSubscriptions/entry.ts",
+      "access": "job",
+      "verify_jwt": false,
+      "provider": null,
+      "retrieved_entrypoint_sha256": "546ada3211fba19cd609a58a51a1f3612961989b37ff4a286e502f66517cd59f",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "3e55ee484be5bdcf3e26bf2d8c032c1e55c1dda152703fc8eb6e63d22f558d4d",
+      "reconciled_entrypoint_sha256": "807e96116f08645d46fffdcfb4dddb15a121d0d0d206bab188c2c533d2437847",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    },
+    {
+      "slug": "generate-quiz",
+      "entrypoint": "supabase-functions/functions/generateQuiz/entry.ts",
+      "access": "user",
+      "verify_jwt": true,
+      "provider": "Gemini",
+      "retrieved_entrypoint_sha256": "2198000d130a07f61623a3f27138cb0025a936eff622fd3b9ebc09c37dd50f5c",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "18ce245f3e6ef2f0b3acde44865858d8da65105f07b8d7dc3cec688c456efbcd",
+      "reconciled_entrypoint_sha256": "598837bc35a510e75b014aa32ff0a38d8b3dc4961da7513e0484893a1bb5b9a9",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    },
+    {
+      "slug": "get-bursary-recommendations",
+      "entrypoint": "supabase-functions/functions/getBursaryRecommendations/entry.ts",
+      "access": "user",
+      "verify_jwt": true,
+      "provider": null,
+      "retrieved_entrypoint_sha256": "646f812ea3c62a8c8935d89cd220fec219f598e65d0a5aea28505e70389d59f1",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "aaadfa6f277dc919301c5838882934fc6b5c67c4fed7def8a7fa1c79b3fbc0e0",
+      "reconciled_entrypoint_sha256": "adeb662fbd395a84aa78b83ae59e5917df575c4b388756d8d3dad289442a089c",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    },
+    {
+      "slug": "get-chatbot-configuration",
+      "entrypoint": "supabase-functions/functions/getChatbotConfiguration/entry.ts",
+      "access": "user",
+      "verify_jwt": true,
+      "provider": null,
+      "retrieved_entrypoint_sha256": "267d267b8c1c39b1c4dc78b8db80cab62c37060691884f95c32af05e470fc3b4",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "9390549485569286fe08316f5ae98452fbb620a1f55089c6d4e5fd35f81bea5d",
+      "reconciled_entrypoint_sha256": "45e3307604733c4df7a92cc1de5d43f02d4b6a24a190702c9910b617f8642349",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    },
+    {
+      "slug": "notify-booking-confirmed",
+      "entrypoint": "supabase-functions/functions/notifyBookingConfirmed/entry.ts",
+      "access": "job",
+      "verify_jwt": false,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "d48276bc76495592b7d927ab494a1ffa8c2096d1d7baf5ccf3173099d82001d3",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "f4c610f21484d1f008bff81b6cd8bb0d78e4fa21d7bc7e1fdd3b7f41667d6118",
+      "reconciled_entrypoint_sha256": "fa17fe13aaf6792e7136522c5fb186d55ed72e1bcefd4745a3f803d370b128a4",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "notify-document-status",
+      "entrypoint": "supabase-functions/functions/notifyDocumentStatus/entry.ts",
+      "access": "admin",
+      "verify_jwt": true,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "f41918b6050d5126828de33bb7856e474687ec5f07a562ba828c4a1bc760728a",
+      "deployed_version": 8,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "1d925741bed6604a51b61604051419b31e84257a2f9b536891aa49709313327f",
+      "reconciled_entrypoint_sha256": "489580b377a9a7173d79aa5c5ec725de6dea73a542a00be6d391dc24ecd7b559",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "notify-new-resource",
+      "entrypoint": "supabase-functions/functions/notifyNewResource/entry.ts",
+      "access": "job",
+      "verify_jwt": false,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "1ffba573f986337ffb9c27fce1f9c977c233ae439bf0626f6107fd2b093b3800",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "d980fab3ea47978a6bd036e1d0cc30579e151531d2e71308cfa97fed53a398a0",
+      "reconciled_entrypoint_sha256": "6d2d23c2cf7e28210d7f7c442eb9cab453d1d5aa8b233677c8f7384c84f7205b",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "notify-payout-status-change",
+      "entrypoint": "supabase-functions/functions/notifyPayoutStatusChange/entry.ts",
+      "access": "job",
+      "verify_jwt": false,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "29e170f361f94913dd8f8d0ad5f7b000159b01fc4228acac257ac560667344a0",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "125a63a6dc283bfcf0eb90f466e02bea90bf006c4dfd287c1e4068471efb7b4d",
+      "reconciled_entrypoint_sha256": "8faa6972e9f704fbf506bd99401170aba300cacb6bdd100c8d4758351c2f645f",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "notify-user-approved",
+      "entrypoint": "supabase-functions/functions/notifyUserApproved/entry.ts",
+      "access": "admin",
+      "verify_jwt": true,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "3a66e17db0b6f43df163e4cafeff160288efcb90ade517699c919a113d4ab99a",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "215a1aee28bcef77d567b80181e4d43e7ce63cef665ecd6ac97972abb40434ea",
+      "reconciled_entrypoint_sha256": "754abdb8a9f50fb5eed0a5aa7e251da4b3be25e12bc60af7f406de0a9eef4b2e",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "notify-user-rejected",
+      "entrypoint": "supabase-functions/functions/notifyUserRejected/entry.ts",
+      "access": "admin",
+      "verify_jwt": true,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "3e63192a72fcd24b26cfa6b7cc08010748478e5516d3071fb17ec1c7c38b85be",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "f6ba9b5fafaab047600dd12c415276c1d2459f9ece1e67beeeb6149572c0965b",
+      "reconciled_entrypoint_sha256": "4d34c40080be22480a57bfb72f9d414972dd3e3679acf7ba9a3682ace97822a2",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "send-counselor-reminders",
+      "entrypoint": "supabase-functions/functions/sendCounselorReminders/entry.ts",
+      "access": "admin",
+      "verify_jwt": true,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "b1421f60939b5b8ce60b3b9fa981d4f9f7d0c4c0a667c8252673afcf149a2c31",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "dba1ae84a0f3ecfc636e57d9a8f5925d7bb475232c6319c46ef55eebd40afdf6",
+      "reconciled_entrypoint_sha256": "d70d850fca9b7ae6cf21aca2fa1afaad6bf8125fecc242f80f6abe114015a136",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "send-deadline-reminders",
+      "entrypoint": "supabase-functions/functions/sendDeadlineReminders/entry.ts",
+      "access": "job",
+      "verify_jwt": false,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "73c4825dce9568de7164fca62899de0d83a351783938bebe7126a6c7e137d8a7",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "012b3fa628de70162b30b30bc59cee5f3932a505e8b8f8143789f5cbf809b74b",
+      "reconciled_entrypoint_sha256": "598c697062b3312adcbbec9c427fc69b7b1091ccfcdc5e8d8fda737340791b74",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "send-nbt-reminders",
+      "entrypoint": "supabase-functions/functions/sendNBTReminders/entry.ts",
+      "access": "job",
+      "verify_jwt": false,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "31dae0fc6cb98deec6f7636d636822f9550ea601535053c50436e8124044a5a4",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "58cb117d60fad7054524590d44abdcc4f81d477b410dd418bf3ff77dd3b4fea2",
+      "reconciled_entrypoint_sha256": "2e23f8599ef4cbbb9f300dd675d85ecbca6e7de26640b59e8912c017bc344b09",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "send-session-reminders",
+      "entrypoint": "supabase-functions/functions/sendSessionReminders/entry.ts",
+      "access": "job",
+      "verify_jwt": false,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "c2753893898525d1e45cff4eb602fb03e88c84cde2be1a801e8c3fdc771f0f54",
+      "deployed_version": 8,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "49be5703f88b022f5fd73caddd8b2a9865e42003a5bd610e09c08f7ffe83aeec",
+      "reconciled_entrypoint_sha256": "b98be84820e1ed57658f3b9d2c2f473b3a4a4a862cba26c79666564e5d3ec8a7",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "send-study-reminders",
+      "entrypoint": "supabase-functions/functions/sendStudyReminders/entry.ts",
+      "access": "job",
+      "verify_jwt": false,
+      "provider": "Resend",
+      "retrieved_entrypoint_sha256": "54a6c1cd72c58b4f0f649e7cc2bcf99f620f62f012cdc16c9b127b975a4b02ac",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "12187864906449a155ba226ae246409c46cd2ddf13eb991b1f93e1102d0e380d",
+      "reconciled_entrypoint_sha256": "dae4d71fe1cdf3e99397079dd9c674c5d5af0ff67d952aac7a186cb5fd5be9f9",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/email.ts"
+      ]
+    },
+    {
+      "slug": "student-opportunities-assistant",
+      "entrypoint": "supabase-functions/functions/studentOpportunitiesAssistant/entry.ts",
+      "access": "user",
+      "verify_jwt": true,
+      "provider": "Gemini",
+      "retrieved_entrypoint_sha256": "dec7dad9f8ce13d31e14ef6d1e4c030b559e4b7cc25e7509c5d7fecf69b50eff",
+      "deployed_version": 7,
+      "deployed_verify_jwt": true,
+      "deployed_bundle_sha256": "cc65f34bec12902f298e64db59abd0cae256da105448330ffce907ccc74d99f2",
+      "reconciled_entrypoint_sha256": "4cf15034e76641050261fedcf06ab4ae0a0009ed9cf827a3de6f9b172f09a1e4",
+      "dependencies": [
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/http.ts"
+      ]
+    }
+  ]
+}
