@@ -135,4 +135,4 @@ We apologise for any inconvenience and hope to welcome you to SmartBridge FET so
       { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}));
+}, 'notify-user-rejected'));

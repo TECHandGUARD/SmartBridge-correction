@@ -75,3 +75,5 @@ Backend source reconciliation and staging rollout: [docs/backend-reconciliation.
 API contracts, payment/email callbacks and activation requirements: [docs/api-integrations.md](docs/api-integrations.md).
 
 Admin payment gateway management: [docs/payment-gateways.md](docs/payment-gateways.md).
+
+Private storage, authentication email, scheduled jobs and monitoring: [docs/operational-integrations.md](docs/operational-integrations.md).

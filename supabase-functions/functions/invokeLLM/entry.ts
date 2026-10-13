@@ -24,4 +24,4 @@ serve(withHttp(async (request) => {
     catch (error) {
         return apiError(error);
     }
-}));
+}, 'invoke-llm'));

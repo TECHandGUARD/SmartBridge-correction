@@ -43,4 +43,4 @@ serve(withHttp(async (request) => {
     catch (error) {
         return apiError(error);
     }
-}));
+}, 'paystack-webhook'));

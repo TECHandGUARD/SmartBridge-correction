@@ -137,4 +137,4 @@ Rules:
       { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}));
+}, 'generate-quiz'));

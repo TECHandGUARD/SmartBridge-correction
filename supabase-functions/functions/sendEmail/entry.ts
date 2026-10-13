@@ -87,4 +87,4 @@ serve(withHttp(async (request) => {
     catch (error) {
         return apiError(error);
     }
-}));
+}, 'send-email'));

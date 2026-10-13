@@ -45,4 +45,4 @@ serve(withHttp(async req => {
     if (error) throw error;
     return Response.json({success:true, action:'approved'});
   } catch(error) { return Response.json({error:error.message}, {status:error.status || 500}); }
-}));
+}, 'approve-opportunity-content'));

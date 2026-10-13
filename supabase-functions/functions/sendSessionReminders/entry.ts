@@ -233,4 +233,4 @@ Good luck! 🎓
       { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}));
+}, 'send-session-reminders'));

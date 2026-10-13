@@ -1,3 +1,4 @@
+import FileLink from '@/components/operations/FileLink';
 import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -238,11 +239,11 @@ export default function ResourceSearch() {
                         r.is_premium && !isPremium ? (
                           <PremiumBadge variant="lock" />
                         ) : (
-                          <a href={r.file_url} target="_blank" rel="noopener noreferrer">
-                            <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
+                          <FileLink reference={r.file_url}>
+                            <span>
                               <Download className="w-3 h-3" /> Get
-                            </Button>
-                          </a>
+                            </span>
+                          </FileLink>
                         )
                       ) : null}
                     </div>

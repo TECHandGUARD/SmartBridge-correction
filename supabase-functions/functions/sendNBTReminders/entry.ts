@@ -226,4 +226,4 @@ SmartBridge FET Team`;
       { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}));
+}, 'send-nbt-reminders'));

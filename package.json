@@ -17,7 +17,8 @@
     "test:e2e:config": "node tests/browser-config.cjs",
     "check:edge": "node scripts/check-edge.js",
     "check:api": "node scripts/check-api-contracts.js",
-    "prepare:edge": "node scripts/prepare-edge-deployment.js"
+    "prepare:edge": "node scripts/prepare-edge-deployment.js",
+    "configure:auth-email": "node scripts/configure-auth-email.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

@@ -1,3 +1,4 @@
+import {createClientReporter,monitoredFetch} from './monitoring.js';
 import { createClient } from '@supabase/supabase-js';
 
 import { appConfig, configurationError } from './config.js';
@@ -6,7 +7,9 @@ const supabaseUrl = appConfig.supabaseUrl;
 const supabaseAnonKey = appConfig.supabaseKey;
 
 // Create Supabase client
+let reportRequest=(_code)=>{};
 export const supabase = configurationError ? null : createClient(supabaseUrl, supabaseAnonKey, {
+  global: {fetch: monitoredFetch(globalThis.fetch.bind(globalThis),code=>reportRequest(code))},
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -22,6 +25,8 @@ export const supabase = configurationError ? null : createClient(supabaseUrl, su
     },
   },
 });
+
+reportRequest=createClientReporter(supabase);
 
 // Optional: Helper function to check if user is authenticated
 export const isAuthenticated = async () => {

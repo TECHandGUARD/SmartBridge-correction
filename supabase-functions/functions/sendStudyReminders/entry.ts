@@ -205,4 +205,4 @@ Keep up the great work! 🎓
       { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}));
+}, 'send-study-reminders'));

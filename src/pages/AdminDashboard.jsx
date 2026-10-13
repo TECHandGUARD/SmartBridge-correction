@@ -1,3 +1,4 @@
+import OperationsPanel from '@/components/admin/OperationsPanel';
 import PaymentGatewayPanel from '@/components/admin/PaymentGatewayPanel';
 import { getAdminNotificationEmails } from '@/lib/admin-notifications';
 // src/pages/AdminDashboard.jsx
@@ -292,6 +293,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="moderation" className="gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Moderation</TabsTrigger>
             <TabsTrigger value="feature-flags" className="gap-1.5"><ToggleLeft className="w-3.5 h-3.5" /> Feature Flags</TabsTrigger>
             <TabsTrigger value="ai-config" className="gap-1.5"><Cpu className="w-3.5 h-3.5" /> AI Config</TabsTrigger>
+            <TabsTrigger value="operations" className="gap-1.5"><Activity className="w-3.5 h-3.5" /> Operations</TabsTrigger>
             <TabsTrigger value="system" className="gap-1.5"><Settings className="w-3.5 h-3.5" /> System Test</TabsTrigger>
           </TabsList>
 
@@ -536,6 +538,7 @@ export default function AdminDashboard() {
             <SystemConfigPanel />
           </TabsContent>
 
+          <TabsContent value="operations"><OperationsPanel /></TabsContent>
           <TabsContent value="system">
             <Card className="border-primary/20">
               <CardHeader className="pb-3">

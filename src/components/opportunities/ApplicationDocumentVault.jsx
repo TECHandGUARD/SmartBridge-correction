@@ -1,3 +1,5 @@
+import {uploadPrivate,removePrivate} from '@/lib/private-storage';
+import FileLink from '@/components/operations/FileLink';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Upload, File, Trash2, CheckCircle2, Clock, XCircle, AlertCircle, ChevronDown, ChevronUp, FolderOpen, Loader2 } from 'lucide-react';
@@ -53,21 +55,8 @@ function DocTypeRow({ docType, doc, appId, studentEmail, universityName, onRefre
     }, 200);
     
     try {
-      // Upload to Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `application_docs/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('application_documents')
-        .upload(fileName, file);
-      
-      if (uploadError) throw uploadError;
-      
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('application_documents')
-        .getPublicUrl(fileName);
-      
+      const uploaded=await uploadPrivate(supabase,'application_documents',file);
+      const publicUrl=uploaded.reference;
       clearInterval(progressInterval);
       setUploadProgress(100);
       
@@ -90,7 +79,8 @@ function DocTypeRow({ docType, doc, appId, studentEmail, universityName, onRefre
           .from('application_documents')
           .insert({
             application_id: appId,
-            student_email: studentEmail,
+            student_email: uploaded.actor.email,
+            student_id: uploaded.actor.id,
             university_name: universityName,
             doc_type: docType,
             file_url: publicUrl,
@@ -117,14 +107,8 @@ function DocTypeRow({ docType, doc, appId, studentEmail, universityName, onRefre
     if (!doc) return;
     
     try {
-      // Delete file from storage
-      const filePath = doc.file_url?.split('/').pop();
-      if (filePath) {
-        await supabase.storage
-          .from('application_documents')
-          .remove([`application_docs/${filePath}`]);
-      }
-      
+      await removePrivate(supabase,doc.file_url);
+
       // Delete record from database
       const { error } = await supabase
         .from('application_documents')
@@ -168,8 +152,8 @@ function DocTypeRow({ docType, doc, appId, studentEmail, universityName, onRefre
           )}
 
           {doc && (
-            <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
-              className="text-[10px] text-primary hover:underline font-medium">View</a>
+            <FileLink reference={doc.file_url}
+              className="text-[10px] text-primary hover:underline font-medium">View</FileLink>
           )}
 
           {!isVerified && (

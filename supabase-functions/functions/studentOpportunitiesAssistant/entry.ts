@@ -176,4 +176,4 @@ Return a JSON response with:
       { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}));
+}, 'student-opportunities-assistant'));

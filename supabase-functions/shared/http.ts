@@ -1,14 +1,17 @@
+import {recordServerFailure} from './monitoring.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-job-secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Expose-Headers': 'Content-Disposition',
 };
-export function withHttp(handler: (request: Request) => Promise<Response>) {
+export function withHttp(handler: (request: Request) => Promise<Response>, functionName = 'unknown') {
   return async (request: Request): Promise<Response> => {
     if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
     if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Use POST' }), { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    const response = await handler(request);
+    let response:Response;
+    try{response=await handler(request);}catch{response=new Response(JSON.stringify({error:'Request failed'}),{status:500,headers:{'Content-Type':'application/json'}});}
+    if(response.status>=500)await recordServerFailure(functionName,response.status);
     const headers = new Headers(response.headers);
     for (const [key, value] of Object.entries(corsHeaders)) headers.set(key, value);
     return new Response(response.body, {status: response.status, headers});

@@ -1,3 +1,4 @@
+import FileLink from '@/components/operations/FileLink';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -180,9 +181,9 @@ export default function NBTCounselorTracker({ studentEmails = [] }) {
                           {reg.mat_score != null && <span className="text-[10px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">MAT: {reg.mat_score}%</span>}
                           {reg.ql_score != null && <span className="text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded">QL: {reg.ql_score}%</span>}
                           {reg.results_file_url && (
-                            <a href={reg.results_file_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
+                            <FileLink reference={reg.results_file_url} className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
                               <FileText className="w-2.5 h-2.5" /> Results PDF
-                            </a>
+                            </FileLink>
                           )}
                         </div>
                       )}

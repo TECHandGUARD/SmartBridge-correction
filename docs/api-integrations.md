@@ -61,3 +61,7 @@ References: [Google generation API](https://ai.google.dev/api/generate-content),
 ## Admin gateway management
 
 The gateway follow-up adds an admin catalog and Yoco/Paystack adapters with provider-bound settlement. See [payment gateway settings](payment-gateways.md). Paystack remains disabled until account credentials and tests exist; both gateway modes can be configured separately. The fifth migration is required before revised checkout/confirmation handlers. Historical Yoco-only setup above describes the initial integration; the current checkout reads administrator gateway settings.
+
+## Operational follow-up
+
+Private storage/RLS, SMTP activation, job dispatch/leases, weekly reports, alerts and admin monitoring are now staged in migration six. The deployment map now contains 34 functions; the current suite has 38 isolated tests. See [operational integrations](operational-integrations.md) for validation, privacy limits and still-blocked live activation. Earlier checkpoint counts above are historical.

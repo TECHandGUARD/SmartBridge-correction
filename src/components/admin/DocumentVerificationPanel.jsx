@@ -1,3 +1,4 @@
+import FileLink from '@/components/operations/FileLink';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,11 +61,11 @@ function DocRow({ doc, onAction }) {
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {doc.file_url && (
-            <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
-              <Button size="icon" variant="ghost" className="h-7 w-7">
+            <FileLink reference={doc.file_url}>
+              <span>
                 <Eye className="w-3.5 h-3.5" />
-              </Button>
-            </a>
+              </span>
+            </FileLink>
           )}
           {isPending && (
             <Button

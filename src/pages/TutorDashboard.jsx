@@ -1,3 +1,4 @@
+import FileLink from '@/components/operations/FileLink';
 import { Link } from 'react-router-dom';
 import { appConfig } from '@/lib/config';
 import { useDashboardSection } from '@/lib/useDashboardSection';
@@ -395,9 +396,9 @@ function ResourcesList({ resources, onDelete }) {
               </div>
               <div className="flex items-center gap-1.5">
                 {r.file_url && (
-                  <a href={r.file_url} target="_blank" rel="noopener noreferrer">
-                    <Button size="sm" variant="ghost" className="text-primary text-xs h-8">View</Button>
-                  </a>
+                  <FileLink reference={r.file_url}>
+                    <span>View</span>
+                  </FileLink>
                 )}
                 <Button size="sm" variant="ghost" className="text-destructive h-8" onClick={() => onDelete(r.id)}>
                   <Trash2 className="w-4 h-4" />

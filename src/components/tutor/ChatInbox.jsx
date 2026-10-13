@@ -1,3 +1,5 @@
+import {uploadPrivate} from '@/lib/private-storage';
+import FileLink from '@/components/operations/FileLink';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -415,30 +417,10 @@ export default function ChatInbox({ user }) {
     
     setUploadingFile(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `chat-attachments/${activeRoom.room_id}/${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('chat-attachments')
-        .upload(fileName, file);
-      
-      if (uploadError) throw uploadError;
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat-attachments')
-        .getPublicUrl(fileName);
-      
-      await supabase.from('chat_messages').insert({
-        room_id: activeRoom.room_id,
-        sender_email: user.email,
-          sender_id: user.id,
-        sender_name: user.full_name || user.email,
-        recipient_email: activeRoom.otherEmail,
-        message: `📎 ${file.name}\n${publicUrl}`,
-        attachment_url: publicUrl,
-        attachment_type: file.type,
-      });
-      
+      const uploaded=await uploadPrivate(supabase,'chat-attachments',file);
+      const {error}=await supabase.functions.invoke('send-chat-attachment',{body:{recipient_email:activeRoom.otherEmail,file_ref:uploaded.reference,file_name:file.name}});
+      if(error)throw error;
+
       toast.success('File sent!');
       loadConversations();
     } catch (err) {
@@ -575,6 +557,7 @@ export default function ChatInbox({ user }) {
                         <div className={`max-w-[75%] rounded-xl px-3 py-2 text-xs ${isMe ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'}`}>
                           {!isMe && <p className="font-semibold text-[10px] mb-0.5 opacity-70">{msg.sender_name}</p>}
                           <p className="break-words">{msg.message}</p>
+                          {msg.metadata?.attachment_url&&<FileLink reference={msg.metadata.attachment_url} className="underline">Open attachment</FileLink>}
                           <div className="flex items-center justify-end gap-1 mt-0.5">
                             <p className={`text-[9px] opacity-60`}>
                               {new Date(msg.created_at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}

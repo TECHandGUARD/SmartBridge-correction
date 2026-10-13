@@ -55,10 +55,13 @@ function AddApplicationForm({ userEmail, onAdded }) {
     }
     setSaving(true);
     try {
+      const {data:identity,error:identityError}=await supabase.auth.getUser();
+      if(identityError||!identity?.user)throw new Error('Sign in before saving an application');
       const { error } = await supabase
         .from('university_applications')
         .insert({
-          student_email: userEmail,
+          student_email: identity.user.email,
+          student_id: identity.user.id,
           university_name: name.trim(),
           course: course.trim() || null,
           application_link: link.trim() || null,

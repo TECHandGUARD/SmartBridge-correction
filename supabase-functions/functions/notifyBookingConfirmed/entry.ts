@@ -116,4 +116,4 @@ serve(withHttp(async (req) => {
       { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}));
+}, 'notify-booking-confirmed'));

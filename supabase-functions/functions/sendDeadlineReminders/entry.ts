@@ -234,4 +234,4 @@ Tech & GUARD Pty Ltd`;
       { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}));
+}, 'send-deadline-reminders'));

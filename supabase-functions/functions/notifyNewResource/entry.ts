@@ -155,4 +155,4 @@ The SmartBridge FET Team`;
       { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}));
+}, 'notify-new-resource'));

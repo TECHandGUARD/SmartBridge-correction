@@ -1,3 +1,4 @@
+import FileLink from '@/components/operations/FileLink';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
@@ -96,9 +97,9 @@ function ResourceCard({ resource, onSave, onDelete }) {
               <p className="font-semibold text-sm">{resource.title}</p>
               {resource.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{resource.description}</p>}
               {resource.file_url && (
-                <a href={resource.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline mt-1.5">
+                <FileLink reference={resource.file_url} className="flex items-center gap-1 text-xs text-primary hover:underline mt-1.5">
                   <ExternalLink className="w-3 h-3" /> View File
-                </a>
+                </FileLink>
               )}
               <p className="text-xs text-muted-foreground mt-1">By: {resource.tutor_email || resource.created_by_id || '—'}</p>
             </div>
