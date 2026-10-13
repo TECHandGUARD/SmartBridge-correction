@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 export default function ProtectedRoute({ children, allowedRoles = [], redirectTo = '/', fallback = null }) {
-  const { user, isLoadingAuth, role } = useAuth();
+  const { user, isLoadingAuth, role, isAdmin } = useAuth();
 
   if (isLoadingAuth) {
     return (
@@ -18,13 +18,9 @@ export default function ProtectedRoute({ children, allowedRoles = [], redirectTo
     return <Navigate to="/login" replace />;
   }
 
-  // ✅ ADMIN BYPASS: Super admins (hardcoded or is_super_admin) always pass
-  const SUPER_ADMIN_EMAILS = ['aneleqamata95@gmail.com', 'aneleq@techandguard.co.za'];
-  const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(user.email) || user.is_super_admin === true;
+  if (isAdmin) return children;
 
-  if (isSuperAdmin) {
-    return children;
-  }
+  if (allowedRoles.length === 1 && allowedRoles[0] === 'admin') return <Navigate to={redirectTo} replace />;
 
   // Check allowed roles (if any)
   if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {

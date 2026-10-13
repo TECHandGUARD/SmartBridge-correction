@@ -48,9 +48,9 @@ export default function AIStudyAssistant({ user }) {
     try {
       // Load from unified_resources table (includes both admin and tutor resources)
       const { data, error } = await supabase
-        .from('unified_resources')
+        .from('resources')
         .select('*')
-        .eq('is_active', true)
+        .eq('is_approved', true)
         .order('created_at', { ascending: false })
         .limit(20);
       
@@ -99,7 +99,7 @@ Reference CAPS topics and exam tips when relevant.${subjectNote}${gradeNote}${co
       const { data, error } = await supabase.functions.invoke('invoke-llm', {
         body: {
           prompt: `${systemContext}\n\nStudent question: ${userText}`,
-          model: 'claude-3-sonnet-20241022',
+          task: 'study-assistant',
           user_email: user?.email,
           subject: subject || null,
           grade: grade || null

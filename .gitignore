@@ -2,10 +2,9 @@
 # ENVIRONMENT VARIABLES
 # ============================================================
 .env
-.env.local
-.env.*.local
-.env.production
-.env.development
+.env.*
+!.env.example
+!**/.env.example
 
 # ============================================================
 # LOGS

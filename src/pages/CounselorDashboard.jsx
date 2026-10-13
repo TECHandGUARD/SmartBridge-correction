@@ -1,15 +1,15 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/lib/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
-  Users, GraduationCap, FileText, CheckCircle2,
+  Users, GraduationCap, CheckCircle2,
   Clock, ChevronDown, ChevronUp, Mail, Search, RefreshCw, Loader2,
-  AlertCircle, Building2, Plus, Trash2, Bell
+  AlertCircle, Building2
 } from 'lucide-react';
 
 const DOC_TYPES = ["ID Copy", "Matric Certificate", "Proof of Payment", "NBT Results", "Academic Transcript", "Motivation Letter", "Reference Letter", "Other"];
@@ -209,7 +209,7 @@ export default function CounselorDashboard() {
     setError(null);
     try {
       const [studentsRes, appsRes, docsRes] = await Promise.all([
-        supabase.from('user_profiles').select('*').eq('role', 'student'),
+        supabase.from('users').select('*').eq('role', 'student'),
         supabase.from('university_applications').select('*'),
         supabase.from('application_documents').select('*')
       ]);
@@ -238,7 +238,7 @@ export default function CounselorDashboard() {
     try {
       toast.loading(`Dispatching portfolio reminder to ${student.email}...`);
       
-      const { error } = await supabase.functions.invoke('sendCounselorReminders', {
+      const { error } = await supabase.functions.invoke('send-counselor-reminders', {
         body: {
           students: [{
             email: student.email,

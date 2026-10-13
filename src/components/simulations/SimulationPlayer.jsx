@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { X, Monitor, Download, ExternalLink, ShieldAlert, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { X, Monitor, Download, ExternalLink, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';

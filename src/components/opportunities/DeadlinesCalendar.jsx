@@ -57,7 +57,7 @@ export default function DeadlinesCalendar({ isAdmin }) {
       
       // Combine static and database deadlines
       const all = [...STATIC_DEADLINES, ...(dbDeadlines || [])];
-      all.sort((a, b) => new Date(a.date) - new Date(b.date));
+      all.sort((a, b) => (new Date(a.date)).getTime() - (new Date(b.date)).getTime());
       setDeadlines(all);
     } catch (err) {
       console.error('Error loading deadlines:', err);
@@ -89,7 +89,7 @@ export default function DeadlinesCalendar({ isAdmin }) {
           description: form.description || null,
           link: form.link || null,
           is_approved: true,
-          status: 'approved'
+          is_active: true
         });
       
       if (error) throw error;
@@ -178,7 +178,7 @@ export default function DeadlinesCalendar({ isAdmin }) {
           <p className="text-muted-foreground text-sm text-center py-8">No upcoming deadlines in this category.</p>
         )}
         {filtered.map((d) => {
-          const daysLeft = Math.ceil((new Date(d.date) - today) / (1000 * 60 * 60 * 24));
+          const daysLeft = Math.ceil(((new Date(d.date)).getTime() - (today).getTime()) / (1000 * 60 * 60 * 24));
           const isUrgent = daysLeft <= 30;
           const isStatic = typeof d.id === 'string' && d.id.startsWith('s');
           

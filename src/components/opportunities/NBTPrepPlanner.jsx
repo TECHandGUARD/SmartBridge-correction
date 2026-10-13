@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Calendar, BookOpen, CheckCircle2, Circle, ChevronDown, ChevronUp, ExternalLink, Zap, Clock, FileText, Globe, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -313,7 +313,7 @@ export default function NBTPrepPlanner({ userEmail }) {
   }
 
   const testDate = selectedDeadline ? new Date(selectedDeadline.date + 'T08:00:00') : null;
-  const daysUntil = testDate ? Math.ceil((testDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  const daysUntil = testDate ? Math.ceil(((testDate).getTime() - (new Date()).getTime()) / (1000 * 60 * 60 * 24)) : null;
 
   return (
     <div>

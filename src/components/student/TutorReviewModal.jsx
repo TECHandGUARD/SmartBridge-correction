@@ -77,14 +77,14 @@ export default function TutorReviewModal({ booking, user, onClose, onReviewed })
       
       // 2. Log activity securely for administrator compliance audits
       await supabase
-        .from('activity_logs')
+        .from('activity_log')
         .insert([
           {
             event_type: 'review_submitted',
-            user_email: user.email,
+            user_email: user.email, user_id: user.id,
             description: `Left a verified ${rating}-star evaluation profile for SACE registered tutor: ${booking.tutor_name}`
           }
-        ]).catch((e) => console.warn('Activity logging fallback bypassed.', e));
+        ]);
       
       toast.success('Evaluation cataloged into marketplace matrices successfully!');
       if (onReviewed) onReviewed();

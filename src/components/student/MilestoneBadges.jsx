@@ -76,7 +76,7 @@ export default function MilestoneBadges({ user }) {
     try {
       // Fetch student progress
       const { data: prog, error: progError } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('study_sessions, grade, last_access')
         .eq('user_email', user.email);
 
@@ -148,7 +148,7 @@ export default function MilestoneBadges({ user }) {
         const updatedBadges = [...currentBadges, ...newlyEarned];
         
         const { error: updateError } = await supabase
-          .from('user_profiles')
+          .from('users')
           .update({ 
             badges: updatedBadges,
             updated_at: new Date().toISOString()

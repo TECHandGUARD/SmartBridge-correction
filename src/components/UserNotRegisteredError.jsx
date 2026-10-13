@@ -1,3 +1,4 @@
+import { appConfig } from '@/lib/config';
 import React from 'react';
 import { AlertCircle, Mail, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { toast } from 'sonner';
 
 const UserNotRegisteredError = ({ 
   onRetry, 
-  contactEmail = 'aneleq@techandguard.co.za' 
+  contactEmail = appConfig.company.supportEmail
 }) => {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();

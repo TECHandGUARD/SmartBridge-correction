@@ -1,3 +1,4 @@
+import {uploadPrivate} from '@/lib/private-storage';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { SUBJECTS } from '@/lib/subjects';
@@ -5,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, FileText, BookOpen, ClipboardList, Lightbulb, Star, Loader2, ArrowLeft } from 'lucide-react';
@@ -87,46 +87,36 @@ export default function ResourceTemplateUploader({ user, onUploaded }) {
     setUploading(true);
     setUploadProgress(0);
 
+    let interval;
     try {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setUploadProgress(prev => Math.min(prev + 10, 90));
       }, 200);
 
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `tutor-resources/${user.email}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('tutor-resources')
-        .upload(fileName, selectedFile);
-
+      const uploaded=await uploadPrivate(supabase,'tutor-resources',selectedFile);
+      const publicUrl=uploaded.reference;
       clearInterval(interval);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('tutor-resources')
-        .getPublicUrl(fileName);
-
       setUploadProgress(100);
 
       // Save to unified_resources table
       const { error: insertError } = await supabase
-        .from('unified_resources')
+        .from('resources')
         .insert({
           title: form.title,
           description: form.description,
           file_url: publicUrl,
           subject: form.subject,
           grade: form.grade,
-          source_type: 'tutor',
-          uploaded_by: user.email,
-          is_active: true,
+          tutor_id: uploaded.actor.id,
+          tutor_email: uploaded.actor.email,
+          type: 'Notes',
+          is_approved: false,
           is_premium: form.is_premium,
         });
 
       if (insertError) throw insertError;
 
-      toast.success('Resource uploaded successfully! It will now be available to students and the AI assistant.');
+      toast.success('Resource uploaded successfully! An administrator will review it before publication.');
       setStep('choose');
       setTemplate(null);
       setSelectedFile(null);
@@ -136,6 +126,7 @@ export default function ResourceTemplateUploader({ user, onUploaded }) {
       console.error('Upload error:', error);
       toast.error('Failed to upload resource: ' + error.message);
     } finally {
+      clearInterval(interval);
       setUploading(false);
       setUploadProgress(0);
     }

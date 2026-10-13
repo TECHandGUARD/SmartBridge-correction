@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BarChart2, Search, TrendingUp, BookOpen, Bell, Loader2 } from 'lucide-react';
+import { BarChart2, Search, TrendingUp, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ParentSummaryReport() {
@@ -25,7 +25,7 @@ export default function ParentSummaryReport() {
     try {
       // Load student progress
       const { data: prog, error: progError } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('*')
         .eq('student_email', email.trim());
       

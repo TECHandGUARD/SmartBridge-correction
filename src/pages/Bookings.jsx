@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { bookingRequest as prepareRequest } from '@/lib/booking-request';
+import { createBooking } from '@/lib/bookings';
+import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Plus, Loader2, CheckCircle, XCircle, ExternalLink, Star, BookOpen, User } from 'lucide-react';
+import { Calendar, Clock, Plus, Loader2, XCircle, ExternalLink, Star, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import TutorReviewModal from '@/components/student/TutorReviewModal';
 
@@ -49,7 +51,7 @@ export default function Bookings() {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'tutor_bookings' }, 
         (payload) => {
-          if (payload.new && payload.new.student_email === user.email) {
+          if (payload.new && ('student_id' in payload.new ? payload.new.student_id : null) === user.id) {
             fetchBookingDashboardData();
           }
         }
@@ -66,8 +68,8 @@ export default function Bookings() {
       setLoading(true);
       
       const [bookingsQuery, tutorsQuery] = await Promise.all([
-        supabase.from('tutor_bookings').select('*').eq('student_email', user.email).order('created_at', { ascending: false }),
-        supabase.from('tutor_profiles').select('*').eq('is_verified', true)
+        supabase.from('tutor_bookings').select('*').eq('student_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('tutor_directory').select('*').eq('is_verified', true)
       ]);
 
       if (bookingsQuery.error) throw bookingsQuery.error;
@@ -82,35 +84,22 @@ export default function Bookings() {
     }
   };
 
+  const bookingRequest = useRef(null);
   const selectedTutor = tutors.find(t => t.user_email === form.tutor_email);
   const computedHourlyDuration = parseFloat(form.duration_hours) || 1;
   const estimatedCost = (selectedTutor?.hourly_rate || 0) * computedHourlyDuration;
 
   const handleCreateBooking = async () => {
-    if (!form.tutor_email || !form.date) {
+    if (isSaving) return;
+    if (!selectedTutor?.user_id || !form.date) {
       toast.error('Please specify target scheduling date and tutor requirements.');
       return;
     }
     try {
       setIsSaving(true);
-      const { error: insertError } = await supabase
-        .from('tutor_bookings')
-        .insert([
-          {
-            student_email: user.email,
-            tutor_email: form.tutor_email,
-            tutor_name: selectedTutor?.full_name || 'Verified SACE Instructor',
-            subject: form.subject,
-            session_date: form.date,
-            session_time: form.time,
-            duration_hours: computedHourlyDuration,
-            message: form.message.trim(),
-            amount_payable: estimatedCost,
-            status: 'pending'
-          }
-        ]);
-
-      if (insertError) throw insertError;
+      bookingRequest.current = prepareRequest(bookingRequest.current, selectedTutor, form);
+      await createBooking(selectedTutor, form, bookingRequest.current.id);
+      bookingRequest.current = null;
 
       toast.success('Lesson reservation dispatched to instructor inbox successfully!');
       setForm({ tutor_email: '', subject: 'Mathematics', date: '', time: '14:00', duration_hours: '1', message: '' });
@@ -313,7 +302,7 @@ export default function Bookings() {
         ) : (
           <div className="space-y-3">
             {bookings.map((b) => {
-              const cleanTime = b.session_time?.slice(0, 5) || b.session_time;
+              const cleanTime = b.time?.slice(0, 5) || b.time;
               return (
                 <Card key={b.id} className="border-slate-200 hover:shadow-md transition-shadow bg-white">
                   <CardContent className="pt-4 pb-4">
@@ -330,9 +319,9 @@ export default function Bookings() {
                         </div>
                         <div className="flex flex-wrap gap-3 text-xs text-slate-500">
                           <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" />{b.subject}</span>
-                          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{b.session_date}</span>
+                          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{b.date}</span>
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{cleanTime} · {b.duration_hours}h</span>
-                          {b.amount_payable > 0 && <span className="flex items-center gap-1 text-blue-600 font-bold">R{b.amount_payable}</span>}
+                          {b.amount > 0 && <span className="flex items-center gap-1 text-blue-600 font-bold">R{b.amount}</span>}
                         </div>
                         {b.message && <p className="text-xs text-slate-400 mt-1 italic">"{b.message}"</p>}
                       </div>

@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarDays, Clock, CheckCircle, XCircle, User, BookOpen, ExternalLink, Search, Loader2, AlertCircle, DollarSign, Bell } from 'lucide-react';
+import { CalendarDays, Clock, CheckCircle, XCircle, User, BookOpen, ExternalLink, Search, Loader2, AlertCircle, Bell } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 const STATUS_STYLES = {
   pending: 'bg-amber-100 text-amber-700',
@@ -53,10 +53,10 @@ const hasOverlap = (booking1, booking2) => {
   
   // 15 minute buffer between sessions
   const buffer = 15 * 60 * 1000;
-  return (start1 < end2 + buffer && end1 > start2 - buffer);
+  return (start1.getTime() < (end2).getTime() + buffer && (end1).getTime() > (start2).getTime() - buffer);
 };
 
-export default function BookingRequests({ user, onBookingUpdate }) {
+export default function BookingRequests({ user, onBookingUpdate = undefined }) {
   const [bookings, setBookings] = useState([]);
   const [tutorProfile, setTutorProfile] = useState(null);
   const [processing, setProcessing] = useState(null);
@@ -88,9 +88,9 @@ export default function BookingRequests({ user, onBookingUpdate }) {
       
       // Load tutor profile for session links
       const { data: profileData, error: profileError } = await supabase
-        .from('tutor_profiles')
+        .from('users')
         .select('zoom_link, teams_link')
-        .eq('user_email', user.email)
+        .eq('id', user.id)
         .maybeSingle();
       
       if (profileError) throw profileError;
@@ -151,23 +151,10 @@ export default function BookingRequests({ user, onBookingUpdate }) {
     };
   }, [user?.email, loadData]);
 
-  const sendEmailNotification = async (booking, action, customMessage = null) => {
+  const sendEmailNotification = async (booking) => {
     try {
       const { error } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: booking.student_email,
-          subject: action === 'confirmed' 
-            ? `✅ Session Confirmed — ${booking.subject} with ${user.full_name}`
-            : action === 'cancelled'
-            ? `❌ Session Cancelled — ${booking.subject}`
-            : `📝 Session Update — ${booking.subject}`,
-          body: customMessage || (
-            action === 'confirmed'
-              ? `Hi,\n\nYour tutoring session has been confirmed!\n\n📚 Subject: ${booking.subject}\n📅 Date: ${formatDateTime(booking.date, booking.time)}\n⏱ Duration: ${booking.duration_hours}h\n\nYour tutor will share the session link before the session.\n\n— SmartBridge FET / Tech & GUARD Pty Ltd`
-              : `Hi,\n\nYour tutoring session has been cancelled.\n\n📚 Subject: ${booking.subject}\n📅 Date: ${formatDateTime(booking.date, booking.time)}\n\nPlease book another time.\n\n— SmartBridge FET / Tech & GUARD Pty Ltd`
-          ),
-          from_name: 'SmartBridge FET'
-        }
+        body: {kind: 'booking-status', booking_id: booking.id}
       });
       if (error) console.error('Email notification error:', error);
     } catch (err) {
@@ -218,8 +205,8 @@ export default function BookingRequests({ user, onBookingUpdate }) {
         b.id === booking.id ? { ...b, status: 'confirmed', session_link: sessionLink } : b
       ));
       
-      await sendEmailNotification(booking, 'confirmed');
-      toast.success('Booking confirmed! Student notified.');
+      await sendEmailNotification(booking);
+      toast.success('Booking confirmed.');
       if (onBookingUpdate) onBookingUpdate();
     } catch (err) {
       console.error('Error accepting booking:', err);
@@ -248,11 +235,7 @@ export default function BookingRequests({ user, onBookingUpdate }) {
         b.id === booking.id ? { ...b, status: 'cancelled', cancellation_reason: reason } : b
       ));
       
-      const customMessage = reason 
-        ? `Hi,\n\nYour tutoring session has been cancelled.\n\n📚 Subject: ${booking.subject}\n📅 Date: ${formatDateTime(booking.date, booking.time)}\n\nReason: ${reason}\n\nPlease book another time.\n\n— SmartBridge FET / Tech & GUARD Pty Ltd`
-        : null;
-      
-      await sendEmailNotification(booking, 'cancelled', customMessage);
+      await sendEmailNotification(booking);
       toast.info('Booking declined.');
       if (onBookingUpdate) onBookingUpdate();
     } catch (err) {

@@ -1,22 +1,20 @@
+import {createClientReporter,monitoredFetch} from './monitoring.js';
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables. Check your .env file.');
-  throw new Error('Missing Supabase configuration');
-}
+import { appConfig, configurationError } from './config.js';
+export { configurationError };
+const supabaseUrl = appConfig.supabaseUrl;
+const supabaseAnonKey = appConfig.supabaseKey;
 
 // Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+let reportRequest=(_code)=>{};
+export const supabase = configurationError ? null : createClient(supabaseUrl, supabaseAnonKey, {
+  global: {fetch: monitoredFetch(globalThis.fetch.bind(globalThis),code=>reportRequest(code))},
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storage: localStorage,
+    storage: typeof window === 'undefined' ? undefined : window.localStorage,
   },
   db: {
     schema: 'public',
@@ -28,14 +26,18 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+reportRequest=createClientReporter(supabase);
+
 // Optional: Helper function to check if user is authenticated
 export const isAuthenticated = async () => {
+  if (!supabase) return false;
   const { data: { session } } = await supabase.auth.getSession();
   return !!session;
 };
 
 // Optional: Helper function to get current user
 export const getCurrentUser = async () => {
+  if (!supabase) return null;
   const { data: { user } } = await supabase.auth.getUser();
   return user;
 };

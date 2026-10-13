@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  GraduationCap, Plus, Trash2, ExternalLink, ChevronDown, ChevronUp, FileEdit, Calculator, BarChart2, Loader2
+  GraduationCap, Plus, Trash2, ExternalLink, ChevronDown, ChevronUp, FileEdit, BarChart2, Loader2
 } from 'lucide-react';
 import ApplicationDocumentVault from './ApplicationDocumentVault';
 import APSCalculator from './APSCalculator';
@@ -55,10 +55,13 @@ function AddApplicationForm({ userEmail, onAdded }) {
     }
     setSaving(true);
     try {
+      const {data:identity,error:identityError}=await supabase.auth.getUser();
+      if(identityError||!identity?.user)throw new Error('Sign in before saving an application');
       const { error } = await supabase
         .from('university_applications')
         .insert({
-          student_email: userEmail,
+          student_email: identity.user.email,
+          student_id: identity.user.id,
           university_name: name.trim(),
           course: course.trim() || null,
           application_link: link.trim() || null,

@@ -17,7 +17,7 @@ const FALLBACK_SUGGESTIONS = [
 
 const FALLBACK_WELCOME = "Hi! 👋 I'm your University & NBT AI Guide. I can help you with university applications, NBT preparation, bursaries, and career guidance.\n\nWhat would you like to know?";
 
-export default function AIAssistantChat({ prospectusUrls = [], grade, subject }) {
+export default function AIAssistantChat({ prospectusUrls = [], grade = null, subject = null }) {
   const [suggestions, setSuggestions] = useState(FALLBACK_SUGGESTIONS);
   const [messages, setMessages] = useState(null); // null = loading config
   const [input, setInput] = useState('');

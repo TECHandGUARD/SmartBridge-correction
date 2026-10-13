@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Minus, BarChart2, BookOpen, Clock, Users, DollarSign, Loader2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, BarChart2, BookOpen, Loader2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
 
@@ -168,7 +168,7 @@ export default function TutorBusinessSummary({ user }) {
 
   const maxDemand = subjectDemand[0]?.total || 1;
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = ({ active = false, payload = [], label = null }) => {
     if (!active || !payload?.length) return null;
     return (
       <div className="bg-card border border-border rounded-lg px-3 py-2 shadow text-xs">

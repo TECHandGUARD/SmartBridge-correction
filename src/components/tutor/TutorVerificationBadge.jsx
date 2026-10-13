@@ -24,13 +24,13 @@ const useVerificationConfig = () => {
     const loadConfig = async () => {
       try {
         const { data, error } = await supabase
-          .from('system_configurations')
-          .select('config_value')
-          .eq('config_key', 'tutor_verification_config')
+          .from('system_configuration')
+          .select('value')
+          .eq('key', 'tutor_verification_config')
           .single();
         
-        if (!error && data?.config_value) {
-          setConfig(prev => ({ ...prev, ...data.config_value }));
+        if (!error && data?.value) {
+          setConfig(prev => ({ ...prev, ...data.value }));
         }
       } catch (err) {
         console.warn('Using default verification config:', err);
@@ -41,7 +41,7 @@ const useVerificationConfig = () => {
     loadConfig();
   }, []);
 
-  return { config, loading: configLoading };
+  return { config, loading };
 };
 
 export default function TutorVerificationBadge({ user, profile, onProfileUpdate }) {
@@ -116,7 +116,7 @@ export default function TutorVerificationBadge({ user, profile, onProfileUpdate 
         const { data, error } = await supabase
           .from('tutor_profiles')
           .insert({
-            user_email: user.email,
+            user_email: user.email, user_id: user.id,
             full_name: user.full_name || user.email,
             sace_number: trimmedSace,
             is_verified: false,
@@ -165,43 +165,27 @@ export default function TutorVerificationBadge({ user, profile, onProfileUpdate 
       const { data: currentUser } = await supabase.auth.getUser();
       if (currentUser?.user?.role !== 'tutor_pending') {
         await supabase
-          .from('user_profiles')
+          .from('users')
           .update({ role: 'tutor_pending', updated_at: new Date().toISOString() })
           .eq('email', user.email);
       }
       
       // Send confirmation email via Edge Function
       const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: user.email,
-          subject: '📋 Tutor Verification Request Received',
-          body: `
-Hi ${user.full_name || 'there'},
-
-We've received your SACE verification request (${trimmedSace}).
-
-An admin will review it within ${config?.verificationHours || 48} hours.
-
-You'll receive an email once verified.
-
-— SmartBridge FET
-          `,
-          from_name: 'SmartBridge FET'
-        }
+        body: {kind: 'verification-status'}
       });
       
       if (emailError) console.error('Email error:', emailError);
       
       // Log activity
       await supabase
-        .from('activity_logs')
+        .from('activity_log')
         .insert({
           event_type: 'tutor_verification_requested',
-          user_email: user.email,
+          user_email: user.email, user_id: user.id,
           description: `Tutor verification requested - SACE: ${trimmedSace}`,
           created_at: new Date().toISOString()
-        })
-        .catch(err => console.error('Activity log error:', err));
+        });
       
       onProfileUpdate?.(tutorProfile);
       checkApplicationStatus();

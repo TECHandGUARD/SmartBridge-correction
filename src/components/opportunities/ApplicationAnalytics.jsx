@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 
@@ -25,7 +25,7 @@ export default function ApplicationAnalytics({ applications }) {
 
     const upcoming = applications
       .filter(a => a.deadline && new Date(a.deadline) > new Date())
-      .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+      .sort((a, b) => (new Date(a.deadline)).getTime() - (new Date(b.deadline)).getTime())
       .slice(0, 4);
 
     const overdue = applications.filter(a => a.deadline && new Date(a.deadline) < new Date() && !['Submitted','Accepted','Rejected','Waitlisted'].includes(a.stage));
@@ -109,7 +109,7 @@ export default function ApplicationAnalytics({ applications }) {
             <span className="text-sm font-semibold text-amber-800">Upcoming Deadlines</span>
           </div>
           {stats.upcoming.map(a => {
-            const daysLeft = Math.ceil((new Date(a.deadline) - new Date()) / 86400000);
+            const daysLeft = Math.ceil(((new Date(a.deadline)).getTime() - (new Date()).getTime()) / 86400000);
             return (
               <div key={a.id} className="flex items-center justify-between text-xs py-0.5">
                 <span className="font-medium text-amber-900">{a.university_name}</span>

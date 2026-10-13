@@ -1,49 +1,39 @@
+import { emailFetch } from "../../shared/email.ts";
+import { serverConnection, emailSettings, appUrl } from "../../shared/config.ts";
+import { withHttp, authorize } from "../../shared/http.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Resend Email API configuration
 
-/**
- * NBT Reminder Function
- * Sends reminders to students about upcoming NBT tests.
- * Runs daily to check for tests within 7 days.
- */
-serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
+serve(withHttp(async (req) => {
   try {
-    // Create Supabase client with service role
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-
+    const connection = serverConnection();
+    const supabase = createClient(connection.url, connection.key, {auth:{persistSession:false, autoRefreshToken:false}});
+    const user = await authorize(req, supabase, 'job');
+    const { apiKey: RESEND_API_KEY, from: FROM_EMAIL } = emailSettings();
+    const APP_URL = appUrl().replace(/\/$/, '');
     // Fetch all NBT registrations with status 'registered'
-    const { data: registrations, error: registrationsError } = await supabaseClient
-      .from('nbt_registrations')
-      .select('*')
-      .eq('status', 'registered');
+    const { data: registrations, error: regError } = await supabase
+      .from("nbt_registrations")
+      .select("*")
+      .eq("status", "registered");
 
-    if (registrationsError) {
-      throw new Error("Failed to fetch NBT registrations: " + registrationsError.message);
+    if (regError) {
+      return new Response(
+        JSON.stringify({ error: regError.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     if (!registrations || registrations.length === 0) {
       return new Response(
-        JSON.stringify({ status: 'ok', reminders_sent: 0, message: 'No NBT registrations found' }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          status: "ok",
+          reminders_sent: 0,
+          message: "No active NBT registrations found"
+        }),
+        { headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -55,93 +45,185 @@ serve(async (req) => {
       return daysUntil >= 0 && daysUntil <= 7;
     });
 
-    const results: any[] = [];
+    if (toRemind.length === 0) {
+      return new Response(
+        JSON.stringify({
+          status: "ok",
+          reminders_sent: 0,
+          message: "No reminders to send at this time"
+        }),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Send reminders
+    if (!RESEND_API_KEY) {
+      console.warn("RESEND_API_KEY not configured. Emails not sent.");
+      return new Response(
+        JSON.stringify({
+          status: "ok",
+          reminders_sent: 0,
+          error: "RESEND_API_KEY not configured",
+          total_due: toRemind.length
+        }),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const results = [];
 
     for (const reg of toRemind) {
-      const testDate = new Date(reg.test_date);
-      const daysUntil = Math.ceil((testDate.getTime() - now.getTime()) / 86400000);
-      const formattedDate = testDate.toLocaleDateString('en-ZA', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
+      try {
+        const testDate = new Date(reg.test_date);
+        const daysUntil = Math.ceil((testDate.getTime() - now.getTime()) / 86400000);
+        const formattedDate = testDate.toLocaleDateString("en-ZA", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
 
-      const subject = `📝 NBT Reminder: Your test is ${daysUntil === 0 ? 'TODAY' : `in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`}!`;
+        const subject = `📝 NBT Reminder: Your test is ${daysUntil === 0 ? "TODAY" : `in ${daysUntil} day${daysUntil !== 1 ? "s" : ""}`}!`;
 
-      const body = `
-Dear ${reg.student_name || reg.student_email},
+        const bodyText = `Dear ${reg.student_name || reg.student_email},
 
-This is a reminder about your upcoming <strong>National Benchmark Test (NBT)</strong>.
+This is a reminder about your upcoming National Benchmark Test (NBT).
 
-<strong>📅 Date:</strong> ${formattedDate}
-<strong>⏰ Venue:</strong> ${reg.venue}, ${reg.city}
-<strong>📋 Tests:</strong> ${(reg.tests_registered || []).join(', ') || 'As registered'}
+📅 Date: ${formattedDate}
+📍 Venue: ${reg.venue}, ${reg.city}
+📋 Tests: ${(reg.tests_registered || []).join(", ") || "As registered"}
 
-<strong>What to bring on the day:</strong>
-<ul>
-  <li>Your South African ID or Passport</li>
-  <li>Your NBT registration confirmation</li>
-  <li>Pens and pencils (no calculators allowed)</li>
-  <li>Arrive at least 30 minutes early</li>
-</ul>
+What to bring on the day:
+• Your South African ID or Passport
+• Your NBT registration confirmation
+• Pens and pencils (no calculators allowed)
+• Arrive at least 30 minutes early
 
-<strong>Quick Preparation Tips:</strong>
-<ul>
-  <li>Review the NBT sample questions on the official website</li>
-  <li>Get a good night's sleep before the test</li>
-  <li>Eat a nutritious breakfast on the day</li>
-</ul>
+Quick Preparation Tips:
+• Review the NBT sample questions on the official website
+• Get a good night's sleep before the test
+• Eat a nutritious breakfast on the day
 
 Once you have your results, log in to SmartBridge FET and upload them to your profile under Student Opportunities → NBT Schedule.
 
 Good luck — you've got this! 💪
 
-SmartBridge FET Team
-      `.trim();
+SmartBridge FET Team`;
 
-      // Send email (logging for now, replace with actual email sending)
-      console.log(`[NBT REMINDER] To: ${reg.student_email}, Subject: ${subject}`);
+        const bodyHtml = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
+  <div style="background: linear-gradient(135deg, #2d3748, #1a202c); padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
+    <h2 style="color: #fff; margin: 0;">📝 NBT Reminder</h2>
+    <p style="color: rgba(255,255,255,0.8); margin: 5px 0 0 0; font-size: 14px;">${daysUntil === 0 ? "Your test is TODAY!" : `Your test is in ${daysUntil} day${daysUntil !== 1 ? "s" : ""}`}</p>
+  </div>
+  <div style="padding: 20px; background: #fff; border-radius: 0 0 10px 10px; border: 1px solid #e2e8f0; border-top: none;">
+    <p style="color: #4a5568; font-size: 16px;">Dear ${reg.student_name || reg.student_email},</p>
+    <p style="color: #4a5568; font-size: 16px;">This is a reminder about your upcoming <strong>National Benchmark Test (NBT)</strong>.</p>
+    <div style="background-color: #f7fafc; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #4a5568;">
+      <p style="margin: 5px 0; color: #2d3748;"><strong>📅 Date:</strong> ${formattedDate}</p>
+      <p style="margin: 5px 0; color: #2d3748;"><strong>📍 Venue:</strong> ${reg.venue}, ${reg.city}</p>
+      <p style="margin: 5px 0; color: #2d3748;"><strong>📋 Tests:</strong> ${(reg.tests_registered || []).join(", ") || "As registered"}</p>
+    </div>
+    <p style="color: #4a5568; font-size: 16px;"><strong>What to bring on the day:</strong></p>
+    <ul style="color: #4a5568; font-size: 16px; padding-left: 20px;">
+      <li>Your South African ID or Passport</li>
+      <li>Your NBT registration confirmation</li>
+      <li>Pens and pencils (no calculators allowed)</li>
+      <li>Arrive at least 30 minutes early</li>
+    </ul>
+    <p style="color: #4a5568; font-size: 16px;"><strong>Quick Preparation Tips:</strong></p>
+    <ul style="color: #4a5568; font-size: 16px; padding-left: 20px;">
+      <li>Review the NBT sample questions on the official website</li>
+      <li>Get a good night's sleep before the test</li>
+      <li>Eat a nutritious breakfast on the day</li>
+    </ul>
+    <p style="color: #4a5568; font-size: 16px;">Once you have your results, log in to SmartBridge FET and upload them to your profile under Student Opportunities → NBT Schedule.</p>
+    <p style="color: #4a5568; font-size: 14px; margin-top: 20px;">Good luck — you've got this! 💪</p>
+    <p style="color: #4a5568; font-size: 14px;">SmartBridge FET Team</p>
+  </div>
+</div>`;
 
-      // If you have a send-email function, uncomment this:
-      // const { error: emailError } = await supabaseClient.functions.invoke('send-email', {
-      //   body: {
-      //     to: reg.student_email,
-      //     subject: subject,
-      //     body: body,
-      //     from_name: 'SmartBridge FET'
-      //   }
-      // });
-      // if (emailError) console.error('Failed to send email:', emailError);
+        const resendResponse = await emailFetch({
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: FROM_EMAIL,
+            to: [reg.student_email],
+            subject: subject,
+            html: bodyHtml,
+            text: bodyText,
+          }),
+        }, supabase);
 
-      // Mark reminder as sent
-      await supabaseClient
-        .from('nbt_registrations')
-        .update({ 
-          reminder_sent: true,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', reg.id);
+        if (resendResponse.ok) {
+          const emailResult = await resendResponse.json();
 
-      results.push({ 
-        email: reg.student_email, 
-        test_date: reg.test_date 
-      });
+          // Update reminder_sent flag
+          const {error: trackingError} = await supabase
+            .from("nbt_registrations")
+            .update({
+              reminder_sent: true,
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", reg.id);
+          if (trackingError) throw trackingError;
+
+          results.push({
+            email: reg.student_email,
+            test_date: reg.test_date,
+            email_id: emailResult.id
+          });
+
+          // Log in audit log
+          await supabase
+            .from("activity_log")
+            .insert({
+              event_type: "notification_sent",
+              user_email: reg.student_email,
+              description: `NBT reminder sent for test on ${reg.test_date}`,
+              metadata: {
+                test_date: reg.test_date,
+                registration_id: reg.id,
+                days_until: daysUntil,
+                email_id: emailResult.id
+              }
+            });
+        } else {
+          const errorText = await resendResponse.text();
+          console.error(`Failed to send email to ${reg.student_email}:`, errorText);
+          results.push({
+            email: reg.student_email,
+            test_date: reg.test_date,
+            error: errorText
+          });
+        }
+      } catch (emailError) {
+        console.error(`Error sending email to ${reg.student_email}:`, emailError.message);
+        results.push({
+          email: reg.student_email,
+          test_date: reg.test_date,
+          error: emailError.message
+        });
+      }
     }
 
     return new Response(
-      JSON.stringify({ 
-        reminders_sent: results.length, 
-        results,
-        status: 'ok'
+      JSON.stringify({
+        reminders_sent: results.filter((r: any) => r.email_id).length,
+        total_due: toRemind.length,
+        results
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { "Content-Type": "application/json" } }
     );
 
-  } catch (error: any) {
+  } catch (error) {
+    console.error("Error sending NBT reminders:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-});
+}, 'send-nbt-reminders'));

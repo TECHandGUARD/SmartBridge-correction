@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const ADMIN_EMAILS = ['aneleq@techandguard.co.za', 'aneleqamata95@gmail.com'];
+
 
 function timeSince(dateStr) {
   if (!dateStr) return 'Just now';
@@ -106,7 +106,7 @@ export default function TutorVerificationHub() {
 
       // Fetch all user profiles
       const { data: allUsers, error: usersError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -156,18 +156,18 @@ export default function TutorVerificationHub() {
       
       // Update user profile role
       const { error: userError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ role: tutorType })
         .eq('email', tutor.user_email);
       
       if (userError) console.error('Error updating user role:', userError);
 
       // Log activity
-      await supabase.from('activity_logs').insert({
+      await supabase.from('activity_log').insert({
         event_type: 'tutor_verified',
         user_email: tutor.user_email,
         description: `Admin verified tutor: ${tutor.full_name}`,
-      }).catch(() => {});
+      });
 
       // Send approval email to tutor
       const emailResult = await sendTutorApprovalEmail(tutor);
@@ -192,11 +192,11 @@ export default function TutorVerificationHub() {
     setProcessing(tutor.id);
     try {
       // Log rejection
-      await supabase.from('activity_logs').insert({
+      await supabase.from('activity_log').insert({
         event_type: 'tutor_rejected',
         user_email: tutor.user_email,
         description: `Admin rejected tutor: ${tutor.full_name}`,
-      }).catch(() => {});
+      });
 
       setPendingProfiles(prev => prev.filter(t => t.id !== tutor.id));
       toast.success(`❌ ${tutor.full_name} rejected.`);

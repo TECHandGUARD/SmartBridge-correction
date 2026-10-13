@@ -37,7 +37,7 @@ export default function UserRegistrationsPanel() {
     try {
       // Load users from Supabase
       const { data: usersData, error: usersError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(200);
@@ -71,7 +71,7 @@ export default function UserRegistrationsPanel() {
     try {
       // Update user role in Supabase
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ 
           role, 
           onboarding_complete: true,
@@ -125,7 +125,7 @@ export default function UserRegistrationsPanel() {
       
       // Update user role
       const { error: userError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ 
           role: newRole,
           updated_at: new Date().toISOString()
@@ -159,7 +159,7 @@ export default function UserRegistrationsPanel() {
     try {
       // Reset user role to 'user' and onboarding to false
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ 
           role: 'user', 
           onboarding_complete: false,

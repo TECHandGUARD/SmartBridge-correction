@@ -1,5 +1,9 @@
+import { appConfig } from '@/lib/config';
+import { useDashboardSection } from '@/lib/useDashboardSection';
+import ParentChildLink from '@/components/parent/ParentChildLink';
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { SUBJECTS } from '@/lib/subjects';
 import usePremiumAccess from '@/hooks/usePremiumAccess';
@@ -35,14 +39,14 @@ import CounselorChat from '@/components/counselor/CounselorChat';
 import { AnnouncementBanner } from '@/components/admin/AnnouncementManager';
 
 export default function StudentDashboard() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const { isPremium, isOnTrial, trialDaysLeft, loading: premLoading } = usePremiumAccess(user);
   const [resources, setResources] = useState([]);
   const [tutors, setTutors] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   const [counselorInfo, setCounselorInfo] = useState(null);
   const [counselorChat, setCounselorChat] = useState(false);
-  const [activeSection, setActiveSection] = useState(null);
+  const [activeSection, toggleSection] = useDashboardSection('student');
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -68,7 +72,7 @@ export default function StudentDashboard() {
 
       // Load tutors
       const { data: tutorsData, error: tutorsError } = await supabase
-        .from('tutor_profiles')
+        .from('tutor_directory')
         .select('*')
         .eq('is_verified', true)
         .order('rating', { ascending: false })
@@ -129,14 +133,13 @@ export default function StudentDashboard() {
   }, [loadData]);
 
   const [deletingAccount, setDeletingAccount] = useState(false);
-  const toggleSection = (key) => setActiveSection(prev => prev === key ? null : key);
 
   const handleDeleteAccount = async () => {
     setDeletingAccount(true);
     try {
       // Update user profile to mark as deleted
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ role: 'deleted', updated_at: new Date().toISOString() })
         .eq('email', user.email);
 
@@ -211,12 +214,14 @@ export default function StudentDashboard() {
             ) : (
               <Link to="/premium">
                 <Button size="sm" className="gap-1.5 bg-secondary text-secondary-foreground hover:bg-secondary/90">
-                  <Crown className="w-4 h-4" /> Upgrade — R20/month
+                  <Crown className="w-4 h-4" /> Upgrade — R{appConfig.prices.student}/month
                 </Button>
               </Link>
             )}
           </div>
         </div>
+
+        <ParentChildLink user={user} />
 
         {/* Platform Announcements */}
         {announcements.length > 0 && (
@@ -282,7 +287,7 @@ export default function StudentDashboard() {
               <AIStudyAssistant user={user} />
             </DashboardPremiumGate>
             <DashboardPremiumGate isPremium={isPremium} isLoading={premLoading} featureName="Interactive Flashcards">
-              <InteractiveFlashcards />
+              <InteractiveFlashcards studentEmail={user.email} />
             </DashboardPremiumGate>
           </div>
         )}
@@ -429,13 +434,13 @@ export default function StudentDashboard() {
               <div className="bg-gradient-to-br from-primary to-green-dark rounded-2xl p-5 text-primary-foreground">
                 <Star className="w-6 h-6 fill-secondary text-secondary mb-2" />
                 <p className="font-playfair font-bold text-lg mb-1">Go Premium</p>
-                <p className="text-sm text-primary-foreground/80 mb-3">Unlock all resources, AI tools, past papers & more — R20/month.</p>
+                <p className="text-sm text-primary-foreground/80 mb-3">Unlock all resources, AI tools, past papers & more — R{appConfig.prices.student}/month.</p>
                 <Link to="/premium">
                   <Button size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 w-full">
-                    Upgrade Now — R20/month
+                    Upgrade Now — R{appConfig.prices.student}/month
                   </Button>
                 </Link>
-                <p className="text-xs text-primary-foreground/60 mt-2">Use your email as payment reference. Activated within 60 min.</p>
+                <p className="text-xs text-primary-foreground/60 mt-2">Use your email as payment reference. Access starts after payment is confirmed.</p>
               </div>
             )}
 

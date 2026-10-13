@@ -1,5 +1,6 @@
+import { appConfig } from '@/lib/config';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -71,7 +72,7 @@ export default function TutorPayoutDashboard() {
             
             <p>Payments are processed every Thursday to your registered banking details.</p>
             
-            <p>If you have not yet submitted your banking details, please contact <a href="mailto:aneleq@techandguard.co.za">aneleq@techandguard.co.za</a> urgently.</p>
+            <p>If you have not yet submitted your banking details, please contact <a href="mailto:${appConfig.company.supportEmail}">${appConfig.company.supportEmail}</a> urgently.</p>
             
             <hr style="margin: 20px 0; border-color: #e5e7eb;">
             

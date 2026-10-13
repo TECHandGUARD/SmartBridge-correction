@@ -73,14 +73,14 @@ export default function ProspectusLibrary({ isAdmin }) {
       const fileName = `university_prospectuses/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
-        .from('university_prospectuses')
+        .from('prospectus')
         .upload(fileName, file);
       
       if (uploadError) throw uploadError;
       
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('university_prospectuses')
+        .from('prospectus')
         .getPublicUrl(fileName);
       
       // Save to database
@@ -93,7 +93,7 @@ export default function ProspectusLibrary({ isAdmin }) {
           application_link: form.application_link || null,
           file_url: publicUrl,
           is_approved: true,
-          status: 'approved'
+          is_active: true
         });
       
       if (insertError) throw insertError;
@@ -227,7 +227,7 @@ export default function ProspectusLibrary({ isAdmin }) {
               type="number" 
               placeholder="Year (e.g. 2027)" 
               value={form.year} 
-              onChange={e => setForm({...form, year: e.target.value})} 
+              onChange={e => setForm({...form, year: Number(e.target.value)})}
             />
             <Input 
               placeholder="Application link (optional)" 

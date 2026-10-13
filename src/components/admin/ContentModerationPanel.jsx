@@ -1,3 +1,4 @@
+import FileLink from '@/components/operations/FileLink';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,14 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Search, Pencil, Check, X, ExternalLink, Loader2, BookOpen, FileText, Plus, Trash2 } from 'lucide-react';
+import { Search, Pencil, Check, X, ExternalLink, Loader2, BookOpen, FileText, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const SUBJECTS = ['Mathematics', 'Mathematical Literacy', 'Physical Sciences', 'Life Sciences', 'Geography', 'History', 'Accounting', 'Business Studies', 'Economics', 'English Home Language', 'Life Orientation'];
 const GRADES = ['Grade 10', 'Grade 11', 'Grade 12'];
 const RESOURCE_TYPES = ['Notes', 'Past Paper', 'Study Guide', 'Worksheet', 'Video', 'Other'];
 
-function EditableField({ label, value, onChange, type = 'text', options }) {
+function EditableField({ label, value, onChange, type = 'text', options = [] }) {
   if (options) return (
     <div className="space-y-1">
       <Label className="text-xs text-muted-foreground">{label}</Label>
@@ -96,9 +97,9 @@ function ResourceCard({ resource, onSave, onDelete }) {
               <p className="font-semibold text-sm">{resource.title}</p>
               {resource.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{resource.description}</p>}
               {resource.file_url && (
-                <a href={resource.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline mt-1.5">
+                <FileLink reference={resource.file_url} className="flex items-center gap-1 text-xs text-primary hover:underline mt-1.5">
                   <ExternalLink className="w-3 h-3" /> View File
-                </a>
+                </FileLink>
               )}
               <p className="text-xs text-muted-foreground mt-1">By: {resource.tutor_email || resource.created_by_id || '—'}</p>
             </div>
@@ -140,7 +141,7 @@ function ResourceCard({ resource, onSave, onDelete }) {
 
 function StudyGuideCard({ guide, onSave, onDelete }) {
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState(guide);
+  const [form, setForm] = useState({ ...guide, external_link: guide.file_url || '', source: guide.metadata?.source || '' });
   const [saving, setSaving] = useState(false);
 
   const field = (key) => (val) => setForm(p => ({ ...p, [key]: val }));
@@ -154,8 +155,8 @@ function StudyGuideCard({ guide, onSave, onDelete }) {
           title: form.title,
           description: form.description,
           category: form.category,
-          external_link: form.external_link,
-          source: form.source,
+          file_url: form.external_link,
+          metadata: { ...guide.metadata, source: form.source },
         })
         .eq('id', guide.id);
       
@@ -187,12 +188,12 @@ function StudyGuideCard({ guide, onSave, onDelete }) {
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap gap-1.5 mb-1.5">
                 <Badge variant="outline" className="text-xs">{guide.category}</Badge>
-                {guide.source && <Badge variant="secondary" className="text-xs">{guide.source}</Badge>}
+                {guide.metadata?.source && <Badge variant="secondary" className="text-xs">{guide.metadata?.source}</Badge>}
               </div>
               <p className="font-semibold text-sm">{guide.title}</p>
               {guide.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{guide.description}</p>}
-              {guide.external_link && (
-                <a href={guide.external_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline mt-1.5">
+              {guide.file_url && (
+                <a href={guide.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline mt-1.5">
                   <ExternalLink className="w-3 h-3" /> View Resource
                 </a>
               )}

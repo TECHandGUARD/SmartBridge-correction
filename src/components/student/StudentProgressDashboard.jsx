@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -39,7 +38,7 @@ const COLORS = ['#2563eb', '#16a34a', '#d97706', '#ea580c', '#7c3aed', '#db2777'
 
 const SHORT = (s) => s?.length > 10 ? s.slice(0, 10) + '…' : s;
 
-function StatCard({ icon: Icon, label, value, sub, color }) {
+function StatCard({ icon: Icon, label, value, sub = null, color }) {
   return (
     <Card className="border-border bg-card shadow-sm">
       <CardContent className="pt-5 pb-4">
@@ -67,7 +66,7 @@ export default function StudentProgressDashboard({ user }) {
       setError(null);
 
       const { data, error: dbError } = await supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('subject, grade_level, study_sessions, last_access, notes')
         .eq('user_email', user.email);
 

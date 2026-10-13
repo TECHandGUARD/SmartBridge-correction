@@ -1,18 +1,17 @@
+import FileLink from '@/components/operations/FileLink';
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  BookOpen, ArrowRight, Star, GraduationCap, Users,
-  Bell, TrendingUp, Calendar, FileText, Video, ClipboardList,
+  BookOpen, ArrowRight, Star, GraduationCap, Users, TrendingUp, Calendar, FileText, Video, ClipboardList,
   MessageSquare, Briefcase, Award, ChevronRight
 } from 'lucide-react';
 import PremiumBanner from './PremiumBanner';
 import PremiumBadge from '@/components/ui/PremiumBadge';
 import usePremiumAccess from '@/hooks/usePremiumAccess';
 import TrialBanner from '@/components/ui/TrialBanner';
-import { toast } from 'sonner';
 
 // Role-specific nav tiles — only what's relevant
 const ROLE_CONFIG = {
@@ -250,14 +249,12 @@ export default function PersonalizedHome({ user }) {
                       <PremiumBadge variant="lock" />
                     </div>
                   ) : res.resource_url ? (
-                    <a
-                      href={res.resource_url}
-                      target="_blank"
-                      rel="noreferrer"
+                    <FileLink
+                      reference={res.resource_url}
                       className="mt-3 text-xs text-primary hover:underline flex items-center gap-1"
                     >
                       Download <ArrowRight className="w-3 h-3" />
-                    </a>
+                    </FileLink>
                   ) : null}
                   {res.is_premium && (
                     <div className="absolute top-3 right-3">

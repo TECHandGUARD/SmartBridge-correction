@@ -13,9 +13,9 @@ const actions = [
   { key: 'sessions', label: 'Live Sessions', icon: Video, color: 'bg-indigo-100 text-indigo-700', activeColor: 'bg-indigo-600 text-white' },
 ];
 
-export default function TutorQuickActions({ onAction, activeSection, stats }) {
+export default function TutorQuickActions({ onAction, activeSection, stats = {} }) {
   return (
-    <Card className="border-border sticky top-0 z-20 bg-card/95 backdrop-blur-sm">
+    <Card className="border-border bg-card/95 backdrop-blur-sm">
       <CardContent className="pt-4 pb-3">
         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
           {actions.map(a => {
@@ -23,13 +23,14 @@ export default function TutorQuickActions({ onAction, activeSection, stats }) {
             return (
               <button
                 key={a.key}
+                aria-pressed={isActive}
                 onClick={() => onAction(a.key)}
                 className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all relative group ${isActive ? 'bg-muted ring-1 ring-primary/30' : 'hover:bg-muted/50'}`}
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${isActive ? a.activeColor : a.color}`}>
                   <a.icon className="w-5 h-5" />
                 </div>
-                <span className={`text-[10px] font-medium text-center leading-tight ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>{a.label}</span>
+                <span className={`text-xs font-medium text-center leading-tight ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>{a.label}</span>
                 {stats?.[a.key] > 0 && (
                   <Badge className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] h-4 min-w-4 px-1 flex items-center justify-center">
                     {stats[a.key]}

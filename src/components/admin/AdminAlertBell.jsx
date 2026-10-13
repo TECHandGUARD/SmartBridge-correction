@@ -1,3 +1,4 @@
+import { getAdminNotificationEmails } from '@/lib/admin-notifications';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';  // ✅ Fixed import path
@@ -17,10 +18,9 @@ function timeSince(dateStr) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-// Admin email addresses
-const ADMIN_EMAILS = ['aneleq@techandguard.co.za', 'aneleqamata95@gmail.com'];
 
-// Send email to both admins when a new tutor registers
+
+// Send email to active administrators when a new tutor registers
 const sendAdminAlertEmail = async (newTutor) => {
   const tutorType = newTutor.sace_number ? 'SACE Registered Tutor' : 'Student Tutor';
   const credentials = newTutor.sace_number 
@@ -28,9 +28,9 @@ const sendAdminAlertEmail = async (newTutor) => {
     : `Student Tutor - Verification required`;
   
   try {
-    // Send to both admin emails
-    for (const adminEmail of ADMIN_EMAILS) {
-      await supabase.functions.invoke('send-email', {
+    // Send to active administrator emails
+    for (const adminEmail of await getAdminNotificationEmails(supabase)) {
+      const { error } = await supabase.functions.invoke('send-email', {
         body: {
           to: adminEmail,
           subject: `🚨 ACTION REQUIRED: New ${tutorType} — ${newTutor.full_name || 'Unknown'}`,
@@ -72,6 +72,7 @@ const sendAdminAlertEmail = async (newTutor) => {
           `,
         },
       });
+      if (error) throw error;
     }
     return { success: true };
   } catch (error) {
@@ -122,7 +123,7 @@ export default function AdminAlertBell() {
         const newTutor = payload.new;
         setAlerts(prev => [newTutor, ...prev]);
         
-        // Send email alert to both admins
+        // Send email alert to active administrators
         const emailResult = await sendAdminAlertEmail(newTutor);
         
         // Show toast notification

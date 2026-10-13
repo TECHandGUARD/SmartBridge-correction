@@ -40,7 +40,7 @@ export default function CAPSAdmin() {
 
   // Inline edit state
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
+  const [editForm, setEditForm] = useState({ ...EMPTY_FORM });
   const [editSaving, setEditSaving] = useState(false);
   const [replacingId, setReplacingId] = useState(null);
 
@@ -101,13 +101,13 @@ export default function CAPSAdmin() {
     const fileName = `${safeSubject}/${safeGrade}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
     
     const { error: uploadError } = await supabase.storage
-      .from('caps-documents')
+      .from('caps_documents')
       .upload(fileName, file);
 
     if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
-      .from('caps-documents')
+      .from('caps_documents')
       .getPublicUrl(fileName);
 
     return publicUrl;
@@ -178,6 +178,7 @@ export default function CAPSAdmin() {
   const startEdit = (doc) => {
     setEditingId(doc.id);
     setEditForm({
+      file_url: doc.file_url || "",
       title: doc.title || '',
       description: doc.description || '',
       document_type: doc.document_type || '',
@@ -190,7 +191,7 @@ export default function CAPSAdmin() {
 
   const cancelEdit = () => { 
     setEditingId(null); 
-    setEditForm({}); 
+    setEditForm({ ...EMPTY_FORM });
   };
 
   const saveEdit = async (doc) => {
@@ -241,7 +242,7 @@ export default function CAPSAdmin() {
       // 1. Delete old file from storage
       const oldStoragePath = getStoragePathFromUrl(doc.file_url);
       if (oldStoragePath) {
-        await supabase.storage.from('caps-documents').remove([oldStoragePath]);
+        await supabase.storage.from('caps_documents').remove([oldStoragePath]);
       }
 
       // 2. Upload new file
@@ -273,7 +274,7 @@ export default function CAPSAdmin() {
       // 1. Delete file from storage
       const storagePath = getStoragePathFromUrl(doc.file_url);
       if (storagePath) {
-        await supabase.storage.from('caps-documents').remove([storagePath]);
+        await supabase.storage.from('caps_documents').remove([storagePath]);
       }
 
       // 2. Delete from database
@@ -309,7 +310,7 @@ export default function CAPSAdmin() {
         .filter(Boolean);
       
       if (storagePaths.length) {
-        await supabase.storage.from('caps-documents').remove(storagePaths);
+        await supabase.storage.from('caps_documents').remove(storagePaths);
       }
 
       // 2. Delete all from database

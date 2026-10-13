@@ -1,312 +1,131 @@
-// src/lib/AuthContext.jsx
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
+import { mergeProfile, editableProfile, withTimeout } from './auth-utils.js';
 
-const AuthContext = createContext();
-
+/** @typedef {{ user: any, role: string, isAuthenticated: boolean, isLoadingAuth: boolean, loading: boolean,
+ * authError: any, authChecked: boolean, isLoadingPublicSettings: boolean, appPublicSettings: {enabled: boolean},
+ * isAdmin: boolean, isTutor: boolean, isStudent: boolean, isParent: boolean,
+ * signIn: (email: string, password: string) => Promise<any>, signUp: (email: string, password: string, metadata?: any) => Promise<any>,
+ * signInWithGoogle: () => Promise<any>, signOut: () => Promise<void>, updateUserProfile: (updates: any) => Promise<any>,
+ * checkUser: () => Promise<any>, navigateToLogin: () => void, checkAppState: () => Promise<any> }} AuthState */
+/** @type {import('react').Context<AuthState | null>} */
+const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState(null);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
-  const [appPublicSettings, setAppPublicSettings] = useState(null);
-
-  // ✅ Computed properties
-  const role = user?.role || 'user';
-  const isAdmin = user?.role === 'admin' || user?.is_super_admin === true;
-  const isTutor = ['sace_tutor', 'student_tutor'].includes(role);
-  const isStudent = role === 'student';
-  const isParent = role === 'parent';
-
-  // Fetch user profile from user_profiles table
-  const fetchUserProfile = useCallback(async (email) => {
-    if (!email) return null;
+  const generation = useRef(0);
+  const alive = useRef(true);
+  const hydrate = useCallback(async (authUser) => {
+    const request = ++generation.current;
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user profile:', error);
+      let next = null;
+      if (authUser) {
+        const { data, error } = await withTimeout(supabase.from('users').select('*').eq('id', authUser.id).maybeSingle());
+        if (error) throw error;
+        if (!data) throw new Error('Your account profile is unavailable. Please retry or contact support.');
+        if (data.is_active === false) throw new Error('Your account is inactive. Please contact support.');
+        next = mergeProfile(authUser, data);
       }
-      return data;
+      if (alive.current && request === generation.current) {
+        setUser(next); setAuthError(null); setIsLoadingAuth(false);
+      }
+      return next;
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-      return null;
+      if (alive.current && request === generation.current) {
+        setUser(null); setAuthError({ type: 'profile_unavailable', message: error.message }); setIsLoadingAuth(false);
+      }
+      throw error;
     }
   }, []);
-
-  // Set user with profile data merged
-  const setUserWithProfile = useCallback(async (authUser) => {
-    if (!authUser) {
-      setUser(null);
-      setIsAuthenticated(false);
-      return;
-    }
-
-    const profile = await fetchUserProfile(authUser.email);
-
-    const mergedUser = {
-      ...authUser,
-      ...profile,
-      email: authUser.email,
-      full_name: profile?.full_name || authUser.user_metadata?.full_name,
-      role: profile?.role || 'user',
-      is_super_admin: profile?.is_super_admin || false,
-      onboarding_complete: profile?.onboarding_complete ?? false,
-    };
-
-    setUser(mergedUser);
-    setIsAuthenticated(true);
-  }, [fetchUserProfile]);
-
-  // Check current user session
   const checkUser = useCallback(async () => {
     setIsLoadingAuth(true);
-    setAuthError(null);
-
+    const request = generation.current;
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error) throw error;
-
-      if (session?.user) {
-        await setUserWithProfile(session.user);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
+      const { data, error } = await withTimeout(supabase.auth.getUser());
+      if (request !== generation.current) return null;
+      if (error) {
+        if (error.name === 'AuthSessionMissingError') return await hydrate(null);
+        throw error;
       }
+      return await hydrate(data.user);
     } catch (error) {
-      console.error('Auth check failed:', error);
-      setAuthError({ type: 'auth_required', message: error.message });
-      setUser(null);
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoadingAuth(false);
-      setAuthChecked(true);
-    }
-  }, [setUserWithProfile]);
-
-  // Listen for auth state changes
-  useEffect(() => {
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        await setUserWithProfile(session.user);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
+      if (alive.current && request === generation.current) {
+        setUser(null); setAuthError({ type: 'auth_failed', message: error.message }); setIsLoadingAuth(false);
       }
-      setIsLoadingAuth(false);
-      setAuthChecked(true);
+      return null;
+    }
+  }, [hydrate]);
+  useEffect(() => {
+    alive.current = true;
+    let timer;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Leave the auth callback before calling Supabase to avoid auth-lock deadlocks.
+      clearTimeout(timer);
+      if (!session?.user) {
+        ++generation.current; setUser(null); setIsLoadingAuth(false); setAuthError(null); return;
+      }
+      timer = setTimeout(() => { hydrate(session.user).catch(() => {}); }, 0);
     });
-
-    return () => subscription.unsubscribe();
-  }, [checkUser, setUserWithProfile]);
-
-  // Sign in with email/password
+    checkUser();
+    return () => { alive.current = false; ++generation.current; clearTimeout(timer); subscription.unsubscribe(); };
+  }, [checkUser, hydrate]);
   const signIn = async (email, password) => {
     setIsLoadingAuth(true);
-    setAuthError(null);
-
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
+      const { data, error } = await withTimeout(supabase.auth.signInWithPassword({ email: email.trim(), password }));
       if (error) throw error;
-
-      await setUserWithProfile(data.user);
-      toast.success('Signed in successfully!');
+      await hydrate(data.user);
       return { success: true, data };
     } catch (error) {
-      console.error('Sign in error:', error);
-      setAuthError({ type: 'login_failed', message: error.message });
-      toast.error(error.message || 'Failed to sign in');
+      setAuthError({ type: 'login_failed', message: error.message }); toast.error(error.message);
       return { success: false, error };
-    } finally {
-      setIsLoadingAuth(false);
-    }
+    } finally { setIsLoadingAuth(false); }
   };
-
-  // Sign in with Google OAuth
   const signInWithGoogle = async () => {
-    setIsLoadingAuth(true);
-    setAuthError(null);
-
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-
+      const { data, error } = await withTimeout(supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/auth/callback` } }));
       if (error) throw error;
-
       return { success: true, data };
-    } catch (error) {
-      console.error('Google sign in error:', error);
-      setAuthError({ type: 'login_failed', message: error.message });
-      toast.error(error.message || 'Failed to sign in with Google');
-      return { success: false, error };
-    } finally {
-      setIsLoadingAuth(false);
-    }
+    } catch (error) { toast.error(error.message); return { success: false, error }; }
   };
-
-  // Sign up new user
   const signUp = async (email, password, metadata = {}) => {
-    setIsLoadingAuth(true);
-    setAuthError(null);
-
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata
-        }
-      });
-
+      // Profile creation and privileges belong to the database trigger.
+      const { data, error } = await withTimeout(supabase.auth.signUp({ email: email.trim(), password,
+        options: { data: { full_name: metadata.full_name?.trim() || '' }, emailRedirectTo: `${window.location.origin}/auth/callback` } }));
       if (error) throw error;
-
-      // Create user profile in user_profiles table
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert([{
-            email: data.user.email,
-            full_name: metadata.full_name || '',
-            role: metadata.role || 'user',
-            onboarding_complete: false,
-          }]);
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-        }
-      }
-
-      toast.success('Account created! Please check your email to verify.');
+      toast.success(data.session ? 'Account created.' : 'Please check your email to verify your account.');
       return { success: true, data };
-    } catch (error) {
-      console.error('Sign up error:', error);
-      setAuthError({ type: 'signup_failed', message: error.message });
-      toast.error(error.message || 'Failed to sign up');
-      return { success: false, error };
-    } finally {
-      setIsLoadingAuth(false);
-    }
+    } catch (error) { toast.error(error.message); return { success: false, error }; }
   };
-
-  // Sign out
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setIsAuthenticated(false);
-      toast.success('Signed out successfully');
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Sign out error:', error);
-      toast.error('Failed to sign out');
-    }
-  };
-
-  // Navigate to login page
-  const navigateToLogin = () => {
-    window.location.href = '/login';
-  };
-
-  // Update user profile
-  const updateUserProfile = async (updates) => {
-    if (!user?.email) return { success: false, error: 'No user logged in' };
-
-    try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('email', user.email);
-
+      const { error } = await withTimeout(supabase.auth.signOut());
       if (error) throw error;
-
-      // Update local user state
-      setUser(prev => ({
-        ...prev,
-        ...updates
-      }));
-
-      toast.success('Profile updated successfully');
-      return { success: true };
-    } catch (error) {
-      console.error('Profile update error:', error);
-      toast.error(error.message || 'Failed to update profile');
-      return { success: false, error };
-    }
+      ++generation.current; setUser(null); setAuthError(null); window.location.assign('/login');
+    } catch (error) { toast.error(error.message || 'Could not sign out. Please retry.'); }
   };
-
-  // Check app state (simplified for Supabase)
-  const checkAppState = useCallback(async () => {
-    setIsLoadingPublicSettings(true);
+  const updateUserProfile = async (updates) => {
     try {
-      setAppPublicSettings({ enabled: true });
-    } catch (error) {
-      console.error('App state check failed:', error);
-    } finally {
-      setIsLoadingPublicSettings(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    checkAppState();
-  }, [checkAppState]);
-
-  // ✅ The context value includes computed properties
-  const value = {
-    user,
-    isAuthenticated,
-    isLoadingAuth,
-    isLoadingPublicSettings,
-    authError,
-    appPublicSettings,
-    authChecked,
-    role,
-    isAdmin,
-    isTutor,
-    isStudent,
-    isParent,
-    loading: isLoadingAuth, // Alias for ProtectedRoute
-    signUp,
-    signIn,
-    signInWithGoogle,
-    signOut,
-    navigateToLogin,
-    updateUserProfile,
-    checkUser,
-    checkAppState,
+      if (!user?.id) throw new Error('Please sign in.');
+      const { error } = await withTimeout(supabase.from('users').update(editableProfile(updates)).eq('id', user.id).select('id').single());
+      if (error) throw error;
+      if (!await checkUser()) throw new Error('Profile saved, but could not refresh. Please retry.');
+      return { success: true };
+    } catch (error) { toast.error(error.message); return { success: false, error }; }
   };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const role = user?.is_super_admin ? 'admin' : user?.role || 'user';
+  return <AuthContext.Provider value={{ user, role, isAuthenticated: !!user, isLoadingAuth, loading: isLoadingAuth,
+    authError, authChecked: !isLoadingAuth, isLoadingPublicSettings: false, appPublicSettings: { enabled: true },
+    isAdmin: user?.is_super_admin === true, isTutor: ['sace_tutor', 'student_tutor', 'tutor'].includes(role), isStudent: role === 'student', isParent: role === 'parent',
+    signIn, signUp, signInWithGoogle, signOut, updateUserProfile, checkUser,
+    navigateToLogin: () => window.location.assign('/login'), checkAppState: checkUser,
+  }}>{children}</AuthContext.Provider>;
 };
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };

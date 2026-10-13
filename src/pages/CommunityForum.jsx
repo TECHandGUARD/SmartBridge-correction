@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -283,9 +283,7 @@ export default function CommunityForum() {
               <ForumPostCard
                 key={post.id}
                 post={post}
-                user={user}
                 onClick={() => setSelectedPostId(post.id)}
-                onUpdated={handlePostUpdated}
               />
             ))}
           </div>

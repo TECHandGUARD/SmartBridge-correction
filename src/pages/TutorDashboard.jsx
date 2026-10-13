@@ -1,11 +1,14 @@
+import FileLink from '@/components/operations/FileLink';
+import { Link } from 'react-router-dom';
+import { appConfig } from '@/lib/config';
+import { useDashboardSection } from '@/lib/useDashboardSection';
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
-import { SUBJECTS } from '@/lib/subjects';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, CheckCircle, FileText, Star, Trash2, Upload, ShieldCheck, Loader2 } from 'lucide-react';
+import { BookOpen, CheckCircle, FileText, Star, Trash2, ShieldCheck, Loader2 } from 'lucide-react';
 import usePremiumAccess from '@/hooks/usePremiumAccess';
 import DashboardPremiumGate from '@/components/ui/DashboardPremiumGate';
 import { toast } from 'sonner';
@@ -31,11 +34,11 @@ import LessonPlanner from '@/components/tutor/LessonPlanner';
 import { AnnouncementBanner } from '@/components/admin/AnnouncementManager';
 
 export default function TutorDashboard() {
-  const { user } = useOutletContext() || {};
+  const { user, checkUser } = useAuth();
   const { isPremium, isOnTrial, trialDaysLeft, loading: premLoading } = usePremiumAccess(user);
   const [profile, setProfile] = useState(null);
   const [resources, setResources] = useState([]);
-  const [activeSection, setActiveSection] = useState(null);
+  const [activeSection, toggleSection] = useDashboardSection('tutor');
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -142,9 +145,6 @@ export default function TutorDashboard() {
     }
   };
 
-  const toggleSection = (key) => {
-    setActiveSection(prev => prev === key ? null : key);
-  };
 
   // ---- Access Control Screens ----
   if (!user) {
@@ -262,7 +262,7 @@ export default function TutorDashboard() {
           <div className="mb-6 space-y-4">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <TutorAvailabilityManager user={user} />
-              <MeetingLinks user={user} />
+              <MeetingLinks user={user} onProfileUpdate={checkUser} />
               <TutorVerificationBadge user={user} profile={profile} onProfileUpdate={setProfile} />
             </div>
             <BookingCalendar user={user} />
@@ -352,15 +352,15 @@ export default function TutorDashboard() {
             {profile && !profile.is_premium && (
               <div className="bg-gradient-to-r from-primary/10 to-green-dark/10 border border-primary/20 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="flex-1">
-                  <p className="font-playfair font-bold text-lg text-foreground">Go Tutor Pro — R150/month</p>
+                  <p className="font-playfair font-bold text-lg text-foreground">Go Tutor Pro — R{appConfig.prices.tutor_pro}/month</p>
                   <p className="text-sm text-muted-foreground mt-0.5">Eliminate the 10% platform commission on all your bookings. Featured listing + advanced analytics.</p>
-                  <p className="text-xs text-muted-foreground mt-1">Use your email as reference on Yoco. Activated by Admin within 60 min.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Use your email as reference on Yoco. Access starts after payment is confirmed.</p>
                 </div>
-                <a href="https://pay.yoco.com/r/78MMPk" target="_blank" rel="noopener noreferrer">
+                <Link to="/premium">
                   <Button className="bg-primary gap-2 whitespace-nowrap">
                     <Star className="w-4 h-4 fill-current" /> Upgrade to Pro
                   </Button>
-                </a>
+                </Link>
               </div>
             )}
           </div>
@@ -396,9 +396,9 @@ function ResourcesList({ resources, onDelete }) {
               </div>
               <div className="flex items-center gap-1.5">
                 {r.file_url && (
-                  <a href={r.file_url} target="_blank" rel="noopener noreferrer">
-                    <Button size="sm" variant="ghost" className="text-primary text-xs h-8">View</Button>
-                  </a>
+                  <FileLink reference={r.file_url}>
+                    <span>View</span>
+                  </FileLink>
                 )}
                 <Button size="sm" variant="ghost" className="text-destructive h-8" onClick={() => onDelete(r.id)}>
                   <Trash2 className="w-4 h-4" />

@@ -9,7 +9,16 @@
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.js",
+    "test:e2e": "node tests/browser-core-flows.cjs",
+    "test:e2e:audit": "node tests/browser-core-flows.cjs --all-pages",
+    "check:env": "node scripts/check-env.js",
+    "test:e2e:config": "node tests/browser-config.cjs",
+    "check:edge": "node scripts/check-edge.js",
+    "check:api": "node scripts/check-api-contracts.js",
+    "prepare:edge": "node scripts/prepare-edge-deployment.js",
+    "configure:auth-email": "node scripts/configure-auth-email.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
@@ -91,6 +100,7 @@
     "eslint-plugin-react-refresh": "^0.4.18",
     "eslint-plugin-unused-imports": "^4.3.0",
     "globals": "^15.14.0",
+    "playwright": "^1.64.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.2",

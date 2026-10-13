@@ -1,3 +1,5 @@
+import FileLink from '@/components/operations/FileLink';
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
@@ -9,7 +11,6 @@ import { toast } from 'sonner';
 import ResourceFilter from '@/components/resources/ResourceFilter';
 import SubjectTutors from '@/components/subject/SubjectTutors';
 import ResourceRatingComponent from '@/components/resources/ResourceRating';
-import { useOutletContext } from 'react-router-dom';
 
 const typeIcons = {
   Notes: BookOpen,
@@ -22,7 +23,7 @@ const typeIcons = {
 
 export default function SubjectDetail() {
   const { code } = useParams();
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const subject = getSubjectByCode(code);
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -232,11 +233,11 @@ export default function SubjectDetail() {
                           </Button>
                         </Link>
                       ) : (
-                        <a href={resource.file_url} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" variant="outline" className="gap-1.5">
+                        <FileLink reference={resource.file_url}>
+                          <span>
                             <Download className="w-3.5 h-3.5" /> Download
-                          </Button>
-                        </a>
+                          </span>
+                        </FileLink>
                       )
                     ) : null}
                   </div>

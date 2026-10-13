@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, BookOpen, Trophy, ArrowRight, RotateCcw, Clock, TrendingUp, ChevronRight, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, BookOpen, Trophy, ArrowRight, RotateCcw, TrendingUp, ChevronRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const SUBJECTS = [
@@ -17,44 +18,8 @@ const SUBJECTS = [
 ];
 const GRADES = ['Grade 10', 'Grade 11', 'Grade 12'];
 
-// Built-in sample questions for quick starts
-const SAMPLE_QUESTIONS = {
-  'Mathematics': [
-    { question: 'What is the derivative of x²?', options: ['x', '2x', 'x²', '2'], correct_index: 1, explanation: 'Using the power rule: d/dx(xⁿ) = nxⁿ⁻¹, so d/dx(x²) = 2x.' },
-    { question: 'Solve: 2x + 6 = 14', options: ['x = 3', 'x = 4', 'x = 5', 'x = 10'], correct_index: 1, explanation: '2x = 14 - 6 = 8, so x = 4.' },
-    { question: 'What is sin(90°)?', options: ['0', '0.5', '1', '√2/2'], correct_index: 2, explanation: 'sin(90°) = 1 by definition of the unit circle.' },
-    { question: 'Simplify: 3(2x - 4) + 6', options: ['6x - 6', '6x + 6', '6x - 18', '6x - 10'], correct_index: 0, explanation: '3(2x - 4) + 6 = 6x - 12 + 6 = 6x - 6.' },
-    { question: 'The area of a circle with radius 5 is:', options: ['10π', '25π', '5π', '50π'], correct_index: 1, explanation: 'Area = πr² = π × 5² = 25π.' },
-  ],
-  'Physical Sciences': [
-    { question: 'What is Newton\'s Second Law of Motion?', options: ['F = ma', 'E = mc²', 'v = d/t', 'P = mv'], correct_index: 0, explanation: 'F = ma: Force equals mass times acceleration.' },
-    { question: 'What is the chemical symbol for Gold?', options: ['Go', 'Gd', 'Au', 'Ag'], correct_index: 2, explanation: 'Gold\'s symbol Au comes from the Latin word "Aurum".' },
-    { question: 'The unit of electric current is:', options: ['Volt', 'Ohm', 'Watt', 'Ampere'], correct_index: 3, explanation: 'Electric current is measured in Amperes (A).' },
-    { question: 'Which of the following is NOT a vector quantity?', options: ['Force', 'Velocity', 'Mass', 'Acceleration'], correct_index: 2, explanation: 'Mass is a scalar quantity — it has magnitude but no direction.' },
-    { question: 'What is the speed of light in a vacuum?', options: ['3×10⁶ m/s', '3×10⁸ m/s', '3×10¹⁰ m/s', '3×10⁴ m/s'], correct_index: 1, explanation: 'c ≈ 3×10⁸ m/s (approximately 300,000 km/s).' },
-  ],
-  'Life Sciences': [
-    { question: 'What is the powerhouse of the cell?', options: ['Nucleus', 'Ribosome', 'Mitochondria', 'Golgi Apparatus'], correct_index: 2, explanation: 'Mitochondria produce ATP through cellular respiration.' },
-    { question: 'DNA stands for:', options: ['Deoxyribose Nucleic Acid', 'Deoxyribonucleic Acid', 'Double Nucleic Acid', 'Dinitrogen Acid'], correct_index: 1, explanation: 'DNA = Deoxyribonucleic Acid, the molecule carrying genetic information.' },
-    { question: 'Which process do plants use to make food?', options: ['Respiration', 'Fermentation', 'Photosynthesis', 'Digestion'], correct_index: 2, explanation: 'Photosynthesis converts CO₂ + H₂O + light energy into glucose + O₂.' },
-    { question: 'How many chromosomes do humans have?', options: ['23', '44', '46', '48'], correct_index: 2, explanation: 'Humans have 46 chromosomes (23 pairs) in somatic cells.' },
-    { question: 'Blood type is determined by:', options: ['White blood cells', 'Antigens on red blood cells', 'Plasma proteins', 'Haemoglobin'], correct_index: 1, explanation: 'ABO blood type is determined by antigens (A and/or B) on red blood cells.' },
-  ],
-  'Accounting': [
-    { question: 'The accounting equation is:', options: ['Assets = Liabilities + Equity', 'Assets + Liabilities = Equity', 'Revenue - Expenses = Profit', 'Cash = Assets - Liabilities'], correct_index: 0, explanation: 'A = L + E: Assets must always equal Liabilities plus Equity.' },
-    { question: 'A debit entry in accounts means:', options: ['Money leaving the bank', 'Increase in assets or expenses', 'Increase in liabilities', 'Decrease in equity'], correct_index: 1, explanation: 'Debit increases assets and expenses; credit increases liabilities, equity, and income.' },
-    { question: 'Depreciation is:', options: ['An income', 'A liability', 'An expense', 'An asset'], correct_index: 2, explanation: 'Depreciation is a non-cash expense reflecting the reduction in asset value.' },
-    { question: 'VAT in South Africa is currently:', options: ['10%', '14%', '15%', '20%'], correct_index: 2, explanation: 'South Africa\'s standard VAT rate is 15% (raised from 14% in 2018).' },
-    { question: 'A Trial Balance checks:', options: ['Profitability', 'That debits equal credits', 'Cash flow', 'Net asset value'], correct_index: 1, explanation: 'A Trial Balance verifies that total debits = total credits in the ledger.' },
-  ],
-};
-
-function getQuestionsForQuiz(subject) {
-  return SAMPLE_QUESTIONS[subject] || SAMPLE_QUESTIONS['Mathematics'];
-}
-
 export default function PracticeQuiz() {
-  const { user } = useOutletContext();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [stage, setStage] = useState('select'); // select | quiz | result
@@ -79,7 +44,7 @@ export default function PracticeQuiz() {
       const { data, error } = await supabase
         .from('quiz_results')
         .select('*')
-        .eq('student_email', user.email)
+        .eq('student_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -95,8 +60,8 @@ export default function PracticeQuiz() {
   }, [loadPastResults]);
 
   const startQuiz = async () => {
-    if (!subject) { 
-      toast.error('Please select a subject'); 
+    if (!subject || !grade) {
+      toast.error('Please select a subject and grade');
       return; 
     }
     
@@ -107,6 +72,7 @@ export default function PracticeQuiz() {
         .from('quizzes')
         .select('*')
         .eq('subject', subject)
+        .eq('grade', grade)
         .eq('is_published', true)
         .order('created_at', { ascending: false })
         .limit(1);
@@ -119,8 +85,8 @@ export default function PracticeQuiz() {
         title = data[0].title;
         qId = data[0].id;
       } else {
-        qs = getQuestionsForQuiz(subject);
-        title = `${subject} Practice Quiz`;
+        toast.info('No published quiz is available for this subject and grade yet.');
+        return;
       }
       
       setQuestions(qs);
@@ -148,8 +114,8 @@ export default function PracticeQuiz() {
 
   const handleNext = () => {
     const newAnswers = [...answers, { selected, correct: questions[currentQ].correct_index }];
-    setAnswers(newAnswers);
     if (currentQ + 1 < questions.length) {
+      setAnswers(newAnswers);
       setCurrentQ(currentQ + 1);
       setSelected(null);
       setShowExplanation(false);
@@ -160,6 +126,8 @@ export default function PracticeQuiz() {
   };
 
   const finishQuiz = async (finalAnswers) => {
+    if (loading) return;
+    setLoading(true);
     const score = finalAnswers.filter(a => a.selected === a.correct).length;
     const total = questions.length;
     const pct = Math.round((score / total) * 100);
@@ -170,6 +138,7 @@ export default function PracticeQuiz() {
         const { data, error } = await supabase
           .from('quiz_results')
           .insert({
+            student_id: user.id,
             student_email: user.email,
             quiz_id: quizId || `builtin_${subject}`,
             quiz_title: quizTitle,
@@ -188,10 +157,14 @@ export default function PracticeQuiz() {
         setPastResults(prev => [data, ...prev]);
       } catch (err) {
         console.error('Error saving quiz result:', err);
+        toast.error('Your result could not be saved. Please retry.');
+        setLoading(false);
+        return;
       }
     }
     setAnswers(finalAnswers);
     setStage('result');
+    setLoading(false);
   };
 
   const resetQuiz = () => {
@@ -204,7 +177,7 @@ export default function PracticeQuiz() {
   };
 
   if (stage === 'select') return <SelectStage subject={subject} setSubject={setSubject} grade={grade} setGrade={setGrade} onStart={startQuiz} pastResults={pastResults} loading={loading} />;
-  if (stage === 'quiz') return <QuizStage questions={questions} currentQ={currentQ} selected={selected} showExplanation={showExplanation} quizTitle={quizTitle} subject={subject} onAnswer={handleAnswer} onNext={handleNext} />;
+  if (stage === 'quiz') return <QuizStage questions={questions} currentQ={currentQ} selected={selected} showExplanation={showExplanation} quizTitle={quizTitle} subject={subject} onAnswer={handleAnswer} onNext={handleNext} saving={loading} />;
   if (stage === 'result') return <ResultStage answers={answers} questions={questions} quizTitle={quizTitle} subject={subject} onReset={resetQuiz} pastResults={pastResults} />;
 }
 
@@ -237,15 +210,15 @@ function SelectStage({ subject, setSubject, grade, setGrade, onStart, pastResult
             </Select>
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Grade (optional)</label>
+            <label className="text-sm font-medium mb-1.5 block">Grade *</label>
             <Select value={grade} onValueChange={setGrade}>
-              <SelectTrigger><SelectValue placeholder="Any grade" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Choose your grade" /></SelectTrigger>
               <SelectContent>
                 {GRADES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={onStart} className="w-full gap-2 mt-2" size="lg" disabled={loading || !subject}>
+          <Button onClick={onStart} className="w-full gap-2 mt-2" size="lg" disabled={loading || !subject || !grade}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
             {loading ? 'Loading...' : 'Start Quiz'}
           </Button>
@@ -293,7 +266,7 @@ function SelectStage({ subject, setSubject, grade, setGrade, onStart, pastResult
   );
 }
 
-function QuizStage({ questions, currentQ, selected, showExplanation, quizTitle, subject, onAnswer, onNext }) {
+function QuizStage({ questions, currentQ, selected, showExplanation, quizTitle, subject, onAnswer, onNext, saving }) {
   const q = questions[currentQ];
   const isCorrect = selected === q.correct_index;
   const progress = ((currentQ) / questions.length) * 100;
@@ -343,7 +316,7 @@ function QuizStage({ questions, currentQ, selected, showExplanation, quizTitle, 
           )}
 
           {selected !== null && (
-            <Button onClick={onNext} className="w-full gap-2 mt-2">
+            <Button onClick={onNext} disabled={saving} className="w-full gap-2 mt-2">
               {currentQ + 1 < questions.length ? 'Next Question' : 'See Results'}
               <ArrowRight className="w-4 h-4" />
             </Button>

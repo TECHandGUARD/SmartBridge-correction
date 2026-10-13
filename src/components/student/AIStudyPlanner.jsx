@@ -48,7 +48,7 @@ export default function AIStudyPlanner({ user }) {
     try {
       // Load exams for this student
       const { data: examsData, error: examsError } = await supabase
-        .from('exam_schedules')
+        .from('exam_schedule')
         .select('*')
         .eq('student_email', user.email)
         .order('exam_date', { ascending: true });
@@ -58,7 +58,7 @@ export default function AIStudyPlanner({ user }) {
       
       // Load term dates from system configuration
       const { data: configData, error: configError } = await supabase
-        .from('system_configurations')
+        .from('system_configuration')
         .select('*')
         .eq('is_active', true)
         .eq('key', 'academic_term_dates');
@@ -84,7 +84,7 @@ export default function AIStudyPlanner({ user }) {
     
     try {
       const { data, error } = await supabase
-        .from('exam_schedules')
+        .from('exam_schedule')
         .insert({
           student_email: user.email,
           subject: newExam.subject,
@@ -98,7 +98,7 @@ export default function AIStudyPlanner({ user }) {
       
       if (error) throw error;
       
-      setExams(prev => [...prev, data].sort((a, b) => new Date(a.exam_date) - new Date(b.exam_date)));
+      setExams(prev => [...prev, data].sort((a, b) => (new Date(a.exam_date)).getTime() - (new Date(b.exam_date)).getTime()));
       setNewExam({ subject: '', grade: 'Grade 12', exam_date: '', exam_type: 'Test', notes: '' });
       setShowAddExam(false);
       toast.success('Exam added!');
@@ -111,7 +111,7 @@ export default function AIStudyPlanner({ user }) {
   const removeExam = async (id) => {
     try {
       const { error } = await supabase
-        .from('exam_schedules')
+        .from('exam_schedule')
         .delete()
         .eq('id', id);
       
@@ -156,37 +156,7 @@ Align study blocks with the current academic term if term context is provided ab
 Include short breaks. Limit to 3-4 study blocks per day (each 45-60 min). Allow at least 1 rest day or light day.
 
 Respond with a structured JSON study plan.`,
-          response_json_schema: {
-            type: 'object',
-            properties: {
-              weekly_plan: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    day: { type: 'string' },
-                    date: { type: 'string' },
-                    total_hours: { type: 'number' },
-                    sessions: {
-                      type: 'array',
-                      items: {
-                        type: 'object',
-                        properties: {
-                          time: { type: 'string' },
-                          subject: { type: 'string' },
-                          duration_min: { type: 'number' },
-                          focus: { type: 'string' },
-                          priority: { type: 'string', enum: ['High', 'Medium', 'Low'] }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              tips: { type: 'array', items: { type: 'string' } },
-              summary: { type: 'string' }
-            }
-          }
+          task: 'study-plan'
         }
       });
       
@@ -207,7 +177,7 @@ Respond with a structured JSON study plan.`,
     return 'bg-green-100 text-green-700 border-green-200';
   };
 
-  const daysUntil = (dateStr) => Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
+  const daysUntil = (dateStr) => Math.ceil(((new Date(dateStr)).getTime() - (new Date()).getTime()) / (1000 * 60 * 60 * 24));
 
   return (
     <Card className="border-border">

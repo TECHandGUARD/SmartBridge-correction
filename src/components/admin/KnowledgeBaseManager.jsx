@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import {uploadPrivate} from '@/lib/private-storage';
+import FileLink from '@/components/operations/FileLink';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,8 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Plus, Trash2, ExternalLink, Loader2, BookOpen, 
-  Search, Filter, Edit, Save, X, ChevronLeft, ChevronRight,
-  AlertTriangle, Upload, FileText, CheckCircle, SortAsc, SortDesc
+  Search, Edit, X, ChevronLeft, ChevronRight, CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -27,9 +28,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const SUBJECTS = [
   'Mathematics', 'Mathematical Literacy', 'Physical Sciences', 'Life Sciences',
@@ -92,11 +92,11 @@ const ResourceCard = ({ resource, onEdit, onDelete, onToggleActive }) => {
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           {resource.resource_url && (
-            <a href={resource.resource_url} target="_blank" rel="noopener noreferrer">
-              <Button size="icon" variant="ghost" className="h-7 w-7" title="View Resource">
+            <FileLink reference={resource.resource_url}>
+              <span>
                 <ExternalLink className="w-3.5 h-3.5" />
-              </Button>
-            </a>
+              </span>
+            </FileLink>
           )}
           <Button 
             size="sm" 
@@ -156,18 +156,8 @@ const ResourceForm = ({ initialData, onSave, onCancel, isSaving }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const uploadFileToSupabase = async (file) => {
-    const fileName = `knowledge-base/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from('educational_resources')
-      .upload(fileName, file);
-    
-    if (uploadError) throw uploadError;
-    
-    const { data: { publicUrl } } = supabase.storage
-      .from('educational_resources')
-      .getPublicUrl(fileName);
-    
-    return publicUrl;
+    const uploaded=await uploadPrivate(supabase,'educational_resources',file);
+    return uploaded.reference;
   };
 
   const handleFileUpload = async (e) => {
@@ -388,8 +378,8 @@ export default function KnowledgeBaseManager({ user }) {
     
     // Sort
     filtered.sort((a, b) => {
-      if (sortBy === '-created_at') return new Date(b.created_at) - new Date(a.created_at);
-      if (sortBy === 'created_at') return new Date(a.created_at) - new Date(b.created_at);
+      if (sortBy === '-created_at') return (new Date(b.created_at)).getTime() - (new Date(a.created_at)).getTime();
+      if (sortBy === 'created_at') return (new Date(a.created_at)).getTime() - (new Date(b.created_at)).getTime();
       if (sortBy === 'title') return a.title.localeCompare(b.title);
       if (sortBy === '-title') return b.title.localeCompare(a.title);
       if (sortBy === 'subject') return (a.subject || '').localeCompare(b.subject || '');
@@ -446,6 +436,7 @@ export default function KnowledgeBaseManager({ user }) {
             caps_alignment_tag: formData.caps_alignment_tag,
             description: formData.description,
             uploaded_by: user?.email,
+            uploaded_by_id: user?.id,
             is_active: true
           })
           .select()

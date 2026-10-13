@@ -1,3 +1,6 @@
+import {uploadPrivate} from '@/lib/private-storage';
+import FileLink from '@/components/operations/FileLink';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,9 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  MessageCircle, Send, ArrowLeft, Loader2, AlertCircle, 
-  Search, UserPlus, Paperclip, FileText, CheckCircle, XCircle,
-  Users, Clock, Filter, Plus
+  MessageCircle, Send, ArrowLeft, Loader2,
+  Search, UserPlus, Paperclip, FileText,
+  Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,7 +34,7 @@ export default function ChatInbox({ user }) {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [otherTyping, setOtherTyping] = useState(false);
   const bottomRef = useRef(null);
-  const typingTimeoutRef = useRef();
+  const typingTimeoutRef = useRef(null);
 
   // QUICK REPLIES TEMPLATES
   const QUICK_REPLIES = [
@@ -73,20 +76,20 @@ export default function ChatInbox({ user }) {
       });
       
       const rooms = Object.values(roomMap).map(r => {
-        const sorted = r.messages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const sorted = r.messages.sort((a, b) => (new Date(b.created_at)).getTime() - (new Date(a.created_at)).getTime());
         const other = sorted[0]?.sender_email === user.email ? null : sorted[0];
         const otherEmail = r.room_id.split('__').find(e => e !== user.email);
         return {
           room_id: r.room_id,
           otherEmail,
           otherName: other?.sender_name || otherEmail,
-          lastMessage: sorted[0]?.content || '',
+          lastMessage: sorted[0]?.message || '',
           lastTime: sorted[0]?.created_at,
-          unread: sorted.filter(m => m.sender_email !== user.email && !m.read).length,
+          unread: sorted.filter(m => m.sender_email !== user.email && !m.is_read).length,
         };
       });
       
-      rooms.sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime));
+      rooms.sort((a, b) => (new Date(b.lastTime)).getTime() - (new Date(a.lastTime)).getTime());
       setConversations(rooms);
     } catch (err) {
       console.error('Error loading conversations:', err);
@@ -178,13 +181,13 @@ export default function ChatInbox({ user }) {
       
       // Mark messages as read
       const unreadMessages = (data || []).filter(m => 
-        m.sender_email !== user.email && !m.read
+        m.sender_email !== user.email && !m.is_read
       );
       
       for (const msg of unreadMessages) {
         await supabase
           .from('chat_messages')
-          .update({ read: true, read_at: new Date().toISOString() })
+          .update({ is_read: true, read_at: new Date().toISOString() })
           .eq('id', msg.id);
       }
     } catch (err) {
@@ -246,7 +249,7 @@ export default function ChatInbox({ user }) {
             if (newMessage.sender_email !== user.email) {
               supabase
                 .from('chat_messages')
-                .update({ read: true, read_at: new Date().toISOString() })
+                .update({ is_read: true, read_at: new Date().toISOString() })
                 .eq('id', newMessage.id)
                 .then(() => {});
             }
@@ -268,7 +271,7 @@ export default function ChatInbox({ user }) {
           table: 'chat_typing_status',
         },
         (payload) => {
-          if (activeRoom && payload.new?.room_id === activeRoom.room_id && payload.new?.user_email !== user.email) {
+          if ('room_id' in payload.new && activeRoom && payload.new?.room_id === activeRoom.room_id && payload.new?.user_email !== user.email) {
             setOtherTyping(payload.new?.is_typing || false);
           }
         }
@@ -300,10 +303,11 @@ export default function ChatInbox({ user }) {
         .insert({
           room_id: activeRoom.room_id,
           sender_email: user.email,
+          sender_id: user.id,
           sender_name: user.full_name || user.email,
           recipient_email: activeRoom.otherEmail,
-          content: input.trim(),
-          read: false,
+          message: input.trim(),
+          is_read: false,
         })
         .select()
         .single();
@@ -387,9 +391,10 @@ export default function ChatInbox({ user }) {
         .insert({
           room_id: roomId,
           sender_email: user.email,
+          sender_id: user.id,
           sender_name: user.full_name || user.email,
           recipient_email: student.user_profiles.email,
-          content: `Hi! I'm ${user.full_name || 'a tutor'}. I saw you need help with ${student.subject}. I'd love to discuss how I can assist you.`,
+          message: `Hi! I'm ${user.full_name || 'a tutor'}. I saw you need help with ${student.subject}. I'd love to discuss how I can assist you.`,
         });
       
       if (error) throw error;
@@ -412,29 +417,10 @@ export default function ChatInbox({ user }) {
     
     setUploadingFile(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `chat-attachments/${activeRoom.room_id}/${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('chat-attachments')
-        .upload(fileName, file);
-      
-      if (uploadError) throw uploadError;
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat-attachments')
-        .getPublicUrl(fileName);
-      
-      await supabase.from('chat_messages').insert({
-        room_id: activeRoom.room_id,
-        sender_email: user.email,
-        sender_name: user.full_name || user.email,
-        recipient_email: activeRoom.otherEmail,
-        content: `📎 ${file.name}\n${publicUrl}`,
-        attachment_url: publicUrl,
-        attachment_type: file.type,
-      });
-      
+      const uploaded=await uploadPrivate(supabase,'chat-attachments',file);
+      const {error}=await supabase.functions.invoke('send-chat-attachment',{body:{recipient_email:activeRoom.otherEmail,file_ref:uploaded.reference,file_name:file.name}});
+      if(error)throw error;
+
       toast.success('File sent!');
       loadConversations();
     } catch (err) {
@@ -570,7 +556,8 @@ export default function ChatInbox({ user }) {
                       <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[75%] rounded-xl px-3 py-2 text-xs ${isMe ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'}`}>
                           {!isMe && <p className="font-semibold text-[10px] mb-0.5 opacity-70">{msg.sender_name}</p>}
-                          <p className="break-words">{msg.content}</p>
+                          <p className="break-words">{msg.message}</p>
+                          {msg.metadata?.attachment_url&&<FileLink reference={msg.metadata.attachment_url} className="underline">Open attachment</FileLink>}
                           <div className="flex items-center justify-end gap-1 mt-0.5">
                             <p className={`text-[9px] opacity-60`}>
                               {new Date(msg.created_at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}

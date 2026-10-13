@@ -47,7 +47,7 @@ const useFormField = () => {
 
 const FormItemContext = React.createContext({})
 
-const FormItem = React.forwardRef(({ className, ...props }, ref) => {
+const FormItem = React.forwardRef(/** @param {import('react').ComponentPropsWithoutRef<"div">} props @param {import('react').ForwardedRef<import('react').ElementRef<"div">>} ref */ ({ className, ...props }, ref) => {
   const id = React.useId()
 
   return (
@@ -58,7 +58,7 @@ const FormItem = React.forwardRef(({ className, ...props }, ref) => {
 })
 FormItem.displayName = "FormItem"
 
-const FormLabel = React.forwardRef(({ className, ...props }, ref) => {
+const FormLabel = React.forwardRef(/** @param {import('react').ComponentPropsWithoutRef<typeof Label>} props @param {import('react').ForwardedRef<import('react').ElementRef<typeof Label>>} ref */ ({ className, ...props }, ref) => {
   const { error, formItemId } = useFormField()
 
   return (
@@ -71,7 +71,7 @@ const FormLabel = React.forwardRef(({ className, ...props }, ref) => {
 })
 FormLabel.displayName = "FormLabel"
 
-const FormControl = React.forwardRef(({ ...props }, ref) => {
+const FormControl = React.forwardRef(/** @param {import('react').ComponentPropsWithoutRef<typeof Slot>} props @param {import('react').ForwardedRef<import('react').ElementRef<typeof Slot>>} ref */ ({ ...props }, ref) => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
@@ -89,7 +89,7 @@ const FormControl = React.forwardRef(({ ...props }, ref) => {
 })
 FormControl.displayName = "FormControl"
 
-const FormDescription = React.forwardRef(({ className, ...props }, ref) => {
+const FormDescription = React.forwardRef(/** @param {import('react').ComponentPropsWithoutRef<"p">} props @param {import('react').ForwardedRef<import('react').ElementRef<"p">>} ref */ ({ className, ...props }, ref) => {
   const { formDescriptionId } = useFormField()
 
   return (
@@ -102,7 +102,7 @@ const FormDescription = React.forwardRef(({ className, ...props }, ref) => {
 })
 FormDescription.displayName = "FormDescription"
 
-const FormMessage = React.forwardRef(({ className, children, ...props }, ref) => {
+const FormMessage = React.forwardRef(/** @param {import('react').ComponentPropsWithoutRef<"p">} props @param {import('react').ForwardedRef<import('react').ElementRef<"p">>} ref */ ({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message) : children
 

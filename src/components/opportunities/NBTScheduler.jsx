@@ -1,3 +1,5 @@
+import {uploadPrivate} from '@/lib/private-storage';
+import FileLink from '@/components/operations/FileLink';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,9 +30,9 @@ function TestDateCard({ testDate, registration, onRegister, onRefresh, userEmail
   const [band, setBand] = useState(registration?.overall_band ?? '');
   const [savingResults, setSavingResults] = useState(false);
 
-  const daysUntil = Math.ceil((new Date(testDate.test_date) - new Date()) / 86400000);
+  const daysUntil = Math.ceil(((new Date(testDate.test_date)).getTime() - (new Date()).getTime()) / 86400000);
   const regDeadlineDays = testDate.registration_deadline
-    ? Math.ceil((new Date(testDate.registration_deadline) - new Date()) / 86400000)
+    ? Math.ceil(((new Date(testDate.registration_deadline)).getTime() - (new Date()).getTime()) / 86400000)
     : null;
   const isPast = daysUntil < 0;
   const isRegistered = !!registration;
@@ -54,7 +56,8 @@ function TestDateCard({ testDate, registration, onRegister, onRefresh, userEmail
       const { error } = await supabase
         .from('nbt_registrations')
         .insert({
-          student_email: userEmail,
+          student_id: userData.user.id,
+          student_email: userData.user.email,
           student_name: userData.user?.user_metadata?.full_name || userEmail,
           nbt_test_date_id: testDate.id,
           test_date: testDate.test_date,
@@ -94,20 +97,8 @@ function TestDateCard({ testDate, registration, onRegister, onRefresh, userEmail
     
     setUploading(true);
     try {
-      // Upload to Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `nbt_results/${Date.now()}_${registration.id}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('nbt_results')
-        .upload(fileName, file);
-      
-      if (uploadError) throw uploadError;
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('nbt_results')
-        .getPublicUrl(fileName);
-      
+      const uploaded=await uploadPrivate(supabase,'nbt_results',file);
+      const publicUrl=uploaded.reference;
       const { error: updateError } = await supabase
         .from('nbt_registrations')
         .update({
@@ -273,9 +264,9 @@ function TestDateCard({ testDate, registration, onRegister, onRefresh, userEmail
                   </label>
                 </div>
                 {registration.results_file_url && (
-                  <a href={registration.results_file_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-1">
+                  <FileLink reference={registration.results_file_url} className="text-[10px] text-primary hover:underline flex items-center gap-1">
                     <FileText className="w-3 h-3" /> View uploaded results
-                  </a>
+                  </FileLink>
                 )}
               </div>
             )}

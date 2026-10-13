@@ -1,3 +1,6 @@
+import OperationsPanel from '@/components/admin/OperationsPanel';
+import PaymentGatewayPanel from '@/components/admin/PaymentGatewayPanel';
+import { getAdminNotificationEmails } from '@/lib/admin-notifications';
 // src/pages/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -8,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Users, FileText, DollarSign, Activity, Shield, TrendingUp,
+  Settings, Users, FileText, DollarSign, Activity, Shield, TrendingUp,
   BookOpen, Mail, Send, Loader2, RefreshCw, Star, Megaphone, Database, Cpu,
   BarChart2, Trophy, UserCheck, GraduationCap, ToggleLeft, ShieldCheck
 } from 'lucide-react';
@@ -33,7 +36,7 @@ import KnowledgeBaseManager from '@/components/admin/KnowledgeBaseManager';
 import SystemConfigPanel from '@/components/admin/SystemConfigPanel';
 
 // ✅ Hardcoded admin emails
-const ADMIN_EMAILS = ['aneleqamata95@gmail.com', 'aneleq@techandguard.co.za'];
+
 
 export default function AdminDashboard() {
   const { user, isAdmin } = useAuth();
@@ -64,7 +67,7 @@ export default function AdminDashboard() {
     try {
       // Fetch users from user_profiles
       const { data: usersData } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(200);
@@ -104,7 +107,7 @@ export default function AdminDashboard() {
 
       // Fetch activity logs
       const { data: logsData } = await supabase
-        .from('activity_logs')
+        .from('activity_log')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
@@ -114,7 +117,7 @@ export default function AdminDashboard() {
       const { data: bannerData } = await supabase
         .from('banner_clicks')
         .select('*')
-        .order('clicked_at', { ascending: false })
+        .order('click_timestamp', { ascending: false })
         .limit(1000);
       setBannerClicks(bannerData || []);
 
@@ -175,21 +178,22 @@ export default function AdminDashboard() {
     }
   };
 
-  const sendBothAdminTestEmails = async () => {
+  const sendAdminTestEmails = async () => {
     setTestEmailSending(true);
-    const adminEmails = ['aneleq@techandguard.co.za', 'aneleqamata95@gmail.com'];
     try {
-      await Promise.all(adminEmails.map(email =>
-        supabase.functions.invoke('send-email', {
+      const adminEmails = await getAdminNotificationEmails(supabase);
+      await Promise.all(adminEmails.map(async email => {
+        const { error } = await supabase.functions.invoke('send-email', {
           body: {
             to: email,
             subject: '🔔 SmartBridge FET — Admin Notification Test',
             text: `This is a test of the admin notification system.\n\nYou are receiving this because you are a Super Admin on SmartBridge FET.\n\nWhen a new tutor registers, you will receive an email like this with their credentials and a link to verify them.\n\nSystem: ONLINE ✅\nTime: ${new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' })} SAST\n\n— SmartBridge FET Admin System`,
             from_name: 'SmartBridge FET'
           }
-        })
-      ));
-      toast.success('Test emails sent to both admin addresses!');
+        });
+        if (error) throw error;
+      }));
+      toast.success('Test emails sent to active administrator addresses!');
       setEmailLogs(prev => [
         { to: adminEmails.join(' & '), time: new Date().toLocaleTimeString('en-ZA'), status: 'sent ✅' },
         ...prev
@@ -211,7 +215,7 @@ export default function AdminDashboard() {
   }
 
   // If not admin or super admin, show access denied
-  const isSuperAdmin = ADMIN_EMAILS.includes(user?.email) || user?.is_super_admin === true;
+  const isSuperAdmin = user?.is_super_admin === true;
   if (!isSuperAdmin && user?.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -276,6 +280,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="leaderboard" className="gap-1.5"><Trophy className="w-3.5 h-3.5" /> Leaderboard</TabsTrigger>
             <TabsTrigger value="reports" className="gap-1.5"><Mail className="w-3.5 h-3.5" /> Parent Reports</TabsTrigger>
             <TabsTrigger value="content" className="gap-1.5"><FileText className="w-3.5 h-3.5" /> Content</TabsTrigger>
+            <TabsTrigger value="payment-gateways" className="gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Payment Gateways</TabsTrigger>
             <TabsTrigger value="financial" className="gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Financial</TabsTrigger>
             <TabsTrigger value="activity" className="gap-1.5"><Activity className="w-3.5 h-3.5" /> Activity</TabsTrigger>
             <TabsTrigger value="ratings" className="gap-1.5"><Star className="w-3.5 h-3.5" /> Ratings</TabsTrigger>
@@ -288,6 +293,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="moderation" className="gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Moderation</TabsTrigger>
             <TabsTrigger value="feature-flags" className="gap-1.5"><ToggleLeft className="w-3.5 h-3.5" /> Feature Flags</TabsTrigger>
             <TabsTrigger value="ai-config" className="gap-1.5"><Cpu className="w-3.5 h-3.5" /> AI Config</TabsTrigger>
+            <TabsTrigger value="operations" className="gap-1.5"><Activity className="w-3.5 h-3.5" /> Operations</TabsTrigger>
             <TabsTrigger value="system" className="gap-1.5"><Settings className="w-3.5 h-3.5" /> System Test</TabsTrigger>
           </TabsList>
 
@@ -335,7 +341,7 @@ export default function AdminDashboard() {
                           </tr>
                         );
                       })}
-                      {users.length === 0 && <tr><td colSpan="4" className="text-center py-8 text-muted-foreground">No users found.</td></tr>}
+                      {users.length === 0 && <tr><td colSpan={4} className="text-center py-8 text-muted-foreground">No users found.</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -422,6 +428,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="payment-gateways"><PaymentGatewayPanel /></TabsContent>
           <TabsContent value="financial">
             <div className="grid sm:grid-cols-2 gap-6">
               <Card>
@@ -531,6 +538,7 @@ export default function AdminDashboard() {
             <SystemConfigPanel />
           </TabsContent>
 
+          <TabsContent value="operations"><OperationsPanel /></TabsContent>
           <TabsContent value="system">
             <Card className="border-primary/20">
               <CardHeader className="pb-3">
@@ -541,10 +549,10 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium mb-2">Test Both Admin Addresses</p>
-                  <Button onClick={sendBothAdminTestEmails} disabled={testEmailSending} className="bg-primary gap-2">
+                  <p className="text-sm font-medium mb-2">Test Administrator Notifications</p>
+                  <Button onClick={sendAdminTestEmails} disabled={testEmailSending} className="bg-primary gap-2">
                     {testEmailSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    Send Test to Both Admins
+                    Send Test to Active Admins
                   </Button>
                 </div>
                 <div className="border-t border-border pt-4">
@@ -589,4 +597,4 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-}v
+}

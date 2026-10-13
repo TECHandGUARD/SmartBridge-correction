@@ -1,5 +1,5 @@
+import { useAuth } from '@/lib/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 const GRADES = ['All Grades', 'Grade 10', 'Grade 11', 'Grade 12'];
 
 export default function VideoLessons() {
-  const { user } = useOutletContext() || {};
+  const { user } = useAuth() || {};
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(null);
@@ -75,13 +75,13 @@ export default function VideoLessons() {
     const fileName = `video-lessons/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
     
     const { error: uploadError } = await supabase.storage
-      .from('video-lessons')
+      .from('videos')
       .upload(fileName, file);
 
     if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
-      .from('video-lessons')
+      .from('videos')
       .getPublicUrl(fileName);
 
     return publicUrl;

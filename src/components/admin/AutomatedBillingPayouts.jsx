@@ -1,9 +1,10 @@
+import { appConfig } from '@/lib/config';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';  // ✅ Fixed import path
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DollarSign, CheckCircle, Clock, Send, Download, Zap, RefreshCw, AlertCircle } from 'lucide-react';
+import { DollarSign, CheckCircle, Send, Download, Zap, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PLATFORM_COMMISSION_STANDARD = 0.10; // 10%
@@ -34,7 +35,7 @@ export default function AutomatedBillingPayouts() {
       
       // Load previously paid tutors from activity logs
       const { data: paidLogs } = await supabase
-        .from('activity_logs')
+        .from('activity_log')
         .select('user_email')
         .eq('event_type', 'payout_processed');
       
@@ -100,7 +101,7 @@ export default function AutomatedBillingPayouts() {
               
               <p>Payments are processed every Thursday. Please allow 1–2 business days for the funds to reflect in your bank account.</p>
               
-              <p>If you have any questions, contact <a href="mailto:aneleq@techandguard.co.za">aneleq@techandguard.co.za</a></p>
+              <p>If you have any questions, contact <a href="mailto:${appConfig.company.supportEmail}">${appConfig.company.supportEmail}</a></p>
               
               <p style="margin-top: 30px; font-size: 12px; color: #666;">
                 — EduConnect FET / Tech &amp; GUARD Pty Ltd<br>
@@ -120,12 +121,12 @@ export default function AutomatedBillingPayouts() {
   };
 
   const markTutorPaid = async (tutor) => {
-    await supabase.from('activity_logs').insert({
+    await supabase.from('activity_log').insert({
       event_type: 'payout_processed',
       user_email: tutor.user_email,
       description: `Payout processed for ${tutor.full_name}: R${tutor.netPayout.toFixed(2)} net (${tutor.bookingCount} sessions)`,
       metadata: { gross: tutor.grossRevenue, commission: tutor.commission, net: tutor.netPayout },
-    }).catch(() => {});
+    });
     
     setProcessedIds(prev => new Set([...prev, tutor.id]));
   };

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ExternalLink, Sparkles, BookOpen, TrendingUp, DollarSign, Clock, ChevronDown, ChevronUp, Loader2, AlertCircle } from 'lucide-react';
+import { Search, ExternalLink, Sparkles, BookOpen, Clock, ChevronDown, ChevronUp, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const EXTENDED_FIELDS = [
@@ -37,7 +37,7 @@ function MeterBar({ score }) {
 
 function BursaryRowCard({ bursary }) {
   const [open, setOpen] = useState(false);
-  
+
   const totalDaysRemaining = bursary.deadline
     ? Math.ceil((new Date(bursary.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
@@ -50,7 +50,7 @@ function BursaryRowCard({ bursary }) {
   return (
     <Card className="border-slate-200 shadow-sm overflow-hidden transition-all bg-white hover:shadow-md">
       <CardContent className="p-4 space-y-2.5">
-        
+
         {/* Header Metadata Section */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -62,7 +62,7 @@ function BursaryRowCard({ bursary }) {
             </div>
             <p className="text-[11px] font-bold text-slate-400 mt-0.5">{bursary.provider}</p>
           </div>
-          
+
           <div className="text-right shrink-0 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-xl min-w-[48px]">
             <div className={`text-sm font-black leading-none ${bursary.match_score >= 75 ? 'text-emerald-600' : bursary.match_score >= 55 ? 'text-blue-600' : 'text-amber-600'}`}>
               {bursary.match_score}%
@@ -135,7 +135,7 @@ export default function BursaryFinder() {
   const [householdIncome, setHouseholdIncome] = useState('350000');
   const [averageMark, setAverageMark] = useState('75');
   const [province, setProvince] = useState('National');
-  
+
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -156,7 +156,7 @@ export default function BursaryFinder() {
 
       if (rpcError) throw rpcError;
       setResults(data || []);
-      
+
       if (data?.length === 0) {
         toast.info('No bursaries found matching your profile parameters.');
       } else {
@@ -172,7 +172,7 @@ export default function BursaryFinder() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans select-none antialiased pb-10">
-      
+
       {/* Visual Identity Hero Section Banner */}
       <div className="bg-slate-900 text-white py-10 px-4 shadow-md border-b border-slate-800">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
@@ -195,7 +195,7 @@ export default function BursaryFinder() {
 
       {/* Main Structural Working Interface Layout Grid Block */}
       <div className="max-w-4xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+
         {/* Profile Filter Control Settings Card */}
         <Card className="border-slate-200 shadow-xl bg-white rounded-2xl p-4 md:col-span-1 h-fit">
           <CardHeader className="p-0 pb-3 border-b border-slate-50">
@@ -203,7 +203,7 @@ export default function BursaryFinder() {
               <Search className="w-4 h-4 text-blue-600" /> Profiling Parameters
             </CardTitle>
           </CardHeader>
-          
+
           <form onSubmit={handleExecuteBursarySearch} className="space-y-3.5 pt-4">
             <div className="space-y-1">
               <Label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Field of Study Category</Label>
@@ -221,24 +221,24 @@ export default function BursaryFinder() {
 
             <div className="space-y-1">
               <Label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Gross Household Income (ZAR / p.a.)</Label>
-              <Input 
-                type="number" 
-                value={householdIncome} 
-                onChange={e => setHouseholdIncome(e.target.value)} 
-                className="text-xs h-8 font-bold border-slate-200 bg-white" 
+              <Input
+                type="number"
+                value={householdIncome}
+                onChange={e => setHouseholdIncome(e.target.value)}
+                className="text-xs h-8 font-bold border-slate-200 bg-white"
                 placeholder="e.g. 350000"
               />
             </div>
 
             <div className="space-y-1">
               <Label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Current Pass Average Mark (%)</Label>
-              <Input 
-                type="number" 
-                min={0} 
-                max={100} 
-                value={averageMark} 
-                onChange={e => setAverageMark(e.target.value)} 
-                className="text-xs h-8 font-bold border-slate-200 bg-white" 
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={averageMark}
+                onChange={e => setAverageMark(e.target.value)}
+                className="text-xs h-8 font-bold border-slate-200 bg-white"
                 placeholder="e.g. 75"
               />
             </div>
@@ -257,9 +257,9 @@ export default function BursaryFinder() {
               </Select>
             </div>
 
-            <Button 
-              type="submit" 
-              disabled={loading} 
+            <Button
+              type="submit"
+              disabled={loading}
               className="w-full h-8 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm gap-1.5"
             >
               {loading ? (
@@ -298,9 +298,9 @@ export default function BursaryFinder() {
                 <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
                   No active bursary tracks discovered matching those explicit parameter sets.
                 </p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="mt-4 text-xs font-bold"
                   onClick={() => {
                     setFieldOfStudy('STEM (Science, Technology, Engineering, Mathematics)');

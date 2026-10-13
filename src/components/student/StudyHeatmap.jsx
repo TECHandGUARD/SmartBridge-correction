@@ -24,8 +24,8 @@ export default function StudyHeatmap({ user }) {
 
       const { data, error: dbError } = await supabase
         .from('study_sessions')
-        .select('session_date, session_hour')
-        .eq('student_email', user.email);
+        .select('session_date:date, session_hour:hour')
+        .eq('student_id', user.id).eq('is_completed', true);
 
       if (dbError) throw dbError;
 

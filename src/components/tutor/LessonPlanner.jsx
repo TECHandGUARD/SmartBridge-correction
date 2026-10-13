@@ -8,8 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   ClipboardList, Plus, Pencil, Trash2, Lock, Crown, Calendar, BookOpen, 
-  Loader2, AlertCircle, Search, Filter, CheckCircle, Share2, Sparkles, 
-  Repeat, TrendingUp, FileText, Mail, LinkIcon, Clock, Download, Lightbulb,
+  Loader2, AlertCircle, Search, CheckCircle, Sparkles, Mail, LinkIcon, Download, Lightbulb,
   X, Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -75,7 +74,7 @@ const TEMPLATES = {
   }
 };
 
-export default function LessonPlanner({ user, onLessonUpdate }) {
+export default function LessonPlanner({ user, onLessonUpdate = undefined }) {
   const { isPremium, loading: premLoading } = usePremiumAccess(user);
   const [plans, setPlans] = useState([]);
   const [students, setStudents] = useState([]);
@@ -278,42 +277,11 @@ export default function LessonPlanner({ user, onLessonUpdate }) {
       
       if (updateError) throw updateError;
       
-      // Update student progress
-      if (plan.student_email) {
-        const { data: existing } = await supabase
-          .from('student_progress')
-          .select('*')
-          .eq('user_email', plan.student_email)
-          .eq('subject', plan.subject)
-          .maybeSingle();
-        
-        if (existing) {
-          await supabase
-            .from('student_progress')
-            .update({ 
-              study_sessions: (existing.study_sessions || 0) + 1,
-              last_access: new Date().toISOString().split('T')[0],
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existing.id);
-        } else {
-          await supabase
-            .from('student_progress')
-            .insert({
-              user_email: plan.student_email,
-              subject: plan.subject,
-              grade: plan.grade,
-              study_sessions: 1,
-              last_access: new Date().toISOString().split('T')[0]
-            });
-        }
-      }
-      
       setPlans(prev => prev.map(p => 
         p.id === plan.id ? { ...p, status: 'completed' } : p
       ));
       
-      toast.success('Plan marked complete! Student progress updated.');
+      toast.success('Plan marked complete.');
       if (onLessonUpdate) onLessonUpdate();
     } catch (err) {
       console.error('Error completing plan:', err);
@@ -329,30 +297,7 @@ export default function LessonPlanner({ user, onLessonUpdate }) {
     
     try {
       const { error } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: plan.student_email,
-          subject: `📚 Lesson Plan: ${plan.session_title}`,
-          body: `
-Hi ${plan.student_name || 'Student'},
-
-Here's the lesson plan for our session on ${plan.session_date ? format(parseISO(plan.session_date), 'dd MMM yyyy') : 'our upcoming session'}:
-
-📖 Topic: ${plan.session_title}
-🎯 Objectives:
-${plan.objectives?.map(o => `• ${o}`).join('\n')}
-
-📚 Resources to review:
-${plan.resources_used?.map(r => `• ${r}`).join('\n')}
-
-✏️ Homework:
-${plan.homework_assigned || 'No homework assigned'}
-
-See you in the session!
-
-${user.full_name}
-`,
-          from_name: user.full_name
-        }
+        body: {kind: 'lesson-plan', plan_id: plan.id}
       });
       
       if (error) throw error;

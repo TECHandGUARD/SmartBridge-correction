@@ -1,3 +1,4 @@
+import { appConfig } from '@/lib/config';
 import React from 'react';
 import { 
   Shield, 
@@ -11,7 +12,6 @@ import {
   CheckCircle,
   Award,
   Lock,
-  Users,
   GraduationCap
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -22,11 +22,11 @@ export default function AboutTechAndGuard() {
   // Configuration (Soft-coded for admin control)
   // ============================================================
   
-  const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || 'Tech & GUARD Pty Ltd';
-  const REGISTRATION_NUMBER = import.meta.env.VITE_CIPC_REGISTRATION || '2026/15509/07';
-  const REGISTRATION_DATE = import.meta.env.VITE_REGISTRATION_DATE || '21 February 2026';
-  const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL || 'aneleq@techandguard.co.za';
-  const CORPORATE_WEBSITE = import.meta.env.VITE_CORPORATE_WEBSITE || 'https://www.techandguard.co.za';
+  const COMPANY_NAME = appConfig.company.name;
+  const REGISTRATION_NUMBER = appConfig.company.registrationNumber;
+  const REGISTRATION_DATE = appConfig.company.registrationDate;
+  const SUPPORT_EMAIL = appConfig.company.supportEmail;
+  const CORPORATE_WEBSITE = appConfig.company.website;
 
   // ============================================================
   // Data

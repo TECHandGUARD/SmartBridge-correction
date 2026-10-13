@@ -49,7 +49,7 @@ export default function AdminUserViewer({ users, subscriptions }) {
     setUpdatingTrial(true);
     try {
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ trial_started_at: new Date().toISOString() })
         .eq('id', selectedUser.id);
       
@@ -70,7 +70,7 @@ export default function AdminUserViewer({ users, subscriptions }) {
     try {
       const pastDate = new Date(Date.now() - TRIAL_MS - 1000).toISOString();
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ trial_started_at: pastDate })
         .eq('id', selectedUser.id);
       
@@ -97,6 +97,8 @@ export default function AdminUserViewer({ users, subscriptions }) {
         const { error } = await supabase
           .from('subscriptions')
           .update({
+            user_id: selectedUser.id,
+            plan: 'premium',
             status: 'active',
             end_date: end.toISOString().split('T')[0],
           })
@@ -108,7 +110,8 @@ export default function AdminUserViewer({ users, subscriptions }) {
           .from('subscriptions')
           .insert({
             user_email: selectedUser.email,
-            plan_type: 'premium',
+            user_id: selectedUser.id,
+            plan: 'premium',
             status: 'active',
             amount_paid: 0,
             start_date: new Date().toISOString().split('T')[0],
@@ -188,7 +191,7 @@ export default function AdminUserViewer({ users, subscriptions }) {
                 </div>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <Badge variant="outline" className="text-[10px] capitalize">{u.role || 'user'}</Badge>
-                  {sub?.plan_type === 'premium' && sub?.status === 'active' && (
+                  {sub?.plan === 'premium' && sub?.status === 'active' && (
                     <Badge className="bg-amber-100 text-amber-700 text-[10px]">Premium</Badge>
                   )}
                   {!sub && trial?.active && <Badge className="bg-blue-100 text-blue-700 text-[10px]">Trial</Badge>}

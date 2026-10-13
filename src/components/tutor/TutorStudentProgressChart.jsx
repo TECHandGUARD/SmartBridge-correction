@@ -5,14 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  Users, AlertTriangle, TrendingUp, BookOpen, Download, 
-  Mail, Calendar, TrendingDown, TrendingUp as TrendUp, 
-  Loader2, FileText, Bell, User, GraduationCap 
+  Users, TrendingUp, BookOpen, Download,
+  Mail, TrendingDown, TrendingUp as TrendUp,
+  Loader2, Bell
 } from 'lucide-react';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
-  LineChart, Line, CartesianGrid
+  BarChart, Bar, XAxis, YAxis, Tooltip, Cell
 } from 'recharts';
 import { toast } from 'sonner';
 
@@ -46,7 +45,7 @@ const getDateFilter = (timeFrame) => {
   return { gte: date.toISOString().split('T')[0] };
 };
 
-export default function TutorStudentProgressChart({ user, onContactParent, schoolContext }) {
+export default function TutorStudentProgressChart({ user, onContactParent = undefined, schoolContext = null }) {
   const [progress, setProgress] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [studentProfiles, setStudentProfiles] = useState({});
@@ -92,7 +91,7 @@ export default function TutorStudentProgressChart({ user, onContactParent, schoo
       
       // Load student progress with date filter
       let progressQuery = supabase
-        .from('student_progress')
+        .from('study_progress')
         .select('*')
         .in('user_email', studentEmails);
       
@@ -108,7 +107,7 @@ export default function TutorStudentProgressChart({ user, onContactParent, schoo
       
       // Load student profiles (names, grades, parent emails)
       const { data: profilesData, error: profilesError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('email, full_name, grade, parent_email, phone')
         .in('email', studentEmails);
       
@@ -156,7 +155,7 @@ export default function TutorStudentProgressChart({ user, onContactParent, schoo
         prevEnd.setDate(prevEnd.getDate() - 1);
         
         const { data: prevData } = await supabase
-          .from('student_progress')
+          .from('study_progress')
           .select('*')
           .in('user_email', studentEmails)
           .gte('last_access', prevStart.toISOString().split('T')[0])
@@ -194,6 +193,29 @@ export default function TutorStudentProgressChart({ user, onContactParent, schoo
   }, [loadData]);
 
   // Calculate alerts
+  // Aggregate: average study_sessions per subject across all students
+  const subjectStats = useMemo(() => {
+    const map = {};
+    progress.forEach(p => {
+      if (!p.subject) return;
+      if (!map[p.subject]) map[p.subject] = { total: 0, count: 0, students: new Set() };
+      map[p.subject].total += (p.study_sessions || 0);
+      map[p.subject].count++;
+      map[p.subject].students.add(p.user_email);
+    });
+    return Object.entries(map)
+      .map(([subject, data]) => ({
+        subject: subject.length > 14 ? subject.slice(0, 13) + '…' : subject,
+        fullSubject: subject,
+        avgSessions: data.count > 0 ? Math.round((data.total / data.count) * 10) / 10 : 0,
+        studentCount: data.students.size,
+        needsFocus: (data.total / data.count) < FOCUS_THRESHOLD,
+        vsSchoolAvg: schoolAverages ?
+          Number(((data.total / data.count) - (schoolAverages[subject] || 0)).toFixed(1)) : null
+      }))
+      .sort((a, b) => b.avgSessions - a.avgSessions);
+  }, [progress, schoolAverages]);
+
   useEffect(() => {
     const newAlerts = [];
     
@@ -234,28 +256,7 @@ export default function TutorStudentProgressChart({ user, onContactParent, schoo
     setAlerts(newAlerts);
   }, [progress, studentProfiles, subjectStats]);
 
-  // Aggregate: average study_sessions per subject across all students
-  const subjectStats = useMemo(() => {
-    const map = {};
-    progress.forEach(p => {
-      if (!p.subject) return;
-      if (!map[p.subject]) map[p.subject] = { total: 0, count: 0, students: new Set() };
-      map[p.subject].total += (p.study_sessions || 0);
-      map[p.subject].count++;
-      map[p.subject].students.add(p.user_email);
-    });
-    return Object.entries(map)
-      .map(([subject, data]) => ({
-        subject: subject.length > 14 ? subject.slice(0, 13) + '…' : subject,
-        fullSubject: subject,
-        avgSessions: data.count > 0 ? Math.round((data.total / data.count) * 10) / 10 : 0,
-        studentCount: data.students.size,
-        needsFocus: (data.total / data.count) < FOCUS_THRESHOLD,
-        vsSchoolAvg: schoolAverages ? 
-          ((data.total / data.count) - (schoolAverages[subject] || 0)).toFixed(1) : null
-      }))
-      .sort((a, b) => b.avgSessions - a.avgSessions);
-  }, [progress, schoolAverages]);
+
 
   // Per-student engagement with full names and grades
   const studentStats = useMemo(() => {
@@ -272,7 +273,7 @@ export default function TutorStudentProgressChart({ user, onContactParent, schoo
       .map(([email, data]) => {
         const profile = studentProfiles[email];
         const lastAccessDays = data.lastAccess ? 
-          Math.ceil((new Date() - new Date(data.lastAccess)) / (1000 * 60 * 60 * 24)) : null;
+          Math.ceil(((new Date()).getTime() - (new Date(data.lastAccess)).getTime()) / (1000 * 60 * 60 * 24)) : null;
         return {
           email,
           name: profile?.full_name || email.split('@')[0],
@@ -351,7 +352,7 @@ export default function TutorStudentProgressChart({ user, onContactParent, schoo
     }
   };
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = ({ active = false, payload = [], label = null }) => {
     if (!active || !payload?.length) return null;
     const stat = subjectStats.find(s => s.subject === label || s.fullSubject === label);
     return (

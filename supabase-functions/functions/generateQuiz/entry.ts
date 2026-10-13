@@ -1,94 +1,56 @@
+import {consumeQuota,readJson} from '../../shared/api.ts';
+import { serverConnection, geminiSettings } from "../../shared/config.ts";
+import { withHttp, authorize } from "../../shared/http.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-/**
- * Generate Quiz Function
- * Generates CAPS-aligned multiple choice quizzes using Gemini AI.
- * Used by the Quiz Builder feature.
- */
-serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
+serve(withHttp(async (req) => {
   try {
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-
-    // Get user from JWT token
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Parse request body
-    const { subject, grade, topic, question_count = 5 } = await req.json();
+    const connection = serverConnection();
+    const supabase = createClient(connection.url, connection.key, {auth:{persistSession:false, autoRefreshToken:false}});
+    const user = await authorize(req, supabase, 'user');
+    await consumeQuota(supabase,user.id,'ai');
+    const { subject, grade, topic, question_count = 5 } = await readJson(req);
 
     if (!subject || !grade || !topic) {
       return new Response(
-        JSON.stringify({ error: 'subject, grade, and topic are required' }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "subject, grade, and topic are required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
     // Fetch guardrail and relevant resources in parallel
-    const [configsResult, resourcesResult] = await Promise.all([
-      supabaseClient
-        .from('system_configurations')
-        .select('*')
-        .eq('is_active', true),
-      supabaseClient
-        .from('educational_resources')
-        .select('*')
-        .eq('is_active', true)
+    const [configs, allResources] = await Promise.all([
+      supabase
+        .from("system_configuration")
+        .select("*")
+        .eq("is_active", true),
+      supabase
+        .from("educational_resources")
+        .select("*")
+        .eq("is_active", true)
     ]);
 
-    const configs = configsResult.data || [];
-    const allResources = resourcesResult.data || [];
+    const configData = configs.data || [];
+    const resourcesData = allResources.data || [];
 
-    const guardrailConfig = configs.find((c: any) => c.key === 'master_tutor_guardrail');
+    const guardrailConfig = configData.find((c: any) => c.key === "master_tutor_guardrail");
     const guardrail = guardrailConfig?.value?.text ||
-      'You are a strict South African CAPS curriculum tutor. Only generate content that is factually correct, educationally appropriate, and aligned with the CAPS syllabus. Reject any non-educational content.';
+      "You are a strict South African CAPS curriculum tutor. Only generate content that is factually correct, educationally appropriate, and aligned with the CAPS syllabus. Reject any non-educational content.";
 
-    // Filter resources for this subject/grade
-    const matchedResources = allResources.filter((r: any) =>
-      (r.subject === subject || r.subject === 'All Subjects') &&
-      (r.grade === grade || r.grade === 'All Grades') &&
-      r.resource_url
-    ).slice(0, 5);
+    // Filter resources for this subject/grade, prioritize exact matches then broader
+    const matchedResources = resourcesData
+      .filter((r: any) =>
+        (r.subject === subject || r.subject === "All Subjects") &&
+        (r.grade === grade || r.grade === "All Grades") &&
+        r.resource_url
+      )
+      .slice(0, 5);
 
     const resourceContext = matchedResources.length > 0
       ? `Use the following CAPS-aligned resources as your primary source:\n${matchedResources.map((r: any) =>
-          `- "${r.title}" (${r.caps_alignment_tag || topic}): ${r.description || ''} [URL: ${r.resource_url}]`
-        ).join('\n')}`
+          `- "${r.title}" (${r.caps_alignment_tag || topic}): ${r.description || ""} [URL: ${r.resource_url}]`
+        ).join("\n")}`
       : `No uploaded resources found. Generate based on the official CAPS curriculum for ${subject}, ${grade}.`;
 
     const prompt = `${guardrail}
@@ -102,75 +64,77 @@ Rules:
 - Each question must have exactly 4 options (A, B, C, D)
 - The correct answer index is 0-based (0=A, 1=B, 2=C, 3=D)
 - Each explanation must clearly explain WHY the correct answer is right
-- Strictly follow CAPS curriculum scope for ${grade} ${subject}
+- Strictly follow CAPS curriculum scope for ${grade} ${subject}`;
 
-Return a JSON response with 'questions' array and 'topic_summary' string.`;
+    // Call Gemini AI
+    const { url: geminiUrl, apiKey: geminiApiKey } = geminiSettings();
 
-    // Call Gemini API
-    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!geminiApiKey) {
-      throw new Error("GEMINI_API_KEY not configured");
-    }
-
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
-
-    const fullPrompt = `${prompt}\n\nIMPORTANT: Return ONLY valid JSON. No markdown, no extra text.`;
-
-    const geminiResponse = await fetch(geminiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: fullPrompt }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 2000,
-        }
-      })
-    });
+    const geminiResponse = await fetch(
+      geminiUrl,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }],
+          generationConfig: {
+            temperature: 0.3,
+            topK: 1,
+            topP: 0.8,
+            maxOutputTokens: 2048,
+          }
+        })
+      }
+    );
 
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
-      throw new Error("Gemini API error: " + errorText);
+      return new Response(
+        JSON.stringify({ error: `Gemini API error: ${errorText}` }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const geminiData = await geminiResponse.json();
+    const textResponse = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    let questions: any[] = [];
-    let topic_summary = '';
+    let result = { questions: [], topic_summary: "" };
+    try {
+      const jsonMatch = textResponse.match(/```json\s*([\s\S]*?)\s*```/) ||
+                        textResponse.match(/\{\s*"questions"\s*:\s*\[[\s\S]*\]\s*\}/);
+      const jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : textResponse;
+      result = JSON.parse(jsonString);
 
-    if (geminiData.candidates && geminiData.candidates.length > 0) {
-      const rawReply = geminiData.candidates[0].content.parts[0].text;
-      try {
-        const jsonMatch = rawReply.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          questions = parsed.questions || [];
-          topic_summary = parsed.topic_summary || '';
-        }
-      } catch (_e) {
-        console.error('Failed to parse Gemini response as JSON');
+      if (!result.questions || !Array.isArray(result.questions)) {
+        result.questions = [];
       }
+    } catch (parseError) {
+      return new Response(
+        JSON.stringify({
+          error: "Failed to parse Gemini response",
+          raw_response: textResponse
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(
       JSON.stringify({
-        questions: questions,
-        topic_summary: topic_summary,
-        resources_used: matchedResources.map((r: any) => ({ 
-          title: r.title, 
-          url: r.resource_url 
+        questions: result.questions || [],
+        topic_summary: result.topic_summary || "",
+        resources_used: matchedResources.map((r: any) => ({
+          title: r.title,
+          url: r.resource_url
         }))
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { "Content-Type": "application/json" } }
     );
 
-  } catch (error: any) {
-    console.error('Generate quiz error:', error);
+  } catch (error) {
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: error.status || 500, headers: { "Content-Type": "application/json" } }
     );
   }
-});
+}, 'generate-quiz'));
