@@ -1,10 +1,10 @@
 import { requiredEnv } from './config.ts';
 import { failure } from './http.ts';
-export async function verifySignedWebhook(request: Request, raw: string, secretName: string, prefix = 'webhook', tolerance = 180): Promise<void> {
+export async function verifySignedWebhook(request: Request, raw: string, secretName: string, prefix = 'webhook', tolerance = 180, secretOverride?: string): Promise<void> {
     const id = request.headers.get(`${prefix}-id`), timestamp = request.headers.get(`${prefix}-timestamp`), signatures = request.headers.get(`${prefix}-signature`);
     if (!id || id.length > 200 || !timestamp || !/^\d+$/.test(timestamp) || !signatures || Math.abs(Date.now() / 1000 - Number(timestamp)) > tolerance)
         failure(401, 'Invalid webhook authentication');
-    const secret = requiredEnv(secretName);
+    const secret = secretOverride || requiredEnv(secretName);
     if (!secret.startsWith('whsec_'))
         failure(503, 'Webhook secret configuration is invalid');
     let bytes: Uint8Array;

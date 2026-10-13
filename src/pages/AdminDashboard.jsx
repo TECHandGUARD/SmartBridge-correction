@@ -1,3 +1,4 @@
+import PaymentGatewayPanel from '@/components/admin/PaymentGatewayPanel';
 import { getAdminNotificationEmails } from '@/lib/admin-notifications';
 // src/pages/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
@@ -278,6 +279,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="leaderboard" className="gap-1.5"><Trophy className="w-3.5 h-3.5" /> Leaderboard</TabsTrigger>
             <TabsTrigger value="reports" className="gap-1.5"><Mail className="w-3.5 h-3.5" /> Parent Reports</TabsTrigger>
             <TabsTrigger value="content" className="gap-1.5"><FileText className="w-3.5 h-3.5" /> Content</TabsTrigger>
+            <TabsTrigger value="payment-gateways" className="gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Payment Gateways</TabsTrigger>
             <TabsTrigger value="financial" className="gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Financial</TabsTrigger>
             <TabsTrigger value="activity" className="gap-1.5"><Activity className="w-3.5 h-3.5" /> Activity</TabsTrigger>
             <TabsTrigger value="ratings" className="gap-1.5"><Star className="w-3.5 h-3.5" /> Ratings</TabsTrigger>
@@ -424,6 +426,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="payment-gateways"><PaymentGatewayPanel /></TabsContent>
           <TabsContent value="financial">
             <div className="grid sm:grid-cols-2 gap-6">
               <Card>

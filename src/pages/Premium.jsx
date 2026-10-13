@@ -72,27 +72,38 @@ export default function Premium() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [checkingOut, setCheckingOut] = useState(false);
   const paymentIntent = useRef(null);
+  const [gateways,setGateways]=useState([]);
+  const [gateway,setGateway]=useState('');
+  const [gatewayError,setGatewayError]=useState('');
+  const [gatewaysLoading,setGatewaysLoading]=useState(false);
+  useEffect(()=>{
+    if(!appConfig.paymentsApiEnabled||!user?.id)return;
+    let alive=true;setGatewaysLoading(true);setGatewayError('');
+    supabase.functions.invoke('payment-gateways',{body:{action:'list'}}).then(({data,error})=>{if(!alive)return;if(error){setGatewayError('Payment options are unavailable. Please try again later.');setGateways([]);setGateway('');}else{setGateways(data?.gateways||[]);setGateway(data?.gateways?.[0]?.provider||'');}}).catch(()=>{if(alive)setGatewayError('Payment options are unavailable.');}).finally(()=>{if(alive)setGatewaysLoading(false);});
+    return()=>{alive=false;};
+  },[user?.id]);
 
   const beginCheckout = async (plan) => {
     if(!user?.id) { toast.error('Please sign in first.'); return; }
+    if(!gateway) { toast.error('Choose an available payment gateway.'); return; }
     setCheckingOut(true);
-    const storageKey = `smartbridge-checkout:${appConfig.supabaseUrl}:${user.id}:${plan.id}`;
+    const storageKey = `smartbridge-checkout:${appConfig.supabaseUrl}:${user.id}:${plan.id}:${gateway}`;
     if(!paymentIntent.current) {
-      try { const saved=sessionStorage.getItem(storageKey); if(saved && /^[0-9a-f-]{36}$/i.test(saved)) paymentIntent.current={product:plan.id,userId:user.id,id:saved}; } catch { /* In-memory retry remains available. */ }
+      try { const saved=sessionStorage.getItem(storageKey); if(saved && /^[0-9a-f-]{36}$/i.test(saved)) paymentIntent.current={product:plan.id,userId:user.id,gateway,id:saved}; } catch { /* In-memory retry remains available. */ }
     }
-    if(paymentIntent.current?.product !== plan.id || paymentIntent.current?.userId !== user.id) {
-      paymentIntent.current = {product: plan.id, userId: user.id, id: crypto.randomUUID()};
+    if(paymentIntent.current?.product !== plan.id || paymentIntent.current?.userId !== user.id || paymentIntent.current?.gateway !== gateway) {
+      paymentIntent.current = {product: plan.id, userId: user.id, gateway, id: crypto.randomUUID()};
       try { sessionStorage.setItem(storageKey,paymentIntent.current.id); } catch { /* In-memory retry remains available. */ }
     }
     try {
       const {data,error} = await supabase.functions.invoke('create-checkout', {
-        body: {product: plan.id, request_id: paymentIntent.current.id}
+        body: {product: plan.id, request_id: paymentIntent.current.id, gateway}
       });
       if(error) throw error;
       if(data?.status === 'paid') { paymentIntent.current=null; try { sessionStorage.removeItem(storageKey); } catch { /* No stored intent. */ } toast.info('Payment already received. Refresh your account status.'); await loadSubscription(); return; }
       if(data?.amount_cents !== Math.round(plan.price * 100)) throw new Error('The plan price has changed. Contact support before paying.');
       const redirect = new URL(data.redirect_url);
-      if(redirect.protocol !== 'https:' || !['c.yoco.com','pay.yoco.com'].includes(redirect.hostname) || redirect.username || redirect.password) throw new Error('Invalid payment redirect.');
+      if(redirect.protocol !== 'https:' || !(gateway==='paystack'?['checkout.paystack.com']:['c.yoco.com','pay.yoco.com']).includes(redirect.hostname) || redirect.username || redirect.password) throw new Error('Invalid payment redirect.');
       window.location.assign(redirect.href);
     } catch(error) { toast.error(error.message || 'Checkout unavailable. Please retry.'); }
     finally { setCheckingOut(false); }
@@ -248,10 +259,13 @@ export default function Premium() {
                   <CardContent className="pt-5 pb-5 space-y-3">
                     <div className="flex items-center gap-2">
                       <CreditCard className="w-5 h-5 text-primary" />
-                      <p className="font-playfair text-lg font-bold">Pay via Yoco</p>
+                      <p className="font-playfair text-lg font-bold">{appConfig.paymentsApiEnabled?'Pay online':'Pay via Yoco'}</p>
                     </div>
                     <p className="text-xs text-muted-foreground">{appConfig.paymentsApiEnabled ? `Pay R${plan.price} for one month of access. This is a one-off payment and does not renew automatically. Access updates after payment verification.` : `Click below to pay R${plan.price} via Yoco. Use your account email as the reference. An administrator will confirm payment before activating access.`}</p>
-                    {appConfig.paymentsApiEnabled ? <Button className="w-full" disabled={!user || checkingOut} onClick={() => beginCheckout(plan)}>{checkingOut ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CreditCard className="w-4 h-4 mr-2" />}Pay R{plan.price} securely</Button> : YOCO_LINKS[plan.id] ? <a
+                    {appConfig.paymentsApiEnabled && <div className="space-y-2">
+                      {gatewaysLoading?<p role="status">Loading payment options…</p>:gatewayError?<p role="alert">{gatewayError}</p>:gateways.length?<label className="block text-sm">Payment gateway<select className="block w-full border rounded-md p-2 mt-1 bg-background" value={gateway} onChange={event=>setGateway(event.target.value)}>{gateways.map(item=><option key={item.provider} value={item.provider}>{item.name}{item.mode==='test'?' — test mode':''}</option>)}</select></label>:<p role="status">No online payment gateway is currently available.</p>}
+                    </div>}
+                    {appConfig.paymentsApiEnabled ? <Button className="w-full" disabled={!user || checkingOut || !gateway || gatewaysLoading} onClick={() => beginCheckout(plan)}>{checkingOut ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CreditCard className="w-4 h-4 mr-2" />}Pay R{plan.price} securely</Button> : YOCO_LINKS[plan.id] ? <a
                       href={YOCO_LINKS[plan.id]}
                       target="_blank"
                       rel="noopener noreferrer"

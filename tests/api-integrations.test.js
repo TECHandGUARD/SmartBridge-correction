@@ -58,7 +58,7 @@ test('booking notifications reject unowned records and derive the recipient from
 
 const paymentEnv={PAYMENTS_API_ENABLED:'true',YOCO_MODE:'test',YOCO_SECRET_KEY:'sk_test_isolated',PAYMENT_STUDENT_AMOUNT_CENTS:'2000',YOCO_WEBHOOK_SECRET:'whsec_'+Buffer.from('isolated-signature-test-secret').toString('base64')};
 test('checkout ignores browser authority and sends a stable intent, server amount and trusted callbacks',async()=>{
- const calls=[],rpc=[];const client=fakeClient(active);client.rpc=async(name,args)=>{rpc.push({name,args});return {data:name==='consume_api_quota'?true:{id:args.request_id,status:'pending',amount_cents:2000,mode:'test'},error:null};};
+ const calls=[],rpc=[];const client=fakeClient(active,call=>({data:call.table==='payment_gateway_settings'?{provider:'yoco',enabled:true,mode:'test',priority:0}:[],error:null}));client.rpc=async(name,args)=>{rpc.push({name,args});return {data:name==='consume_api_quota'?true:{id:args.request_id,status:'pending',amount_cents:2000,mode:'test'},error:null};};
  const runtime=edgeRuntime('createCheckout',{client,env:paymentEnv,fetch:async(url,options)=>{calls.push({url,options});return Response.json({id:'ch-test',amount:2000,currency:'ZAR',processingMode:'test',redirectUrl:'https://c.yoco.com/checkout/test'});}});
  const id='00000000-0000-4000-8000-000000000501';for(let i=0;i<2;i++)assert.equal((await runtime.handle(request({product:'student',request_id:id}))).status,200);
  assert.equal(calls[0].options.headers['Idempotency-Key'],calls[1].options.headers['Idempotency-Key']);const payload=JSON.parse(calls[0].options.body);assert.equal(payload.amount,2000);assert.match(payload.successUrl,/staging.example.test/);
@@ -76,9 +76,9 @@ test('Yoco webhook rejects forged, expired, wrong-mode and malformed payments be
  assert.equal((await runtime.handle(request(event,{}))).status,401);
  assert.equal((await runtime.handle(signedRequest(event,{timestamp:'1'}))).status,401);
  assert.equal((await runtime.handle(signedRequest(event,{secret:Buffer.from('attacker-key')}))).status,401);
- assert.equal((await runtime.handle(signedRequest({...event,payload:{...event.payload,mode:'live'}}))).status,400);
+ assert.equal((await runtime.handle(signedRequest({...event,payload:{...event.payload,mode:'live'}}))).status,503);
  assert.equal((await runtime.handle(signedRequest({...event,payload:{...event.payload,amount:1}}))).status,400);assert.equal(calls.length,0);
- assert.equal((await runtime.handle(signedRequest(event))).status,200);assert.equal(calls[0].name,'fulfill_yoco_payment');assert.equal(calls[0].args.checkout_key,'ch-test');
+ assert.equal((await runtime.handle(signedRequest(event))).status,200);assert.equal(calls[0].name,'fulfill_gateway_payment');assert.equal(calls[0].args.checkout_key,'ch-test');
 });
 
 test('Resend delivery callbacks verify Svix signatures before writing tracking and suppression events',async()=>{

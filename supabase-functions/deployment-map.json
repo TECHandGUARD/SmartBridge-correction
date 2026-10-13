@@ -28,15 +28,16 @@
       "entrypoint": "supabase-functions/functions/createCheckout/entry.ts",
       "access": "user",
       "verify_jwt": true,
-      "provider": "Yoco",
+      "provider": "Yoco/Paystack",
       "deployed_version": null,
       "deployed_verify_jwt": null,
       "deployed_bundle_sha256": null,
       "retrieved_entrypoint_sha256": null,
-      "reconciled_entrypoint_sha256": "619b497aefc5f0a6bbafe2d560d81bcdbfd1f5d1b1c3587fe958f1776727945d",
+      "reconciled_entrypoint_sha256": "4c86be244691e58498533cb81f5fb75dbc61e157361f369ced68e79720a2fe0b",
       "dependencies": [
         "supabase-functions/shared/api.ts",
         "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/gateways.ts",
         "supabase-functions/shared/http.ts",
         "supabase-functions/shared/payments.ts",
         "supabase-functions/shared/webhook.ts"
@@ -44,12 +45,14 @@
       "dependency_sha256": {
         "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
         "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/gateways.ts": "c2ae73ca266794fb54b8f0faa401fa1e69edacc15d9268a3d4dc81af4d1f29b9",
         "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b",
-        "supabase-functions/shared/payments.ts": "5ec0b869484d0d62125dc3673db8ec29ef8b77dc3a53b4571934d62b0d1c5b61",
-        "supabase-functions/shared/webhook.ts": "dc9a114bf283e8f0140e743763d0bb9b2d6171d2a8776d2319af7ed25ba602c1"
+        "supabase-functions/shared/payments.ts": "8ae952e83116009000fa7e18928b7aea580d64af207689a91c395ebc2b62172c",
+        "supabase-functions/shared/webhook.ts": "0417775600fc64d652e4bda6ea2c8b86a18af7df12ba49d29f1dd0f61966891b"
       },
       "required_migrations": [
-        "supabase/migrations/20261013093805_api_integrations.sql"
+        "supabase/migrations/20261013093805_api_integrations.sql",
+        "supabase/migrations/20261013103838_payment_gateway_settings.sql"
       ]
     },
     {
@@ -441,6 +444,70 @@
       ]
     },
     {
+      "slug": "payment-gateways",
+      "entrypoint": "supabase-functions/functions/paymentGateways/entry.ts",
+      "access": "user-or-admin",
+      "verify_jwt": true,
+      "provider": null,
+      "deployed_version": null,
+      "deployed_verify_jwt": null,
+      "deployed_bundle_sha256": null,
+      "retrieved_entrypoint_sha256": null,
+      "reconciled_entrypoint_sha256": "1a8868a14580db799d396c55d6b3fe264620df270343c0571fc3a83120dccfe3",
+      "dependencies": [
+        "supabase-functions/shared/api.ts",
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/gateways.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/payments.ts",
+        "supabase-functions/shared/webhook.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/gateways.ts": "c2ae73ca266794fb54b8f0faa401fa1e69edacc15d9268a3d4dc81af4d1f29b9",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b",
+        "supabase-functions/shared/payments.ts": "8ae952e83116009000fa7e18928b7aea580d64af207689a91c395ebc2b62172c",
+        "supabase-functions/shared/webhook.ts": "0417775600fc64d652e4bda6ea2c8b86a18af7df12ba49d29f1dd0f61966891b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql",
+        "supabase/migrations/20261013103838_payment_gateway_settings.sql"
+      ]
+    },
+    {
+      "slug": "paystack-webhook",
+      "entrypoint": "supabase-functions/functions/paystackWebhook/entry.ts",
+      "access": "signed-webhook",
+      "verify_jwt": false,
+      "provider": "Paystack",
+      "deployed_version": null,
+      "deployed_verify_jwt": null,
+      "deployed_bundle_sha256": null,
+      "retrieved_entrypoint_sha256": null,
+      "reconciled_entrypoint_sha256": "ec4454e60136aaeb711e1056facdcef8d2383bd4a6692f2a6af43a835dca8366",
+      "dependencies": [
+        "supabase-functions/shared/api.ts",
+        "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/gateways.ts",
+        "supabase-functions/shared/http.ts",
+        "supabase-functions/shared/payments.ts",
+        "supabase-functions/shared/webhook.ts"
+      ],
+      "dependency_sha256": {
+        "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
+        "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/gateways.ts": "c2ae73ca266794fb54b8f0faa401fa1e69edacc15d9268a3d4dc81af4d1f29b9",
+        "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b",
+        "supabase-functions/shared/payments.ts": "8ae952e83116009000fa7e18928b7aea580d64af207689a91c395ebc2b62172c",
+        "supabase-functions/shared/webhook.ts": "0417775600fc64d652e4bda6ea2c8b86a18af7df12ba49d29f1dd0f61966891b"
+      },
+      "required_migrations": [
+        "supabase/migrations/20261013093805_api_integrations.sql",
+        "supabase/migrations/20261013103838_payment_gateway_settings.sql"
+      ]
+    },
+    {
       "slug": "resend-webhook",
       "entrypoint": "supabase-functions/functions/resendWebhook/entry.ts",
       "access": "signed-webhook",
@@ -461,7 +528,7 @@
         "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
         "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
         "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b",
-        "supabase-functions/shared/webhook.ts": "dc9a114bf283e8f0140e743763d0bb9b2d6171d2a8776d2319af7ed25ba602c1"
+        "supabase-functions/shared/webhook.ts": "0417775600fc64d652e4bda6ea2c8b86a18af7df12ba49d29f1dd0f61966891b"
       },
       "required_migrations": [
         "supabase/migrations/20261013093805_api_integrations.sql"
@@ -654,10 +721,11 @@
       "deployed_verify_jwt": null,
       "deployed_bundle_sha256": null,
       "retrieved_entrypoint_sha256": null,
-      "reconciled_entrypoint_sha256": "bf90aa54d96e94dcd916f61803ed63421f4219969015d28a87fbb1518230d0c2",
+      "reconciled_entrypoint_sha256": "9ecb6e22c8e47f698c5252ddeea950068a973d79a6f0bc89f6b521a92e2650d7",
       "dependencies": [
         "supabase-functions/shared/api.ts",
         "supabase-functions/shared/config.ts",
+        "supabase-functions/shared/gateways.ts",
         "supabase-functions/shared/http.ts",
         "supabase-functions/shared/payments.ts",
         "supabase-functions/shared/webhook.ts"
@@ -665,12 +733,14 @@
       "dependency_sha256": {
         "supabase-functions/shared/api.ts": "a7814a0b0a05b9262141f6669cd54a0bf2310fb5c54057892578e9a67b293b12",
         "supabase-functions/shared/config.ts": "c75d9c4f03344c1cb67993f12d8d75525e8076cfc8863cce6801d3546f920980",
+        "supabase-functions/shared/gateways.ts": "c2ae73ca266794fb54b8f0faa401fa1e69edacc15d9268a3d4dc81af4d1f29b9",
         "supabase-functions/shared/http.ts": "f61a61d277260bdb0b104ae9593642db08e453b71f80725d97ee17316fb0ce9b",
-        "supabase-functions/shared/payments.ts": "5ec0b869484d0d62125dc3673db8ec29ef8b77dc3a53b4571934d62b0d1c5b61",
-        "supabase-functions/shared/webhook.ts": "dc9a114bf283e8f0140e743763d0bb9b2d6171d2a8776d2319af7ed25ba602c1"
+        "supabase-functions/shared/payments.ts": "8ae952e83116009000fa7e18928b7aea580d64af207689a91c395ebc2b62172c",
+        "supabase-functions/shared/webhook.ts": "0417775600fc64d652e4bda6ea2c8b86a18af7df12ba49d29f1dd0f61966891b"
       },
       "required_migrations": [
-        "supabase/migrations/20261013093805_api_integrations.sql"
+        "supabase/migrations/20261013093805_api_integrations.sql",
+        "supabase/migrations/20261013103838_payment_gateway_settings.sql"
       ]
     }
   ],

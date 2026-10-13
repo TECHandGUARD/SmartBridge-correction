@@ -1,6 +1,6 @@
 # API integration repairs — 13 October 2026
 
-Six new Edge Functions and their frontend callers are implemented on the repair branch. Existing provider calls have additional usage/delivery controls. All changes are staged for review; production functions, secrets and database schema remain unchanged. No provider messages, AI generations or payments were executed.
+Eight new Edge Functions and their frontend callers are implemented on the repair branch. Existing provider calls have additional usage/delivery controls. All changes are staged for review; production functions, secrets and database schema remain unchanged. No provider messages, AI generations or payments were executed.
 
 ## Implemented contracts
 
@@ -35,9 +35,9 @@ This is one-off premium purchasing, not recurring billing, booking payments or t
 
 ## Verification
 
-- 27 isolated API/unit tests pass, including malformed input, forged metadata, scoped email ownership, structured AI contracts, usage limits, checkout authority, raw-body signatures, timestamp/mode checks, suppression and provider acceptance.
-- All four migrations and the existing plus new SQL security fixtures passed in one transaction against the connected existing schema, then rolled back. Tests cover quota exhaustion, cross-account payment reads, forbidden client RPC/insert calls, amount checks, test-mode isolation, live activation, duplicate payments and private email event/suppression controls. No fixture accounts or receipts remain.
-- All 34 Edge modules pass local TypeScript/import checks with remote SDK declarations stubbed. Lint, frontend typecheck and a production build with synthetic public settings pass. Every literal frontend function call has a deployment mapping; dynamic admin discovery calls retain handler tests.
+- 31 isolated API/unit tests pass, including malformed input, forged metadata, scoped email ownership, structured AI contracts, usage limits, checkout authority, raw-body signatures, timestamp/mode checks, suppression and provider acceptance.
+- All five migrations and the existing plus new SQL security fixtures passed in one transaction against the connected existing schema, then rolled back. Tests cover quota exhaustion, cross-account payment reads, forbidden client RPC/insert calls, amount checks, test-mode isolation, live activation, duplicate payments and private email event/suppression controls. No fixture accounts or receipts remain.
+- All 37 Edge modules pass local TypeScript/import checks with remote SDK declarations stubbed. Lint, frontend typecheck and a production build with synthetic public settings pass. Every literal frontend function call has a deployment mapping; dynamic admin discovery calls retain handler tests.
 - This turn's browser regression attempt was blocked because Chromium was missing and the browser download returned an invalid archive. Earlier 19 focused browser checks were from the prior checkpoint; they are not evidence for these new frontend changes. Rerun them in a browser-equipped environment, including the enabled API checkout path.
 - Live Google/Resend/Yoco credentials, Deno bundling, domain authentication, OAuth, provider webhooks and deployed UI were not tested. The connected account has one active SmartBridge production project and no nondefault staging branch; the other project is inactive.
 
@@ -45,9 +45,9 @@ The live security advisor still reports 18 RLS tables without policies, public e
 
 ## Activation sequence
 
-1. Provision an isolated staging project based on the existing schema. Apply all four migrations in filename order. `db/test-api-integrations.sql` expects the earlier fixture files in a rollback transaction.
+1. Provision an isolated staging project based on the existing schema. Apply all five migrations in filename order. `db/test-api-integrations.sql` expects the earlier fixture files in a rollback transaction.
 2. Configure server secrets using `supabase-functions/.env.example`: Google key/model, verified email sender/Resend key, staging app origin, job secret, Resend signing secret, and Yoco test key/signing secret. Never put these in `VITE_*` variables or GitHub.
-3. Run `npm run prepare:edge -- /tmp/smartbridge-edge-bundles`. This creates source-only JSON deployment payloads for all 27 functions with mapped entrypoints, transitive shared dependencies, reviewed hashes and gateway settings. It performs no deployment. Deploy each bundle to staging with a Supabase-compatible deployment tool. Apply the fourth migration before the revised AI/email functions, because their shared guards depend on it.
+3. Run `npm run prepare:edge -- /tmp/smartbridge-edge-bundles`. This creates source-only JSON deployment payloads for all 29 functions with mapped entrypoints, transitive shared dependencies, reviewed hashes and gateway settings. It performs no deployment. Deploy each bundle to staging with a Supabase-compatible deployment tool. Apply the fourth migration before the revised AI/email functions, because their shared guards depend on it.
 4. Register Yoco `payment.succeeded`/`payment.failed` and Resend delivery callbacks on the staging function URLs. Provider webhook functions use signature verification rather than user JWTs. Configure the existing application webhooks/schedules with `x-job-secret` separately.
 5. Enable `PAYMENTS_API_ENABLED=true` and `VITE_PAYMENTS_API_ENABLED=true` in staging only after configuration, with `YOCO_MODE=test`. Server amount settings are cents; frontend displays must match. The existing static links/manual payment path remains available while API checkout is disabled. Verify test receipts without premium activation, then use a controlled live acceptance plan before production enablement.
 6. Verify browser flows, real provider results and failure/replay cases with dedicated accounts. Check signing errors, orphaned orders, failed deliveries and quota responses. Configure provider budget alerts and operational monitoring. Document retention/refund/payout procedures before launch.
@@ -57,3 +57,7 @@ The live security advisor still reports 18 RLS tables without policies, public e
 The actual application requirements now have shared adapters, scoped endpoints, signed callback handling, a payment ledger, quotas and a repeatable deployment package. No new paid service is provisioned. SMS/WhatsApp, push notifications, automated video meetings, external school systems, additional payment providers and error-monitoring vendors are not selected or registered: they require a concrete feature, account, budget and consent/ownership design. Add them through the same server adapter and authorization patterns when those decisions exist, rather than shipping unused API keys/dependencies. Existing tutor-supplied meeting links remain supported; no Zoom/Teams account automation is claimed.
 
 References: [Google generation API](https://ai.google.dev/api/generate-content), [Yoco checkout](https://developer.yoco.com/api-reference/checkout-api/checkout/create-checkout), [Yoco payment event](https://developer.yoco.com/api-reference/checkout-api/webhook-events/payment-notification), [Yoco signature verification](https://developer.yoco.com/guides/online-payments/webhooks/verifying-the-events), [Resend webhook verification](https://resend.com/docs/webhooks/verify-webhooks-requests), [Resend event types](https://resend.com/docs/webhooks/event-types).
+
+## Admin gateway management
+
+The gateway follow-up adds an admin catalog and Yoco/Paystack adapters with provider-bound settlement. See [payment gateway settings](payment-gateways.md). Paystack remains disabled until account credentials and tests exist; both gateway modes can be configured separately. The fifth migration is required before revised checkout/confirmation handlers. Historical Yoco-only setup above describes the initial integration; the current checkout reads administrator gateway settings.

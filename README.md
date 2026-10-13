@@ -73,3 +73,5 @@ See [the technical repair report](docs/technical-repair.md) for setup checks, da
 Backend source reconciliation and staging rollout: [docs/backend-reconciliation.md](docs/backend-reconciliation.md).
 
 API contracts, payment/email callbacks and activation requirements: [docs/api-integrations.md](docs/api-integrations.md).
+
+Admin payment gateway management: [docs/payment-gateways.md](docs/payment-gateways.md).

@@ -17,7 +17,7 @@ export function planAmount(product: string): number {
         failure(503, 'Plan price configuration is invalid');
     return value;
 }
-export function checkoutUrl(value: unknown): string {
+export function checkoutUrl(value: unknown, provider: 'yoco'|'paystack' = 'yoco'): string {
     if (typeof value !== 'string')
         failure(502, 'Invalid checkout redirect');
     let url: URL;
@@ -27,7 +27,7 @@ export function checkoutUrl(value: unknown): string {
     catch {
         failure(502, 'Invalid checkout redirect');
     }
-    if (url.protocol !== 'https:' || !['c.yoco.com', 'pay.yoco.com'].includes(url.hostname) || url.username || url.password)
+    if (url.protocol !== 'https:' || !(provider === 'paystack' ? ['checkout.paystack.com'] : ['c.yoco.com', 'pay.yoco.com']).includes(url.hostname) || url.username || url.password)
         failure(502, 'Invalid checkout redirect');
     return url.href;
 }
